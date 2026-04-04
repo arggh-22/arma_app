@@ -1,9 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_ce_flutter/hive_ce_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:arma_proxy_vpn_client/app.dart';
+import 'package:arma_proxy_vpn_client/features/server/data/models/server_config_model.dart';
+import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/theme_provider.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: ArmaApp()));
+
+  // Initialize Hive for Flutter (uses app documents directory)
+  await Hive.initFlutter();
+  Hive.registerAdapter(ServerConfigModelAdapter());
+  await Hive.openBox<ServerConfigModel>('configs');
+
+  // Load SharedPreferences for settings persistence
+  final prefs = await SharedPreferences.getInstance();
+
+  runApp(
+    ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
+      child: const ArmaApp(),
+    ),
+  );
 }
