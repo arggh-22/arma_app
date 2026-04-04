@@ -123,63 +123,69 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ENG-01 | — | Pending |
-| ENG-02 | — | Pending |
-| ENG-03 | — | Pending |
-| ENG-04 | — | Pending |
-| ENG-05 | — | Pending |
-| PROTO-01 | — | Pending |
-| PROTO-02 | — | Pending |
-| PROTO-03 | — | Pending |
-| PROTO-04 | — | Pending |
-| PROTO-05 | — | Pending |
-| PROTO-06 | — | Pending |
-| CONF-01 | — | Pending |
-| CONF-02 | — | Pending |
-| CONF-03 | — | Pending |
-| CONF-04 | — | Pending |
-| CONF-05 | — | Pending |
-| CONF-06 | — | Pending |
-| CONF-07 | — | Pending |
-| CONF-08 | — | Pending |
-| CONF-09 | — | Pending |
-| CONF-10 | — | Pending |
-| SERV-01 | — | Pending |
-| SERV-02 | — | Pending |
-| SERV-03 | — | Pending |
-| SERV-04 | — | Pending |
-| SERV-05 | — | Pending |
-| SERV-06 | — | Pending |
-| SERV-07 | — | Pending |
-| SERV-08 | — | Pending |
-| SERV-09 | — | Pending |
-| MON-01 | — | Pending |
-| MON-02 | — | Pending |
-| MON-03 | — | Pending |
-| MON-04 | — | Pending |
-| MON-05 | — | Pending |
-| MON-06 | — | Pending |
-| ROUTE-01 | — | Pending |
-| ROUTE-02 | — | Pending |
-| ROUTE-03 | — | Pending |
-| ROUTE-04 | — | Pending |
-| ROUTE-05 | — | Pending |
-| ROUTE-06 | — | Pending |
-| UI-01 | — | Pending |
-| UI-02 | — | Pending |
-| UI-03 | — | Pending |
-| UI-04 | — | Pending |
-| UI-05 | — | Pending |
-| UI-06 | — | Pending |
-| UI-07 | — | Pending |
-| STOR-01 | — | Pending |
-| STOR-02 | — | Pending |
+| ENG-01 | Phase 2 | Pending |
+| ENG-02 | Phase 2 | Pending |
+| ENG-03 | Phase 2 | Pending |
+| ENG-04 | Phase 2 | Pending |
+| ENG-05 | Phase 2 | Pending |
+| PROTO-01 | Phase 2 | Pending |
+| PROTO-02 | Phase 2 | Pending |
+| PROTO-03 | Phase 2 | Pending |
+| PROTO-04 | Phase 2 | Pending |
+| PROTO-05 | Phase 4 | Pending |
+| PROTO-06 | Phase 2 | Pending |
+| CONF-01 | Phase 1 | Pending |
+| CONF-02 | Phase 3 | Pending |
+| CONF-03 | Phase 1 | Pending |
+| CONF-04 | Phase 3 | Pending |
+| CONF-05 | Phase 1 | Pending |
+| CONF-06 | Phase 1 | Pending |
+| CONF-07 | Phase 3 | Pending |
+| CONF-08 | Phase 3 | Pending |
+| CONF-09 | Phase 3 | Pending |
+| CONF-10 | Phase 3 | Pending |
+| SERV-01 | Phase 1 | Pending |
+| SERV-02 | Phase 1 | Pending |
+| SERV-03 | Phase 3 | Pending |
+| SERV-04 | Phase 3 | Pending |
+| SERV-05 | Phase 3 | Pending |
+| SERV-06 | Phase 3 | Pending |
+| SERV-07 | Phase 3 | Pending |
+| SERV-08 | Phase 3 | Pending |
+| SERV-09 | Phase 3 | Pending |
+| MON-01 | Phase 2 | Pending |
+| MON-02 | Phase 2 | Pending |
+| MON-03 | Phase 2 | Pending |
+| MON-04 | Phase 2 | Pending |
+| MON-05 | Phase 3 | Pending |
+| MON-06 | Phase 3 | Pending |
+| ROUTE-01 | Phase 2 | Pending |
+| ROUTE-02 | Phase 4 | Pending |
+| ROUTE-03 | Phase 4 | Pending |
+| ROUTE-04 | Phase 4 | Pending |
+| ROUTE-05 | Phase 4 | Pending |
+| ROUTE-06 | Phase 2 | Pending |
+| UI-01 | Phase 1 | Pending |
+| UI-02 | Phase 2 | Pending |
+| UI-03 | Phase 1 | Pending |
+| UI-04 | Phase 4 | Pending |
+| UI-05 | Phase 4 | Pending |
+| UI-06 | Phase 4 | Pending |
+| UI-07 | Phase 1 | Pending |
+| STOR-01 | Phase 1 | Pending |
+| STOR-02 | Phase 1 | Pending |
 
 **Coverage:**
-- v1 requirements: 48 total
-- Mapped to phases: 0
-- Unmapped: 48 ⚠️
+- v1 requirements: 51 total
+- Mapped to phases: 51 ✓
+- Unmapped: 0
+
+**By Phase:**
+- Phase 1 (Foundation & Config Import): 11 requirements
+- Phase 2 (VPN Engine & Core Connection): 17 requirements
+- Phase 3 (Subscriptions & Server Intelligence): 15 requirements
+- Phase 4 (Routing, DNS & Advanced Settings): 8 requirements
 
 ---
 *Requirements defined: 2026-04-04*
-*Last updated: 2026-04-04 after initial definition*
+*Last updated: 2026-04-05 after roadmap creation*
