@@ -38,7 +38,7 @@
 ### Server Management
 
 - [ ] **SERV-01**: User sees a list of all servers grouped by subscription with protocol badges and latency
-- [ ] **SERV-02**: User can tap a server to select it as the active node
+- [x] **SERV-02**: User can tap a server to select it as the active node
 - [ ] **SERV-03**: User can test latency for individual servers (HTTP ping / TCPing)
 - [ ] **SERV-04**: User can test latency for all servers in bulk
 - [ ] **SERV-05**: User can long-press to enter multi-select mode for bulk deletion
@@ -145,7 +145,7 @@
 | CONF-09 | Phase 3 | Pending |
 | CONF-10 | Phase 3 | Pending |
 | SERV-01 | Phase 1 | Pending |
-| SERV-02 | Phase 1 | Pending |
+| SERV-02 | Phase 1 | Complete |
 | SERV-03 | Phase 3 | Pending |
 | SERV-04 | Phase 3 | Pending |
 | SERV-05 | Phase 3 | Pending |

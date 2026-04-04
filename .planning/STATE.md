@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-02-PLAN.md
-last_updated: "2026-04-04T23:48:35.502Z"
+stopped_at: Completed 01-04-PLAN.md
+last_updated: "2026-04-04T23:54:35.944Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 5
-  completed_plans: 2
-  percent: 40
+  completed_plans: 3
+  percent: 60
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 ## Current Position
 
 Phase: 01 (Foundation & Config Import) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-04-04
 
@@ -54,6 +54,7 @@ Progress: [░░░░░░░░░░] 0%
 *Updated after each plan completion*
 | Phase 01 P01 | 5min | 3 tasks | 16 files |
 | Phase 01 P02 | 11min | 3 tasks | 28 files |
+| Phase 01 P04 | 3min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,8 @@ Recent decisions affecting current work:
 - [Phase 01]: Freezed 3.x requires abstract class keyword for mixin-based code generation
 - [Phase 01]: Riverpod generator 4.x uses plain Ref (not scoped types) and shortened provider names (themeProvider not themeNotifierProvider)
 - [Phase 01]: ServerRepositoryImpl validates Hive records per T-01-02-01: protocolIndex range, non-empty required fields, port 1-65535
+- [Phase 01]: Used withValues(alpha:) instead of deprecated withOpacity() per Flutter SDK migration
+- [Phase 01]: Shortened Riverpod provider names (themeProvider/localeProvider/activeServerProvider) used per generator 4.x
 
 ### Pending Todos
 
@@ -85,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T23:48:35.500Z
-Stopped at: Completed 01-02-PLAN.md
+Last session: 2026-04-04T23:54:35.940Z
+Stopped at: Completed 01-04-PLAN.md
 Resume file: None

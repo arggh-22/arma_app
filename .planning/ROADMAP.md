@@ -35,7 +35,7 @@ Plans:
 - [x] 01-01-PLAN.md — Project foundation: dependencies, theme, router, navigation shell
 - [x] 01-02-PLAN.md — Domain models, data layer, localization (4 languages + RTL)
 - [ ] 01-03-PLAN.md — Share link parsers (TDD): all 5 protocols with unit tests
-- [ ] 01-04-PLAN.md — Dashboard, settings, and routing screens
+- [x] 01-04-PLAN.md — Dashboard, settings, and routing screens
 - [ ] 01-05-PLAN.md — Server list UI and import flow (FAB, clipboard, paste dialog)
 
 **UI hint**: yes
