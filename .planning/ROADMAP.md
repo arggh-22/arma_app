@@ -29,7 +29,15 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. User can import a config from clipboard with one tap via the expandable FAB on the config screen
   4. User can select a server as active, switch between light/dark themes, and change language — all preferences and configs persist across app restarts
   5. App displays correctly in RTL layout when Persian language is selected
-**Plans**: TBD
+**Plans:** 5 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Project foundation: dependencies, theme, router, navigation shell
+- [ ] 01-02-PLAN.md — Domain models, data layer, localization (4 languages + RTL)
+- [ ] 01-03-PLAN.md — Share link parsers (TDD): all 5 protocols with unit tests
+- [ ] 01-04-PLAN.md — Dashboard, settings, and routing screens
+- [ ] 01-05-PLAN.md — Server list UI and import flow (FAB, clipboard, paste dialog)
+
 **UI hint**: yes
 
 ### Phase 2: VPN Engine & Core Connection
@@ -77,7 +85,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Config Import | 0/TBD | Not started | - |
+| 1. Foundation & Config Import | 0/5 | Not started | - |
 | 2. VPN Engine & Core Connection | 0/TBD | Not started | - |
 | 3. Subscriptions & Server Intelligence | 0/TBD | Not started | - |
 | 4. Routing, DNS & Advanced Settings | 0/TBD | Not started | - |
