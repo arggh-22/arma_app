@@ -1,0 +1,157 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Chinese (`zh`).
+class AppLocalizationsZh extends AppLocalizations {
+  AppLocalizationsZh([String locale = 'zh']) : super(locale);
+
+  @override
+  String get appName => 'Arma VPN';
+
+  @override
+  String get dashboard => '仪表盘';
+
+  @override
+  String get servers => '服务器';
+
+  @override
+  String get routing => '路由';
+
+  @override
+  String get settings => '设置';
+
+  @override
+  String get importServer => '导入服务器';
+
+  @override
+  String get noServersYet => '暂无服务器';
+
+  @override
+  String get noServersBody => '导入您的第一个服务器配置开始使用';
+
+  @override
+  String get importFromClipboard => '从剪贴板导入';
+
+  @override
+  String get clipboard => '剪贴板';
+
+  @override
+  String get pasteConfig => '粘贴配置';
+
+  @override
+  String get scanQr => '扫描二维码';
+
+  @override
+  String get parseErrorInvalidLink => '无法解析配置 — 请检查链接格式后重试';
+
+  @override
+  String get parseErrorUnsupported =>
+      '不支持的协议 — 仅支持 VLESS、VMess、Trojan、Shadowsocks 和 Hysteria2 链接';
+
+  @override
+  String get parseErrorEmptyClipboard => '剪贴板为空 — 请先复制服务器配置链接';
+
+  @override
+  String get importSuccess => '服务器导入成功';
+
+  @override
+  String get duplicateServer => '此服务器已导入';
+
+  @override
+  String get disabledConnect => '连接功能将在下一版本中提供';
+
+  @override
+  String get disabledQrScan => '二维码扫描即将推出';
+
+  @override
+  String get deleteServerTitle => '删除服务器？';
+
+  @override
+  String deleteServerBody(String serverName) {
+    return '这将永久删除 $serverName。';
+  }
+
+  @override
+  String get deleteConfirm => '删除';
+
+  @override
+  String get deleteCancel => '保留';
+
+  @override
+  String get pasteConfigTitle => '粘贴配置';
+
+  @override
+  String get pasteConfigHint => '粘贴分享链接（vless://、vmess:// 等）或 JSON 配置';
+
+  @override
+  String get pasteConfigAction => '导入配置';
+
+  @override
+  String get pasteConfigEmpty => '请粘贴配置以继续';
+
+  @override
+  String get themeSystem => '跟随系统';
+
+  @override
+  String get themeLight => '浅色';
+
+  @override
+  String get themeDark => '深色';
+
+  @override
+  String get themeTitle => '主题';
+
+  @override
+  String get languageTitle => '语言';
+
+  @override
+  String get routingPlaceholder => '自定义路由规则将在未来版本中推出';
+
+  @override
+  String get bypassLan => '绕过局域网';
+
+  @override
+  String get bypassLanSubtitle => '不通过代理路由本地网络流量 (192.168.x.x, 10.x.x.x)';
+
+  @override
+  String get notConnected => '未连接';
+
+  @override
+  String get noServerSelected => '未选择服务器';
+
+  @override
+  String get generalSection => '通用';
+
+  @override
+  String get aboutSection => '关于';
+
+  @override
+  String get version => '版本';
+
+  @override
+  String get openSourceLicenses => '开源许可证';
+
+  @override
+  String languageChanged(String language) {
+    return '语言已更改为$language';
+  }
+
+  @override
+  String downloadSpeed(String speed) {
+    return '↓ $speed';
+  }
+
+  @override
+  String uploadSpeed(String speed) {
+    return '↑ $speed';
+  }
+
+  @override
+  String get viewAction => '查看';
+
+  @override
+  String get retryAction => '重试';
+}
