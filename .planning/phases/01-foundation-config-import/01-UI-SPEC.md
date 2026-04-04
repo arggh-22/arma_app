@@ -36,8 +36,7 @@ All values in logical pixels (dp). Based on 4-point grid, Material 3 conventions
 |-------|-------|-------|
 | xs | 4dp | Icon-to-label gaps, inline badge padding |
 | sm | 8dp | Compact element spacing, chip internal padding |
-| md | 12dp | List item internal padding, between protocol badge and server name |
-| base | 16dp | Default content padding, card internal padding, FAB spacing |
+| base | 16dp | Default content padding, card internal padding, list item internal padding, FAB spacing |
 | lg | 24dp | Section gaps within a screen, between card groups |
 | xl | 32dp | Bottom nav height padding, major layout gaps |
 | 2xl | 48dp | Dashboard connect button outer margin |
@@ -63,7 +62,7 @@ Using Material 3 `TextTheme` from `ThemeData`. Roboto (system default). Exactly 
 | Heading | 22dp | 400 (regular) | 1.27 (28dp) | `headlineSmall` |
 
 Additional constrained usage:
-- Protocol badge text: `labelSmall` — 11dp, weight 500, line-height 1.45 (16dp)
+- Protocol badge text: `labelMedium` — 12dp, weight 500 (same tier as bottom nav labels)
 - Bottom nav labels: `labelMedium` — 12dp, weight 500
 - FAB labels: `labelLarge` — 14dp, weight 500
 - App bar title: `titleLarge` — 22dp, weight 400
@@ -128,6 +127,8 @@ Each protocol gets a distinct chip color for instant visual identification. Colo
 
 **Purpose:** Home screen. In Phase 1, shows placeholder connect button (non-functional) and active server info. VPN connection is Phase 2.
 
+**Focal point:** Connect button — primary visual anchor, centered in upper-middle of screen.
+
 | Element | Specification |
 |---------|--------------|
 | App bar | Title: "Arma VPN" — `titleLarge`, no back button, settings gear icon (trailing) removed (settings is a tab) |
@@ -145,12 +146,12 @@ Each protocol gets a distinct chip color for instant visual identification. Colo
 | App bar | Title: "Servers" — `titleLarge` |
 | Server group header | Subscription name or "Manual" — `titleMedium`, `primary` color, 16dp horizontal padding, 8dp vertical padding |
 | Server card | Card widget, 12dp border radius, 1dp elevation, `surfaceContainerLow` fill. Internal padding: 16dp all sides. Height: intrinsic (no fixed height). |
-| Card layout | Row: [Protocol badge (left)] [Column: server name `titleMedium` + server address `bodyMedium`/`onSurfaceVariant`] [Checkmark icon if selected (right)] |
-| Protocol badge | Container with 4dp vertical / 8dp horizontal padding, 6dp border radius, protocol-specific color (see table above), `labelSmall` white text |
+| Card layout | Row: [Protocol badge (left) → 8dp gap] [Column: server name `titleMedium` + server address `bodyMedium`/`onSurfaceVariant`] [Checkmark icon if selected (right)] |
+| Protocol badge | Container with 4dp vertical / 8dp horizontal padding, 6dp border radius, protocol-specific color (see table above), `labelMedium` white text |
 | Selected state | Card border: 2dp solid `primary` color. Trailing checkmark icon: `Icons.check_circle`, `primary` color |
 | Tap interaction | Tap card → select as active server. Previous selection deselected. Haptic feedback (`HapticFeedback.selectionClick`). |
-| FAB | `FloatingActionButton.extended` — teal `primary` background, white `Icons.add` icon, label "Import". On tap: expands to show sub-options. |
-| FAB expanded options | Column of 3 mini-FABs above the main FAB, 12dp vertical gap between each: |
+| FAB | `FloatingActionButton.extended` — teal `primary` background, white `Icons.add` icon, label "Import Server". On tap: expands to show sub-options. |
+| FAB expanded options | Column of 3 mini-FABs above the main FAB, 8dp vertical gap between each: |
 | — Clipboard | `Icons.content_paste`, label "Clipboard" — functional in Phase 1 |
 | — Paste Config | `Icons.edit_note`, label "Paste Config" — opens full-screen dialog for manual share link or JSON paste. Functional in Phase 1. |
 | — Scan QR | `Icons.qr_code_scanner`, label "Scan QR" — tap shows snackbar "QR scanning coming soon" (Phase 3) |
@@ -236,7 +237,7 @@ Each protocol gets a distinct chip color for instant visual identification. Colo
 
 | Element | Copy |
 |---------|------|
-| **Primary CTA** | "Import" (FAB label on Servers screen) |
+| **Primary CTA** | "Import Server" (FAB label on Servers screen) |
 | **Empty state heading** | "No servers yet" |
 | **Empty state body** | "Import your first server config to get started" |
 | **Empty state action** | "Import from Clipboard" (filled button) |
@@ -250,10 +251,10 @@ Each protocol gets a distinct chip color for instant visual identification. Colo
 | **Delete server confirmation title** | "Delete server?" |
 | **Delete server confirmation body** | "This will permanently remove {serverName}." |
 | **Delete server confirm action** | "Delete" (destructive, `error` color) |
-| **Delete server cancel action** | "Cancel" |
+| **Delete server cancel action** | "Keep Server" |
 | **Manual paste dialog title** | "Paste Config" |
 | **Manual paste dialog hint** | "Paste a share link (vless://, vmess://, etc.) or raw JSON config" |
-| **Manual paste dialog action** | "Import" |
+| **Manual paste dialog action** | "Import Config" |
 | **Manual paste dialog — empty** | "Paste a config to continue" (validation hint) |
 | **Theme label — system** | "System" |
 | **Theme label — light** | "Light" |
@@ -281,9 +282,9 @@ Full-screen dialog (`showDialog` with `Dialog.fullscreen` or `Navigator.push` wi
 
 | Element | Specification |
 |---------|--------------|
-| App bar | Leading: "✕" close button. Title: "Paste Config" — `titleLarge`. Trailing: "Import" text button (disabled until input is non-empty). |
+| App bar | Leading: "✕" close button. Title: "Paste Config" — `titleLarge`. Trailing: "Import Config" text button (disabled until input is non-empty). |
 | Input field | `TextField` with `maxLines: null` (multiline). Hint text from copywriting contract. `OutlineInputBorder` with 12dp radius. Autofocus: true. |
-| Validation | On "Import" tap: detect format (share link vs JSON). Parse. If valid → pop dialog, show success snackbar, add to server list. If invalid → show inline error below TextField (`errorText` property). |
+| Validation | On "Import Config" tap: detect format (share link vs JSON). Parse. If valid → pop dialog, show success snackbar, add to server list. If invalid → show inline error below TextField (`errorText` property). |
 
 ---
 
@@ -317,7 +318,7 @@ Minimal animations for Phase 1. Declarative via `flutter_animate` or implicit an
 
 | Breakpoint | Behavior |
 |------------|----------|
-| < 360dp | Content padding reduces to 12dp. Cards go edge-to-edge with 8dp horizontal margin. |
+| < 360dp | Content padding reduces to 8dp. Cards go edge-to-edge with 8dp horizontal margin. |
 | 360-600dp | Default layout. 16dp content padding. Standard card layout. |
 | > 600dp (tablet) | Not targeted in Phase 1. Same phone layout will display. No tablet-specific adaptations. |
 
