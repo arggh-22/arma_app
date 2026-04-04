@@ -24,11 +24,11 @@
 
 ### Config Import
 
-- [ ] **CONF-01**: User can import configs by pasting share links (vless://, vmess://, trojan://, ss://, hysteria2://)
+- [x] **CONF-01**: User can import configs by pasting share links (vless://, vmess://, trojan://, ss://, hysteria2://)
 - [ ] **CONF-02**: User can import configs by scanning QR codes via camera
 - [ ] **CONF-03**: User can import configs from clipboard with one tap
 - [ ] **CONF-04**: User can add subscription URLs that deliver multiple server configs
-- [ ] **CONF-05**: App parses both VMess formats: legacy base64-JSON and standard URI
+- [x] **CONF-05**: App parses both VMess formats: legacy base64-JSON and standard URI
 - [ ] **CONF-06**: User can manually enter config via JSON paste
 - [ ] **CONF-07**: Subscription auto-updates on app launch (configurable toggle)
 - [ ] **CONF-08**: User can set custom User-Agent for subscription fetches
@@ -134,11 +134,11 @@
 | PROTO-04 | Phase 2 | Pending |
 | PROTO-05 | Phase 4 | Pending |
 | PROTO-06 | Phase 2 | Pending |
-| CONF-01 | Phase 1 | Pending |
+| CONF-01 | Phase 1 | Complete |
 | CONF-02 | Phase 3 | Pending |
 | CONF-03 | Phase 1 | Pending |
 | CONF-04 | Phase 3 | Pending |
-| CONF-05 | Phase 1 | Pending |
+| CONF-05 | Phase 1 | Complete |
 | CONF-06 | Phase 1 | Pending |
 | CONF-07 | Phase 3 | Pending |
 | CONF-08 | Phase 3 | Pending |
