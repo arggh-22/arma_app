@@ -32,7 +32,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 5 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Project foundation: dependencies, theme, router, navigation shell
+- [x] 01-01-PLAN.md — Project foundation: dependencies, theme, router, navigation shell
 - [ ] 01-02-PLAN.md — Domain models, data layer, localization (4 languages + RTL)
 - [ ] 01-03-PLAN.md — Share link parsers (TDD): all 5 protocols with unit tests
 - [ ] 01-04-PLAN.md — Dashboard, settings, and routing screens

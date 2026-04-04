@@ -67,7 +67,7 @@
 
 ### UI & Settings
 
-- [ ] **UI-01**: App has a clean, modern design with Light and Dark theme (Material 3)
+- [x] **UI-01**: App has a clean, modern design with Light and Dark theme (Material 3)
 - [ ] **UI-02**: Dashboard has a prominent connect/disconnect button with satisfying visual feedback
 - [ ] **UI-03**: App supports multiple languages: English, Persian (RTL), Russian, Chinese
 - [ ] **UI-04**: Settings screen includes Xray toggles: Sniffing, Mux (multiplexing), Fragment handling
@@ -165,7 +165,7 @@
 | ROUTE-04 | Phase 4 | Pending |
 | ROUTE-05 | Phase 4 | Pending |
 | ROUTE-06 | Phase 2 | Pending |
-| UI-01 | Phase 1 | Pending |
+| UI-01 | Phase 1 | Complete |
 | UI-02 | Phase 2 | Pending |
 | UI-03 | Phase 1 | Pending |
 | UI-04 | Phase 4 | Pending |
