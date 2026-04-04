@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import 'package:arma_proxy_vpn_client/core/constants/app_constants.dart';
 import 'package:arma_proxy_vpn_client/core/constants/protocol_constants.dart';
+import 'package:arma_proxy_vpn_client/features/server/data/parsers/parser_utils.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
 
 /// Parses Shadowsocks (SS) share links into [ServerConfig].
@@ -16,8 +17,6 @@ import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_con
 /// Also supports SIP002 format with query parameters for plugin info.
 class ShadowsocksParser {
   ShadowsocksParser._();
-
-  static const _maxInputLength = 10000;
 
   /// Known valid Shadowsocks encryption methods per T-01-03-04.
   static const _validMethods = <String>{
@@ -38,7 +37,7 @@ class ShadowsocksParser {
   /// malformed, has an unknown encryption method, or exceeds length limits.
   static ServerConfig? parse(String input) {
     try {
-      if (input.length > _maxInputLength) return null;
+      if (ParserUtils.exceedsMaxLength(input)) return null;
 
       final content = input.replaceFirst('ss://', '');
       if (content.isEmpty) return null;
@@ -92,10 +91,10 @@ class ShadowsocksParser {
       if (lastColon < 0) return null;
 
       final address = hostPort.substring(0, lastColon);
-      if (address.isEmpty) return null;
-
       final port = int.tryParse(hostPort.substring(lastColon + 1));
-      if (port == null || port <= 0 || port > 65535) return null;
+      if (port == null || !ParserUtils.isValidHostPort(address, port)) {
+        return null;
+      }
 
       var name = (fragment != null && fragment.isNotEmpty)
           ? Uri.decodeComponent(fragment)

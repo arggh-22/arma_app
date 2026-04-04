@@ -1,7 +1,7 @@
 import 'package:uuid/uuid.dart';
 
-import 'package:arma_proxy_vpn_client/core/constants/app_constants.dart';
 import 'package:arma_proxy_vpn_client/core/constants/protocol_constants.dart';
+import 'package:arma_proxy_vpn_client/features/server/data/parsers/parser_utils.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
 
 /// Parses Hysteria2 share links into [ServerConfig].
@@ -12,8 +12,6 @@ import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_con
 class Hysteria2Parser {
   Hysteria2Parser._();
 
-  static const _maxInputLength = 10000;
-
   /// Parses a Hysteria2 share link URI.
   ///
   /// Handles both `hysteria2://` and `hy2://` schemes.
@@ -21,7 +19,7 @@ class Hysteria2Parser {
   /// malformed, missing required fields, or exceeds length limits.
   static ServerConfig? parse(String input) {
     try {
-      if (input.length > _maxInputLength) return null;
+      if (ParserUtils.exceedsMaxLength(input)) return null;
 
       // Normalize hy2:// to hysteria2:// for consistent Uri parsing
       final normalized = input.startsWith('hy2://')
@@ -31,22 +29,14 @@ class Hysteria2Parser {
       final uri = Uri.parse(normalized);
 
       final address = uri.host;
-      if (address.isEmpty) return null;
-
       final port = uri.port;
-      if (port <= 0 || port > 65535) return null;
+      if (!ParserUtils.isValidHostPort(address, port)) return null;
 
       final password = Uri.decodeComponent(uri.userInfo);
       if (password.isEmpty) return null;
 
       final params = uri.queryParameters;
-
-      var name = uri.fragment.isNotEmpty
-          ? Uri.decodeComponent(uri.fragment)
-          : '$address:$port';
-      if (name.length > AppConstants.maxServerNameLength) {
-        name = name.substring(0, AppConstants.maxServerNameLength);
-      }
+      final name = ParserUtils.extractName(uri.fragment, address, port);
 
       return ServerConfig(
         id: const Uuid().v4(),
@@ -55,16 +45,13 @@ class Hysteria2Parser {
         address: address,
         port: port,
         password: password,
-        sni: _nonEmpty(params['sni']),
-        obfs: _nonEmpty(params['obfs']),
-        obfsPassword: _nonEmpty(params['obfs-password']),
+        sni: ParserUtils.nonEmpty(params['sni']),
+        obfs: ParserUtils.nonEmpty(params['obfs']),
+        obfsPassword: ParserUtils.nonEmpty(params['obfs-password']),
         addedAt: DateTime.now(),
       );
     } catch (_) {
       return null;
     }
   }
-
-  static String? _nonEmpty(String? value) =>
-      (value != null && value.isNotEmpty) ? value : null;
 }

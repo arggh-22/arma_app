@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import 'package:arma_proxy_vpn_client/core/constants/app_constants.dart';
 import 'package:arma_proxy_vpn_client/core/constants/protocol_constants.dart';
+import 'package:arma_proxy_vpn_client/features/server/data/parsers/parser_utils.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
 
 /// Parses VMess share links into [ServerConfig].
@@ -14,8 +15,6 @@ import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_con
 class VmessParser {
   VmessParser._();
 
-  static const _maxInputLength = 10000;
-
   /// Parses a VMess share link.
   ///
   /// Detects format by checking for `@` in the content after stripping
@@ -23,7 +22,7 @@ class VmessParser {
   /// routes to URI parser; otherwise to legacy base64-JSON parser.
   static ServerConfig? parse(String input) {
     try {
-      if (input.length > _maxInputLength) return null;
+      if (ParserUtils.exceedsMaxLength(input)) return null;
 
       final content = input.replaceFirst('vmess://', '');
       if (content.isEmpty) return null;
@@ -64,7 +63,9 @@ class VmessParser {
       if (address.isEmpty) return null;
 
       final port = int.tryParse(json['port']?.toString() ?? '');
-      if (port == null || port <= 0 || port > 65535) return null;
+      if (port == null || !ParserUtils.isValidHostPort(address, port)) {
+        return null;
+      }
 
       final uuid = json['id']?.toString() ?? '';
       if (uuid.isEmpty) return null;
@@ -86,12 +87,12 @@ class VmessParser {
         port: port,
         uuid: uuid,
         alterId: int.tryParse(json['aid']?.toString() ?? '0') ?? 0,
-        encryption: _nonEmptyOr(json['scy']?.toString(), 'auto'),
-        network: _nonEmptyOr(json['net']?.toString(), 'tcp'),
+        encryption: ParserUtils.nonEmptyOr(json['scy']?.toString(), 'auto'),
+        network: ParserUtils.nonEmptyOr(json['net']?.toString(), 'tcp'),
         security: security,
-        sni: _nonEmpty(json['sni']?.toString()),
-        host: _nonEmpty(json['host']?.toString()),
-        path: _nonEmpty(json['path']?.toString()),
+        sni: ParserUtils.nonEmpty(json['sni']?.toString()),
+        host: ParserUtils.nonEmpty(json['host']?.toString()),
+        path: ParserUtils.nonEmpty(json['path']?.toString()),
         addedAt: DateTime.now(),
       );
     } catch (_) {
@@ -105,22 +106,14 @@ class VmessParser {
       final uri = Uri.parse(input);
 
       final address = uri.host;
-      if (address.isEmpty) return null;
-
       final port = uri.port;
-      if (port <= 0 || port > 65535) return null;
+      if (!ParserUtils.isValidHostPort(address, port)) return null;
 
       final uuid = uri.userInfo;
       if (uuid.isEmpty) return null;
 
       final params = uri.queryParameters;
-
-      var name = uri.fragment.isNotEmpty
-          ? Uri.decodeComponent(uri.fragment)
-          : '$address:$port';
-      if (name.length > AppConstants.maxServerNameLength) {
-        name = name.substring(0, AppConstants.maxServerNameLength);
-      }
+      final name = ParserUtils.extractName(uri.fragment, address, port);
 
       return ServerConfig(
         id: const Uuid().v4(),
@@ -133,28 +126,13 @@ class VmessParser {
         encryption: params['encryption'] ?? 'auto',
         network: params['type'] ?? 'tcp',
         security: params['security'] ?? 'none',
-        sni: _nonEmpty(params['sni']),
-        host: _nonEmpty(params['host']),
-        path: _decodeParam(params['path']),
+        sni: ParserUtils.nonEmpty(params['sni']),
+        host: ParserUtils.nonEmpty(params['host']),
+        path: ParserUtils.decodeParam(params['path']),
         addedAt: DateTime.now(),
       );
     } catch (_) {
       return null;
-    }
-  }
-
-  static String _nonEmptyOr(String? value, String fallback) =>
-      (value != null && value.isNotEmpty) ? value : fallback;
-
-  static String? _nonEmpty(String? value) =>
-      (value != null && value.isNotEmpty) ? value : null;
-
-  static String? _decodeParam(String? value) {
-    if (value == null || value.isEmpty) return null;
-    try {
-      return Uri.decodeComponent(value);
-    } catch (_) {
-      return value;
     }
   }
 }
