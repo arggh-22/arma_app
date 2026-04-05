@@ -86,8 +86,11 @@ class MainActivity : FlutterActivity() {
                     result.success(true)
                 }
                 "isRunning" -> {
-                    // Return actual VPN state, not just Messenger binding state
-                    result.success(isVpnActive)
+                    // Return actual VPN state — check lastKnownStatus from service too
+                    val running = isVpnActive ||
+                        vpnConnection.lastKnownStatus == "connected" ||
+                        vpnConnection.lastKnownStatus == "connecting"
+                    result.success(running)
                 }
                 "requestVpnPermission" -> {
                     requestVpnPermission(result)
@@ -101,6 +104,14 @@ class MainActivity : FlutterActivity() {
         eventChannel.setStreamHandler(object : EventChannel.StreamHandler {
             override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
                 eventSink = events
+                // If VPN status was already received from the service (e.g., app killed
+                // and reopened while VPN was running), replay it immediately so Dart
+                // gets the correct initial state.
+                vpnConnection.lastKnownStatus?.let { status ->
+                    Log.w(TAG, "EventChannel.onListen: replaying lastKnownStatus=$status")
+                    isVpnActive = status == "connected" || status == "connecting"
+                    events?.success(mapOf("type" to "status", "state" to status))
+                }
             }
             override fun onCancel(arguments: Any?) {
                 eventSink = null

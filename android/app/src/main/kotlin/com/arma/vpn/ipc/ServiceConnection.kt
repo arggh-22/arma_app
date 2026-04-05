@@ -27,11 +27,13 @@ class VpnServiceConnection(
     private val onStatusUpdate: (Map<String, Any>) -> Unit
 ) {
     private var vpnServiceMessenger: Messenger? = null
+    var lastKnownStatus: String? = null
 
     private val incomingHandler = Handler(Looper.getMainLooper()) { msg ->
         when (msg.what) {
             ArmaVpnService.MSG_VPN_STATUS -> {
                 val status = msg.data.getString("status") ?: "disconnected"
+                lastKnownStatus = status
                 Log.w("VpnServiceConnection", "IPC received: status=$status")
                 onStatusUpdate(mapOf("type" to "status", "state" to status))
             }

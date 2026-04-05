@@ -30,6 +30,11 @@ class ConnectionNotifier extends _$ConnectionNotifier {
         .where((e) => e['type'] == 'status')
         .listen(_handleStatusEvent);
 
+    // Sync initial state — the VPN might be running from a previous app session.
+    // The EventChannel.onListen replays lastKnownStatus, but as a belt-and-suspenders
+    // approach, also query isRunning after a short delay.
+    _syncInitialState();
+
     ref.onDispose(() {
       print('[ConnectionNotifier] dispose() — cleaning up');
       _eventSubscription?.cancel();
@@ -37,6 +42,20 @@ class ConnectionNotifier extends _$ConnectionNotifier {
     });
 
     return const Disconnected();
+  }
+
+  Future<void> _syncInitialState() async {
+    // Give time for service binding + EventChannel status replay
+    await Future.delayed(const Duration(milliseconds: 800));
+    try {
+      final running = await _platformService.isRunning;
+      print('[ConnectionNotifier] _syncInitialState: isRunning=$running, currentState=$state');
+      if (running && state is Disconnected) {
+        state = Connected(serverName: 'Active', connectedAt: DateTime.now());
+      }
+    } catch (e) {
+      print('[ConnectionNotifier] _syncInitialState error: $e');
+    }
   }
 
   /// Connect to the given [server].
