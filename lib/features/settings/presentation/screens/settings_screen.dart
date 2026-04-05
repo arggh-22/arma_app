@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:arma_proxy_vpn_client/core/constants/app_constants.dart';
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
@@ -88,6 +89,27 @@ class SettingsScreen extends ConsumerWidget {
               style: theme.textTheme.bodyMedium,
             ),
             onTap: () => _showLanguageSheet(context, ref),
+          ),
+
+          const Divider(),
+
+          // Diagnostics section header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              l10n.diagnosticsSection,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: colorScheme.primary,
+              ),
+            ),
+          ),
+
+          // View Logs
+          ListTile(
+            leading: const Icon(Icons.article_outlined),
+            title: Text(l10n.viewLogs, style: theme.textTheme.titleMedium),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/logs'),
           ),
 
           const Divider(),
