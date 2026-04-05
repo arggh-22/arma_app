@@ -79,7 +79,7 @@ Plans:
 - [x] 03-03-PLAN.md — Latency testing: native MeasureDelay bridge + Dart providers + auto-fallback
 - [x] 03-04-PLAN.md — Log viewer + export (ring buffer, monospace viewer, share)
 - [x] 03-05-PLAN.md — Subscription service + QR scanner + config export + auto-refresh
-- [ ] 03-06-PLAN.md — Server list UI: sort, filter, multi-select, subscription headers, full wiring
+- [x] 03-06-PLAN.md — Server list UI: sort, filter, multi-select, subscription headers, full wiring
 
 **UI hint**: yes
 

@@ -41,9 +41,9 @@
 - [x] **SERV-02**: User can tap a server to select it as the active node
 - [x] **SERV-03**: User can test latency for individual servers (HTTP ping / TCPing)
 - [x] **SERV-04**: User can test latency for all servers in bulk
-- [ ] **SERV-05**: User can long-press to enter multi-select mode for bulk deletion
-- [ ] **SERV-06**: User can sort servers by latency, name, or protocol
-- [ ] **SERV-07**: User can filter servers by working/failed status
+- [x] **SERV-05**: User can long-press to enter multi-select mode for bulk deletion
+- [x] **SERV-06**: User can sort servers by latency, name, or protocol
+- [x] **SERV-07**: User can filter servers by working/failed status
 - [x] **SERV-08**: App displays subscription info: data used, data remaining, expiry date (from subscription-userinfo header)
 - [x] **SERV-09**: App can auto-select the best server based on lowest latency
 
@@ -148,9 +148,9 @@
 | SERV-02 | Phase 1 | Complete |
 | SERV-03 | Phase 3 | Complete |
 | SERV-04 | Phase 3 | Complete |
-| SERV-05 | Phase 3 | Pending |
-| SERV-06 | Phase 3 | Pending |
-| SERV-07 | Phase 3 | Pending |
+| SERV-05 | Phase 3 | Complete |
+| SERV-06 | Phase 3 | Complete |
+| SERV-07 | Phase 3 | Complete |
 | SERV-08 | Phase 3 | Complete |
 | SERV-09 | Phase 3 | Complete |
 | MON-01 | Phase 2 | Complete |
