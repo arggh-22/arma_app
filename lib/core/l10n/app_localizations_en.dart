@@ -159,4 +159,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retryAction => 'Retry';
+
+  @override
+  String get connecting => 'Connecting';
+
+  @override
+  String get connected => 'Connected';
 }

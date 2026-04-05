@@ -49,5 +49,7 @@
   "uploadSpeed": "↑ {speed}",
   "@uploadSpeed": { "placeholders": { "speed": { "type": "String" } } },
   "viewAction": "مشاهده",
-  "retryAction": "تلاش مجدد"
+  "retryAction": "تلاش مجدد",
+  "connecting": "در حال اتصال",
+  "connected": "متصل"
 }

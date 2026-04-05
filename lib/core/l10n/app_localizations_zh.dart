@@ -154,4 +154,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get retryAction => '重试';
+
+  @override
+  String get connecting => '连接中';
+
+  @override
+  String get connected => '已连接';
 }

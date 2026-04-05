@@ -377,6 +377,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get retryAction;
+
+  /// No description provided for @connecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting'**
+  String get connecting;
+
+  /// No description provided for @connected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get connected;
 }
 
 class _AppLocalizationsDelegate

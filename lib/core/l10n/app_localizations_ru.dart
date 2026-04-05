@@ -160,4 +160,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get retryAction => 'Повторить';
+
+  @override
+  String get connecting => 'Подключение';
+
+  @override
+  String get connected => 'Подключено';
 }

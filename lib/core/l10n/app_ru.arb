@@ -49,5 +49,7 @@
   "uploadSpeed": "↑ {speed}",
   "@uploadSpeed": { "placeholders": { "speed": { "type": "String" } } },
   "viewAction": "Просмотр",
-  "retryAction": "Повторить"
+  "retryAction": "Повторить",
+  "connecting": "Подключение",
+  "connected": "Подключено"
 }

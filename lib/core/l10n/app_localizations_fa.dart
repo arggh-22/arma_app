@@ -159,4 +159,10 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get retryAction => 'تلاش مجدد';
+
+  @override
+  String get connecting => 'در حال اتصال';
+
+  @override
+  String get connected => 'متصل';
 }

@@ -49,5 +49,7 @@
   "uploadSpeed": "↑ {speed}",
   "@uploadSpeed": { "placeholders": { "speed": { "type": "String" } } },
   "viewAction": "查看",
-  "retryAction": "重试"
+  "retryAction": "重试",
+  "connecting": "连接中",
+  "connected": "已连接"
 }
