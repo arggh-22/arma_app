@@ -122,7 +122,7 @@ final class SubscriptionNotifierProvider
 }
 
 String _$subscriptionNotifierHash() =>
-    r'3ab6ca1ac3c3d88cbb1469f6eb8f7a004a281be4';
+    r'75db42bed0ddee032d1eab208904fd1116422c41';
 
 /// Riverpod notifier managing the subscription lifecycle.
 ///
