@@ -173,11 +173,23 @@ class ArmaVpnService : VpnService() {
             // 3. Configure TUN interface
             tunInterface = configureTunInterface()
 
-            // 4. Create core callback and start Xray-core loop
+            // 4. Create core callback — CRITICAL: must protect outbound sockets!
+            // When Xray-core creates an outbound connection, it calls onEmitStatus
+            // with the socket fd. We MUST call VpnService.protect(fd) to exclude
+            // that socket from TUN routing, otherwise traffic loops:
+            // Xray outbound → TUN → back to Xray → infinite loop → no internet.
+            val vpnService = this@ArmaVpnService
             val callback = object : CoreCallbackHandler {
                 override fun onEmitStatus(p0: Long, p1: String?): Long {
                     Log.d(TAG, "Core status: code=$p0, msg=$p1")
-                    return 0
+                    // Protect outbound sockets from VPN routing loop
+                    return if (p0 > 0) {
+                        val protected = vpnService.protect(p0.toInt())
+                        Log.d(TAG, "protect(fd=$p0) = $protected")
+                        if (protected) 0L else 1L
+                    } else {
+                        0L
+                    }
                 }
                 override fun shutdown(): Long {
                     Log.d(TAG, "Core shutdown callback")
