@@ -17,6 +17,8 @@ part of 'connection_provider.dart';
 /// Uses [VpnPlatformService] for native MethodChannel/EventChannel communication
 /// and [XrayConfigBuilder] to generate Xray JSON config from [ServerConfig] (D-02).
 ///
+/// Lifecycle-aware: re-syncs state when app returns to foreground.
+///
 /// keepAlive: true — connection state persists across widget rebuilds.
 
 @ProviderFor(ConnectionNotifier)
@@ -31,6 +33,8 @@ final connectionProvider = ConnectionNotifierProvider._();
 /// Uses [VpnPlatformService] for native MethodChannel/EventChannel communication
 /// and [XrayConfigBuilder] to generate Xray JSON config from [ServerConfig] (D-02).
 ///
+/// Lifecycle-aware: re-syncs state when app returns to foreground.
+///
 /// keepAlive: true — connection state persists across widget rebuilds.
 final class ConnectionNotifierProvider
     extends $NotifierProvider<ConnectionNotifier, ConnectionStatus> {
@@ -42,6 +46,8 @@ final class ConnectionNotifierProvider
   ///
   /// Uses [VpnPlatformService] for native MethodChannel/EventChannel communication
   /// and [XrayConfigBuilder] to generate Xray JSON config from [ServerConfig] (D-02).
+  ///
+  /// Lifecycle-aware: re-syncs state when app returns to foreground.
   ///
   /// keepAlive: true — connection state persists across widget rebuilds.
   ConnectionNotifierProvider._()
@@ -72,7 +78,7 @@ final class ConnectionNotifierProvider
 }
 
 String _$connectionNotifierHash() =>
-    r'46df902cb8309e3c2c4de394f5d374249c4fcaad';
+    r'5b541300b869d16b9d84160eb1dca0c6811fad6d';
 
 /// Riverpod notifier managing the VPN connection state machine.
 ///
@@ -82,6 +88,8 @@ String _$connectionNotifierHash() =>
 ///
 /// Uses [VpnPlatformService] for native MethodChannel/EventChannel communication
 /// and [XrayConfigBuilder] to generate Xray JSON config from [ServerConfig] (D-02).
+///
+/// Lifecycle-aware: re-syncs state when app returns to foreground.
 ///
 /// keepAlive: true — connection state persists across widget rebuilds.
 

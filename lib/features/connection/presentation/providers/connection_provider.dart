@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:arma_proxy_vpn_client/features/connection/domain/entities/connection_status.dart';
 import 'package:arma_proxy_vpn_client/features/connection/data/datasources/vpn_platform_service.dart';
@@ -21,14 +22,20 @@ part 'connection_provider.g.dart';
 /// Uses [VpnPlatformService] for native MethodChannel/EventChannel communication
 /// and [XrayConfigBuilder] to generate Xray JSON config from [ServerConfig] (D-02).
 ///
+/// Lifecycle-aware: re-syncs state when app returns to foreground.
+///
 /// keepAlive: true — connection state persists across widget rebuilds.
 @Riverpod(keepAlive: true)
-class ConnectionNotifier extends _$ConnectionNotifier {
+class ConnectionNotifier extends _$ConnectionNotifier
+    with WidgetsBindingObserver {
   final VpnPlatformService _platformService = VpnPlatformService();
   StreamSubscription<Map<String, dynamic>>? _eventSubscription;
   Timer? _durationTimer;
+  Timer? _stateTimeoutTimer;
   int _fallbackAttempts = 0;
   static const _maxFallbackAttempts = 3;
+  static const _connectingTimeout = Duration(seconds: 30);
+  static const _disconnectingTimeout = Duration(seconds: 10);
 
   @override
   ConnectionStatus build() {
@@ -37,22 +44,50 @@ class ConnectionNotifier extends _$ConnectionNotifier {
         .where((e) => e['type'] == 'status')
         .listen(_handleStatusEvent);
 
-    // Sync initial state — the VPN might be running from a previous app session.
-    // The EventChannel.onListen replays lastKnownStatus, but as a belt-and-suspenders
-    // approach, also query isRunning after a short delay.
+    WidgetsBinding.instance.addObserver(this);
+
     _syncInitialState();
 
     ref.onDispose(() {
       print('[ConnectionNotifier] dispose() — cleaning up');
       _eventSubscription?.cancel();
       _durationTimer?.cancel();
+      _stateTimeoutTimer?.cancel();
+      WidgetsBinding.instance.removeObserver(this);
     });
 
     return const Disconnected();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState lifecycleState) {
+    if (lifecycleState == AppLifecycleState.resumed) {
+      print('[ConnectionNotifier] App resumed — re-syncing VPN state');
+      resyncState();
+    }
+  }
+
+  /// Re-sync Dart state with actual native VPN state.
+  /// Called on app resume and can be called manually.
+  Future<void> resyncState() async {
+    try {
+      final running = await _platformService.isRunning;
+      print('[ConnectionNotifier] resyncState: isRunning=$running, currentState=$state');
+      if (running && state is! Connected) {
+        final serverName =
+            state is Connecting ? (state as Connecting).serverName : 'Active';
+        state = Connected(serverName: serverName, connectedAt: DateTime.now());
+        _cancelStateTimeout();
+      } else if (!running && state is! Disconnected) {
+        state = const Disconnected();
+        _cancelStateTimeout();
+      }
+    } catch (e) {
+      print('[ConnectionNotifier] resyncState error: $e');
+    }
+  }
+
   Future<void> _syncInitialState() async {
-    // Give time for service binding + EventChannel status replay
     await Future.delayed(const Duration(milliseconds: 800));
     try {
       final running = await _platformService.isRunning;
@@ -66,29 +101,36 @@ class ConnectionNotifier extends _$ConnectionNotifier {
   }
 
   /// Connect to the given [server].
-  ///
-  /// Set [isManual] to false when called from auto-fallback to preserve
-  /// the fallback attempt counter.
   Future<void> connect(ServerConfig server, {bool isManual = true}) async {
     print('[ConnectionNotifier] connect(${server.name}) — current state: $state');
-    if (state is Connecting || state is Connected) return;
 
-    // Reset fallback counter only on user-initiated connect
+    // Allow reconnect if stuck in Connecting/Connected state
+    if (state is Connected) {
+      // Already connected — disconnect first, then reconnect
+      await disconnect();
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+    if (state is Connecting) {
+      // Stuck in connecting — force reset
+      print('[ConnectionNotifier] Forcing reset from stuck Connecting state');
+      state = const Disconnected();
+      await Future.delayed(const Duration(milliseconds: 300));
+    }
+
     if (isManual) _fallbackAttempts = 0;
 
     state = Connecting(server.name);
+    _startStateTimeout(_connectingTimeout);
 
     final hasPermission = await _platformService.requestVpnPermission();
     print('[ConnectionNotifier] VPN permission: $hasPermission');
     if (!hasPermission) {
       state = const Disconnected('VPN permission denied');
+      _cancelStateTimeout();
       return;
     }
 
     final configJson = XrayConfigBuilder.build(server);
-    print('[ConnectionNotifier] === FULL XRAY CONFIG ===');
-    print(configJson);
-    print('[ConnectionNotifier] === END CONFIG ===');
 
     try {
       print('[ConnectionNotifier] Calling startVpn...');
@@ -96,40 +138,63 @@ class ConnectionNotifier extends _$ConnectionNotifier {
       print('[ConnectionNotifier] startVpn returned: $started');
       if (!started) {
         state = const Disconnected('Failed to start VPN');
+        _cancelStateTimeout();
       }
     } catch (e) {
       print('[ConnectionNotifier] startVpn ERROR: $e');
       state = Disconnected('Error: $e');
+      _cancelStateTimeout();
     }
   }
 
   /// Disconnect from the current VPN connection.
   Future<void> disconnect() async {
     print('[ConnectionNotifier] disconnect() — current state: $state');
-    if (state is Disconnected || state is Disconnecting) return;
+    if (state is Disconnected) return;
+
     state = const Disconnecting();
+    _startStateTimeout(_disconnectingTimeout);
+
     try {
       await _platformService.stopVpn();
       print('[ConnectionNotifier] stopVpn called');
     } catch (e) {
       print('[ConnectionNotifier] stopVpn ERROR: $e');
       state = const Disconnected();
+      _cancelStateTimeout();
     }
+  }
+
+  /// Start a timeout that auto-resets state if it stays in a transitional
+  /// state (Connecting/Disconnecting) for too long.
+  void _startStateTimeout(Duration timeout) {
+    _cancelStateTimeout();
+    _stateTimeoutTimer = Timer(timeout, () {
+      print('[ConnectionNotifier] State timeout — checking actual state');
+      resyncState();
+    });
+  }
+
+  void _cancelStateTimeout() {
+    _stateTimeoutTimer?.cancel();
+    _stateTimeoutTimer = null;
   }
 
   /// Handle status events from the native VPN process via EventChannel.
   void _handleStatusEvent(Map<String, dynamic> event) {
     final status = event['state'] as String?;
     print('[ConnectionNotifier] _handleStatusEvent: status=$status, current=$state');
+    _cancelStateTimeout();
     switch (status) {
       case 'connecting':
         if (state is! Connecting) {
           state = const Connecting('...');
+          _startStateTimeout(_connectingTimeout);
         }
       case 'connected':
         final serverName =
             state is Connecting ? (state as Connecting).serverName : 'Active';
-        _fallbackAttempts = 0; // Reset on successful connection
+        _fallbackAttempts = 0;
         state = Connected(serverName: serverName, connectedAt: DateTime.now());
       case 'disconnected':
         _durationTimer?.cancel();
@@ -138,13 +203,11 @@ class ConnectionNotifier extends _$ConnectionNotifier {
         _durationTimer?.cancel();
         state =
             Disconnected(event['message'] as String? ?? 'Connection error');
-        // D-17: Auto-fallback — try next best server on connection failure
         _attemptAutoFallback();
     }
   }
 
   /// D-17: When selected server fails, automatically try the next best server.
-  /// Bounded to [_maxFallbackAttempts] consecutive failures to prevent infinite loops.
   Future<void> _attemptAutoFallback() async {
     if (_fallbackAttempts >= _maxFallbackAttempts) {
       debugPrint(
@@ -157,7 +220,7 @@ class ConnectionNotifier extends _$ConnectionNotifier {
     try {
       final servers = await ref.read(serverListProvider.future);
       final latencyMap = ref.read(latencyProvider);
-      if (latencyMap.isEmpty) return; // No latency data — can't auto-select
+      if (latencyMap.isEmpty) return;
 
       final activeServer = ref.read(activeServerProvider);
       final nextBest = selectBestServer(
@@ -172,7 +235,6 @@ class ConnectionNotifier extends _$ConnectionNotifier {
           '(attempt $_fallbackAttempts/$_maxFallbackAttempts)',
         );
         ref.read(activeServerProvider.notifier).selectServer(nextBest);
-        // Small delay before retry to avoid rapid reconnection loops
         await Future.delayed(const Duration(seconds: 2));
         await connect(nextBest, isManual: false);
       }
