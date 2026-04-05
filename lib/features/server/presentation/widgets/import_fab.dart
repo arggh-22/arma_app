@@ -5,6 +5,10 @@ import 'package:arma_proxy_vpn_client/core/constants/app_constants.dart';
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/core/utils/clipboard_helper.dart';
 import 'package:arma_proxy_vpn_client/features/server/data/parsers/share_link_parser.dart';
+import 'package:arma_proxy_vpn_client/features/server/data/parsers/subscription_parser.dart';
+import 'package:arma_proxy_vpn_client/features/server/data/services/subscription_service.dart';
+import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
+import 'package:arma_proxy_vpn_client/features/server/domain/entities/subscription.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/server_list_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/screens/qr_scanner_screen.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/add_subscription_dialog.dart';
@@ -66,36 +70,128 @@ class _ImportFabState extends ConsumerState<ImportFab>
     WidgetRef ref,
   ) async {
     final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    // Clear any existing snackbars so they don't block the FAB
+    messenger.clearSnackBars();
+
     final text = await ClipboardHelper.getText();
 
     if (!context.mounted) return;
 
     if (text == null || text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text(l10n.parseErrorEmptyClipboard),
-          duration: AppConstants.snackBarDurationLong,
+          duration: AppConstants.snackBarDurationDefault,
         ),
       );
       return;
     }
 
-    final config = ShareLinkParser.parse(text);
-    if (config == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.parseErrorInvalidLink),
-          duration: AppConstants.snackBarDurationLong,
-          action: SnackBarAction(
-            label: l10n.retryAction,
-            onPressed: () => _importFromClipboard(context, ref),
+    final trimmed = text.trim();
+
+    // Auto-detect: subscription URL (http/https)
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      await _importSubscriptionUrl(context, ref, trimmed);
+      return;
+    }
+
+    // Try single share link first
+    final singleConfig = ShareLinkParser.parse(trimmed);
+    if (singleConfig != null) {
+      await _addSingleServer(context, ref, singleConfig);
+      return;
+    }
+
+    // Try multi-line / base64 content (multiple share links)
+    final multiConfigs = SubscriptionParser.parseBody(trimmed);
+    if (multiConfigs.isNotEmpty) {
+      await _addMultipleServers(context, ref, multiConfigs);
+      return;
+    }
+
+    // Nothing matched
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(l10n.parseErrorInvalidLink),
+        duration: AppConstants.snackBarDurationDefault,
+      ),
+    );
+  }
+
+  /// Fetches a subscription URL from clipboard and imports servers.
+  Future<void> _importSubscriptionUrl(
+    BuildContext context,
+    WidgetRef ref,
+    String url,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+
+    // Show loading indicator
+    messenger.showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            SizedBox(width: 12),
+            Text('Fetching subscription...'),
+          ],
+        ),
+        duration: Duration(seconds: 30),
+      ),
+    );
+
+    try {
+      final subscription = Subscription(
+        id: 'clipboard-import',
+        name: 'Clipboard',
+        url: url,
+        lastUpdated: DateTime.now(),
+        addedAt: DateTime.now(),
+      );
+
+      final result = await SubscriptionService().fetch(subscription);
+
+      if (!context.mounted) return;
+      messenger.clearSnackBars();
+
+      if (result.servers.isEmpty) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(l10n.parseErrorInvalidLink),
+            duration: AppConstants.snackBarDurationDefault,
           ),
+        );
+        return;
+      }
+
+      await _addMultipleServers(context, ref, result.servers);
+    } catch (_) {
+      if (!context.mounted) return;
+      messenger.clearSnackBars();
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.subscriptionFetchError),
+          duration: AppConstants.snackBarDurationDefault,
         ),
       );
-      return;
     }
+  }
 
-    // Check for duplicates by address + port + protocol
+  /// Adds a single server, checking for duplicates.
+  Future<void> _addSingleServer(
+    BuildContext context,
+    WidgetRef ref,
+    ServerConfig config,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+
     final servers = await ref.read(serverListProvider.future);
     final isDuplicate = servers.any(
       (s) =>
@@ -107,7 +203,7 @@ class _ImportFabState extends ConsumerState<ImportFab>
     if (!context.mounted) return;
 
     if (isDuplicate) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text(l10n.duplicateServer),
           duration: AppConstants.snackBarDurationDefault,
@@ -120,15 +216,59 @@ class _ImportFabState extends ConsumerState<ImportFab>
 
     if (!context.mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
+    messenger.showSnackBar(
       SnackBar(
         content: Text('${l10n.importSuccess} — ${config.name}'),
         duration: AppConstants.snackBarDurationDefault,
         backgroundColor: Colors.green.shade700,
-        action: SnackBarAction(
-          label: l10n.viewAction,
-          onPressed: () {},
+      ),
+    );
+  }
+
+  /// Adds multiple servers, skipping duplicates.
+  Future<void> _addMultipleServers(
+    BuildContext context,
+    WidgetRef ref,
+    List<ServerConfig> configs,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+
+    final existingServers = await ref.read(serverListProvider.future);
+
+    // Filter out duplicates
+    final newConfigs = configs.where((config) {
+      return !existingServers.any(
+        (s) =>
+            s.address == config.address &&
+            s.port == config.port &&
+            s.protocol == config.protocol,
+      );
+    }).toList();
+
+    if (!context.mounted) return;
+
+    if (newConfigs.isEmpty) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.duplicateServer),
+          duration: AppConstants.snackBarDurationDefault,
         ),
+      );
+      return;
+    }
+
+    for (final config in newConfigs) {
+      await ref.read(serverListProvider.notifier).addServer(config);
+    }
+
+    if (!context.mounted) return;
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(l10n.importedServersCount(newConfigs.length)),
+        duration: AppConstants.snackBarDurationDefault,
+        backgroundColor: Colors.green.shade700,
       ),
     );
   }
