@@ -8,19 +8,19 @@
 ### VPN Engine
 
 - [x] **ENG-01**: App integrates Xray-core via Go-Mobile AAR with Android VpnService to capture all device traffic in TUN mode
-- [ ] **ENG-02**: App generates valid Xray-core JSON config from user-facing settings (inbounds, outbounds, routing, dns sections)
+- [x] **ENG-02**: App generates valid Xray-core JSON config from user-facing settings (inbounds, outbounds, routing, dns sections)
 - [ ] **ENG-03**: User can connect/disconnect with a single tap from the dashboard
 - [ ] **ENG-04**: Connection state is clearly displayed: Disconnected → Connecting → Connected (with color coding)
 - [x] **ENG-05**: VPN runs as foreground service with persistent notification showing connection status
 
 ### Protocols
 
-- [ ] **PROTO-01**: User can connect via VLESS protocol including Reality and XTLS-Vision support
-- [ ] **PROTO-02**: User can connect via VMess protocol (AES-128-GCM/ChaCha20)
-- [ ] **PROTO-03**: User can connect via Trojan protocol
-- [ ] **PROTO-04**: User can connect via Shadowsocks protocol
+- [x] **PROTO-01**: User can connect via VLESS protocol including Reality and XTLS-Vision support
+- [x] **PROTO-02**: User can connect via VMess protocol (AES-128-GCM/ChaCha20)
+- [x] **PROTO-03**: User can connect via Trojan protocol
+- [x] **PROTO-04**: User can connect via Shadowsocks protocol
 - [ ] **PROTO-05**: User can connect via Hysteria2 protocol (UDP/QUIC)
-- [ ] **PROTO-06**: All protocols support common transport types: TCP, WebSocket, gRPC, HTTP/2
+- [x] **PROTO-06**: All protocols support common transport types: TCP, WebSocket, gRPC, HTTP/2
 
 ### Config Import
 
@@ -58,12 +58,12 @@
 
 ### Routing & DNS
 
-- [ ] **ROUTE-01**: App bypasses LAN traffic by default (192.168.x.x, 10.x.x.x)
+- [x] **ROUTE-01**: App bypasses LAN traffic by default (192.168.x.x, 10.x.x.x)
 - [ ] **ROUTE-02**: User can configure custom DNS servers (DoH/DoT supported)
 - [ ] **ROUTE-03**: User can set per-domain routing rules: Proxy, Direct, or Block
 - [ ] **ROUTE-04**: User can enable per-app proxy (split tunneling) to choose which apps use the proxy
 - [ ] **ROUTE-05**: App provides region-specific bypass presets (Iran, China, Russia domestic traffic)
-- [ ] **ROUTE-06**: DNS is split: remote DNS for proxied domains, direct DNS for local domains (no DNS leaks)
+- [x] **ROUTE-06**: DNS is split: remote DNS for proxied domains, direct DNS for local domains (no DNS leaks)
 
 ### UI & Settings
 
@@ -124,16 +124,16 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | ENG-01 | Phase 2 | Complete |
-| ENG-02 | Phase 2 | Pending |
+| ENG-02 | Phase 2 | Complete |
 | ENG-03 | Phase 2 | Pending |
 | ENG-04 | Phase 2 | Pending |
 | ENG-05 | Phase 2 | Complete |
-| PROTO-01 | Phase 2 | Pending |
-| PROTO-02 | Phase 2 | Pending |
-| PROTO-03 | Phase 2 | Pending |
-| PROTO-04 | Phase 2 | Pending |
+| PROTO-01 | Phase 2 | Complete |
+| PROTO-02 | Phase 2 | Complete |
+| PROTO-03 | Phase 2 | Complete |
+| PROTO-04 | Phase 2 | Complete |
 | PROTO-05 | Phase 4 | Pending |
-| PROTO-06 | Phase 2 | Pending |
+| PROTO-06 | Phase 2 | Complete |
 | CONF-01 | Phase 1 | Complete |
 | CONF-02 | Phase 3 | Pending |
 | CONF-03 | Phase 1 | Pending |
@@ -159,12 +159,12 @@
 | MON-04 | Phase 2 | Pending |
 | MON-05 | Phase 3 | Pending |
 | MON-06 | Phase 3 | Pending |
-| ROUTE-01 | Phase 2 | Pending |
+| ROUTE-01 | Phase 2 | Complete |
 | ROUTE-02 | Phase 4 | Pending |
 | ROUTE-03 | Phase 4 | Pending |
 | ROUTE-04 | Phase 4 | Pending |
 | ROUTE-05 | Phase 4 | Pending |
-| ROUTE-06 | Phase 2 | Pending |
+| ROUTE-06 | Phase 2 | Complete |
 | UI-01 | Phase 1 | Complete |
 | UI-02 | Phase 2 | Pending |
 | UI-03 | Phase 1 | Complete |

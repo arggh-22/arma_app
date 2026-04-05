@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-04-05T10:49:37.816Z"
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-04-05T10:55:53.028Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 10
-  completed_plans: 5
-  percent: 50
+  completed_plans: 6
+  percent: 60
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 ## Current Position
 
 Phase: 02 (VPN Engine & Core Connection) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-04-05
 
@@ -57,6 +57,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P04 | 3min | 2 tasks | 6 files |
 | Phase 01 P03 | 7min | 3 tasks | 13 files |
 | Phase 02 P01 | 5min | 2 tasks | 6 files |
+| Phase 02 P02 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,10 @@ Recent decisions affecting current work:
 - [Phase 01]: ParserUtils extracted to centralize shared parsing logic across all 5 protocol parsers
 - [Phase 02]: Used 2dust/AndroidLibXrayLite AAR (ArmavVPN fork returned 404)
 - [Phase 02]: Committed AAR + geo data directly to git (no LFS configured)
+- [Phase 02]: Config builder uses Dart 3 switch expressions for protocol dispatch — exhaustive pattern matching
+- [Phase 02]: VMess encryption 'none' maps to security 'auto' — Xray-core chooses optimal encryption
+- [Phase 02]: DNS simplified to 1.1.1.1 + localhost (not CN-specific) for general censored regions
+- [Phase 02]: H2 transport always forces TLS regardless of security field value
 
 ### Pending Todos
 
@@ -95,6 +100,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T10:49:37.813Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-04-05T10:55:53.025Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None
