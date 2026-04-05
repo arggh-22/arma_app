@@ -166,16 +166,14 @@ class MainActivity : FlutterActivity() {
     }
 
     /**
-     * Stop the VPN service via both Intent and Messenger for reliability.
+     * Stop the VPN service via Messenger.
+     *
+     * Only uses Messenger (not Intent) to avoid race condition: a queued
+     * Intent STOP can arrive after a subsequent Intent START, killing
+     * the reconnection. Messenger delivery is immediate and synchronous.
      */
     private fun stopVpnService() {
-        // Send stop via Messenger (fastest path if bound)
         vpnConnection.sendStop()
-        // Also send stop Intent in case Messenger isn't connected
-        val intent = Intent(this, ArmaVpnService::class.java).apply {
-            action = ArmaVpnService.ACTION_STOP
-        }
-        startService(intent)
     }
 
     /**

@@ -239,6 +239,10 @@ class ArmaVpnService : VpnService() {
             Log.w(TAG, "Step 6: startLoop returned, isRunning=$running")
             debugLog("startLoop returned, isRunning=$running")
 
+            if (!running) {
+                throw IllegalStateException("Xray core failed to start — isRunning=false after startLoop")
+            }
+
             // 7. Schedule delayed health check
             Handler(Looper.getMainLooper()).postDelayed({
                 val stillRunning = coreController?.isRunning ?: false
@@ -340,6 +344,11 @@ class ArmaVpnService : VpnService() {
     private fun stopVpn() {
         Log.w(TAG, "=== stopVpn() called, isRunning=$isRunning ===")
         debugLog("stopVpn called, isRunning=$isRunning")
+        if (!isRunning) {
+            Log.w(TAG, "stopVpn: already stopped, skipping")
+            sendStatusToClient("disconnected")
+            return
+        }
         isRunning = false
         sendStatusToClient("disconnected")
 
