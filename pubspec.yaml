@@ -23,6 +23,7 @@ dependencies:
   uuid: ^4.5.3
   equatable: ^2.0.8
   gap: ^3.0.1
+  flutter_animate: ^4.5.2
 
 dev_dependencies:
   flutter_test:
