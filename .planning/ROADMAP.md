@@ -76,7 +76,7 @@ Plans:
 Plans:
 - [x] 03-01-PLAN.md — Subscription data model, dependencies, l10n keys (all 4 locales)
 - [x] 03-02-PLAN.md — Subscription parsers (base64/SIP008/Clash) + share link generator (TDD)
-- [ ] 03-03-PLAN.md — Latency testing: native MeasureDelay bridge + Dart providers + auto-fallback
+- [x] 03-03-PLAN.md — Latency testing: native MeasureDelay bridge + Dart providers + auto-fallback
 - [ ] 03-04-PLAN.md — Log viewer + export (ring buffer, monospace viewer, share)
 - [ ] 03-05-PLAN.md — Subscription service + QR scanner + config export + auto-refresh
 - [ ] 03-06-PLAN.md — Server list UI: sort, filter, multi-select, subscription headers, full wiring
