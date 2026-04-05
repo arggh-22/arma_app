@@ -862,22 +862,22 @@ QrImageView(
 | A7 | Clash YAML uses `ws-opts`, `grpc-opts` keys for transport options | Architecture Patterns §8 | Medium — Clash Meta may use different keys. Test with real subscriptions. |
 | A8 | Log export uses path_provider's documents directory | Architecture Patterns §9 | Low — standard location for user-exportable files |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Kotlin coroutines dependency for MeasureDelay**
    - What we know: MeasureDelay blocks, needs Dispatchers.IO
    - What's unclear: Whether kotlinx.coroutines is already available in the Android project or needs to be added as a Gradle dependency
-   - Recommendation: Check `android/app/build.gradle.kts` for existing coroutines dependency; if absent, add `implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")`
+   - RESOLVED: Check `android/app/build.gradle.kts` for existing coroutines dependency; if absent, add `implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")`
 
 2. **MeasureDelay test URL reachability in censored regions**
    - What we know: `google.com/generate_204` is the standard test URL
    - What's unclear: In heavily censored regions (Iran, China), google.com may be blocked even through the proxy
-   - Recommendation: Allow the URL to be configurable, default to `google.com/generate_204`, fallback to `cp.cloudflare.com/generate_204`
+   - RESOLVED: Allow the URL to be configurable, default to `google.com/generate_204`, fallback to `cp.cloudflare.com/generate_204`
 
 3. **ServerConfig latency field persistence**
    - What we know: Latency data is ephemeral, stored in Riverpod state only
    - What's unclear: Whether users expect latency data to survive app restart
-   - Recommendation: Don't persist — latency changes too fast. Run auto-test on launch if enabled.
+   - RESOLVED: Don't persist — latency changes too fast. Run auto-test on launch if enabled.
 
 ## Environment Availability
 
