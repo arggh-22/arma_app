@@ -24,7 +24,7 @@ class XrayConfigBuilder {
       'stats': <String, dynamic>{},
       'policy': _buildPolicy(),
       'dns': _buildDns(),
-      'inbounds': [_buildSocksInbound()],
+      'inbounds': [_buildTunInbound()],
       'outbounds': [
         _buildProxyOutbound(server),
         _buildDirectOutbound(),
@@ -69,7 +69,33 @@ class XrayConfigBuilder {
     };
   }
 
-  /// SOCKS5 inbound on 127.0.0.1:10808 for TUN traffic.
+  /// TUN inbound — Xray-core reads directly from Android's TUN fd.
+  ///
+  /// AndroidLibXrayLite's `startLoop(config, tunFd)` stores the TUN fd as
+  /// `os.Setenv("xray.tun.fd", fd)`. Xray-core's built-in TUN handler
+  /// (proxy/tun/tun_android.go) reads this fd and creates a gVisor TCP/IP
+  /// stack that processes raw IP packets directly.
+  ///
+  /// No separate tun2socks binary needed — Xray-core handles everything.
+  static Map<String, dynamic> _buildTunInbound() {
+    return {
+      'tag': 'tun-in',
+      'protocol': 'tun',
+      'settings': {
+        'name': 'tun0',
+        'MTU': 9000,
+        'userLevel': 0,
+      },
+      'sniffing': {
+        'enabled': true,
+        'destOverride': ['http', 'tls', 'quic'],
+        'metadataOnly': false,
+      },
+    };
+  }
+
+  /// SOCKS5 inbound on 127.0.0.1:10808 — kept for future per-app proxy mode.
+  @Deprecated('Use _buildTunInbound() for VPN mode')
   static Map<String, dynamic> _buildSocksInbound() {
     return {
       'tag': 'socks-in',
