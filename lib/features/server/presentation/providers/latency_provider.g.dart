@@ -47,7 +47,7 @@ final class LatencyNotifierProvider
   }
 }
 
-String _$latencyNotifierHash() => r'54d16cb8b8609dae5074b70b57608c0a5b5fe52f';
+String _$latencyNotifierHash() => r'cc5634e70eb72c68e01d6062b458f0bf8487fd28';
 
 /// Latency test results: serverId → milliseconds (-1 = failed, -2 = testing).
 /// Ephemeral state — not persisted to Hive (latency changes constantly).

@@ -45,13 +45,16 @@ class ServerConfigModelAdapter extends TypeAdapter<ServerConfigModel> {
       subscriptionId: fields[42] as String?,
       groupName: fields[43] == null ? 'Manual' : fields[43] as String,
       addedAtMillis: (fields[44] as num).toInt(),
+      upMbps: (fields[45] as num?)?.toInt(),
+      downMbps: (fields[46] as num?)?.toInt(),
+      insecure: fields[47] == null ? false : fields[47] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, ServerConfigModel obj) {
     writer
-      ..writeByte(28)
+      ..writeByte(31)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -107,7 +110,13 @@ class ServerConfigModelAdapter extends TypeAdapter<ServerConfigModel> {
       ..writeByte(43)
       ..write(obj.groupName)
       ..writeByte(44)
-      ..write(obj.addedAtMillis);
+      ..write(obj.addedAtMillis)
+      ..writeByte(45)
+      ..write(obj.upMbps)
+      ..writeByte(46)
+      ..write(obj.downMbps)
+      ..writeByte(47)
+      ..write(obj.insecure);
   }
 
   @override

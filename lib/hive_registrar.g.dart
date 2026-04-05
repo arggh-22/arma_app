@@ -3,11 +3,13 @@
 // Check in to version control
 
 import 'package:hive_ce/hive_ce.dart';
+import 'package:arma_proxy_vpn_client/features/routing/data/models/domain_rule_model.dart';
 import 'package:arma_proxy_vpn_client/features/server/data/models/server_config_model.dart';
 import 'package:arma_proxy_vpn_client/features/server/data/models/subscription_model.dart';
 
 extension HiveRegistrar on HiveInterface {
   void registerAdapters() {
+    registerAdapter(DomainRuleModelAdapter());
     registerAdapter(ServerConfigModelAdapter());
     registerAdapter(SubscriptionModelAdapter());
   }
@@ -15,6 +17,7 @@ extension HiveRegistrar on HiveInterface {
 
 extension IsolatedHiveRegistrar on IsolatedHiveInterface {
   void registerAdapters() {
+    registerAdapter(DomainRuleModelAdapter());
     registerAdapter(ServerConfigModelAdapter());
     registerAdapter(SubscriptionModelAdapter());
   }

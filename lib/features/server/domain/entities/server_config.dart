@@ -86,6 +86,15 @@ abstract class ServerConfig with _$ServerConfig {
     /// Hysteria2 obfuscation password.
     String? obfsPassword,
 
+    /// Hysteria2 upload bandwidth hint in Mbps (optional — auto-detect if null).
+    int? upMbps,
+
+    /// Hysteria2 download bandwidth hint in Mbps (optional — auto-detect if null).
+    int? downMbps,
+
+    /// Hysteria2: skip TLS certificate verification.
+    @Default(false) bool insecure,
+
     /// ID of the subscription this config belongs to (null = manual import).
     String? subscriptionId,
 

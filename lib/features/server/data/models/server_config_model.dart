@@ -106,6 +106,15 @@ class ServerConfigModel extends HiveObject {
   @HiveField(44)
   final int addedAtMillis;
 
+  @HiveField(45)
+  final int? upMbps;
+
+  @HiveField(46)
+  final int? downMbps;
+
+  @HiveField(47)
+  final bool insecure;
+
   ServerConfigModel({
     required this.id,
     required this.name,
@@ -135,6 +144,9 @@ class ServerConfigModel extends HiveObject {
     this.subscriptionId,
     this.groupName = 'Manual',
     required this.addedAtMillis,
+    this.upMbps,
+    this.downMbps,
+    this.insecure = false,
   });
 
   /// Maps this Hive model to the domain [ServerConfig] entity.
@@ -165,6 +177,9 @@ class ServerConfigModel extends HiveObject {
       method: method,
       obfs: obfs,
       obfsPassword: obfsPassword,
+      upMbps: upMbps,
+      downMbps: downMbps,
+      insecure: insecure,
       subscriptionId: subscriptionId,
       groupName: groupName,
       addedAt: DateTime.fromMillisecondsSinceEpoch(addedAtMillis),
@@ -202,6 +217,9 @@ extension ServerConfigModelMapper on ServerConfigModel {
       method: config.method,
       obfs: config.obfs,
       obfsPassword: config.obfsPassword,
+      upMbps: config.upMbps,
+      downMbps: config.downMbps,
+      insecure: config.insecure,
       subscriptionId: config.subscriptionId,
       groupName: config.groupName,
       addedAtMillis: config.addedAt.millisecondsSinceEpoch,
