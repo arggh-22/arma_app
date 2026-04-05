@@ -683,6 +683,426 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Diagnostics'**
   String get diagnosticsSection;
+
+  /// No description provided for @regionPresets.
+  ///
+  /// In en, this message translates to:
+  /// **'Region Presets'**
+  String get regionPresets;
+
+  /// No description provided for @domainRules.
+  ///
+  /// In en, this message translates to:
+  /// **'Domain Rules'**
+  String get domainRules;
+
+  /// No description provided for @perAppProxy.
+  ///
+  /// In en, this message translates to:
+  /// **'Per-App Proxy'**
+  String get perAppProxy;
+
+  /// No description provided for @enablePerAppProxy.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Per-App Proxy'**
+  String get enablePerAppProxy;
+
+  /// No description provided for @searchApps.
+  ///
+  /// In en, this message translates to:
+  /// **'Search apps…'**
+  String get searchApps;
+
+  /// No description provided for @appsSelectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} apps selected'**
+  String appsSelectedCount(int count);
+
+  /// No description provided for @blacklistMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Blacklist'**
+  String get blacklistMode;
+
+  /// No description provided for @whitelistMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Whitelist'**
+  String get whitelistMode;
+
+  /// No description provided for @blacklistDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'All apps route through VPN except selected'**
+  String get blacklistDescription;
+
+  /// No description provided for @whitelistDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Only selected apps route through VPN'**
+  String get whitelistDescription;
+
+  /// No description provided for @switchedToMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Switched to {mode} mode'**
+  String switchedToMode(String mode);
+
+  /// No description provided for @loadingApps.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading installed apps…'**
+  String get loadingApps;
+
+  /// No description provided for @noAppsSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'No apps selected — check apps to include or exclude them'**
+  String get noAppsSelected;
+
+  /// No description provided for @addRule.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Rule'**
+  String get addRule;
+
+  /// No description provided for @addDomainRule.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Domain Rule'**
+  String get addDomainRule;
+
+  /// No description provided for @discardRule.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get discardRule;
+
+  /// No description provided for @domainHint.
+  ///
+  /// In en, this message translates to:
+  /// **'example.com'**
+  String get domainHint;
+
+  /// No description provided for @invalidDomain.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid domain (e.g., example.com)'**
+  String get invalidDomain;
+
+  /// No description provided for @ruleRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Rule removed'**
+  String get ruleRemoved;
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
+  /// No description provided for @noRulesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No custom rules yet — tap Add Rule to get started'**
+  String get noRulesYet;
+
+  /// No description provided for @proxy.
+  ///
+  /// In en, this message translates to:
+  /// **'Proxy'**
+  String get proxy;
+
+  /// No description provided for @direct.
+  ///
+  /// In en, this message translates to:
+  /// **'Direct'**
+  String get direct;
+
+  /// No description provided for @block.
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get block;
+
+  /// No description provided for @updateRules.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Rules'**
+  String get updateRules;
+
+  /// No description provided for @rulesUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Rules updated'**
+  String get rulesUpdated;
+
+  /// No description provided for @bundledRulesNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses bundled rules. Tap ↓ to update.'**
+  String get bundledRulesNote;
+
+  /// No description provided for @regionIran.
+  ///
+  /// In en, this message translates to:
+  /// **'Iran 🇮🇷'**
+  String get regionIran;
+
+  /// No description provided for @regionChina.
+  ///
+  /// In en, this message translates to:
+  /// **'China 🇨🇳'**
+  String get regionChina;
+
+  /// No description provided for @regionRussia.
+  ///
+  /// In en, this message translates to:
+  /// **'Russia 🇷🇺'**
+  String get regionRussia;
+
+  /// No description provided for @dnsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'DNS'**
+  String get dnsSection;
+
+  /// No description provided for @dnsProtocol.
+  ///
+  /// In en, this message translates to:
+  /// **'DNS Protocol'**
+  String get dnsProtocol;
+
+  /// No description provided for @remoteDns.
+  ///
+  /// In en, this message translates to:
+  /// **'Remote DNS'**
+  String get remoteDns;
+
+  /// No description provided for @directDns.
+  ///
+  /// In en, this message translates to:
+  /// **'Direct DNS'**
+  String get directDns;
+
+  /// No description provided for @selectDnsServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Select DNS Server'**
+  String get selectDnsServer;
+
+  /// No description provided for @customDns.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom...'**
+  String get customDns;
+
+  /// No description provided for @enterDnsAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter DNS address'**
+  String get enterDnsAddress;
+
+  /// No description provided for @dnsUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'DNS updated'**
+  String get dnsUpdated;
+
+  /// No description provided for @engineSettingsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Engine Settings'**
+  String get engineSettingsSection;
+
+  /// No description provided for @sniffing.
+  ///
+  /// In en, this message translates to:
+  /// **'Sniffing'**
+  String get sniffing;
+
+  /// No description provided for @sniffingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Detect protocol type from traffic content'**
+  String get sniffingSubtitle;
+
+  /// No description provided for @mux.
+  ///
+  /// In en, this message translates to:
+  /// **'Mux (Multiplexing)'**
+  String get mux;
+
+  /// No description provided for @muxSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Combine multiple connections into one'**
+  String get muxSubtitle;
+
+  /// No description provided for @concurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Concurrency'**
+  String get concurrency;
+
+  /// No description provided for @antiCensorshipSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Anti-Censorship'**
+  String get antiCensorshipSection;
+
+  /// No description provided for @profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profile;
+
+  /// No description provided for @profileNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get profileNone;
+
+  /// No description provided for @profileLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get profileLight;
+
+  /// No description provided for @profileModerate.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate'**
+  String get profileModerate;
+
+  /// No description provided for @profileAggressive.
+  ///
+  /// In en, this message translates to:
+  /// **'Aggressive'**
+  String get profileAggressive;
+
+  /// No description provided for @profileLightDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimal fragmentation for light filtering'**
+  String get profileLightDesc;
+
+  /// No description provided for @profileModerateDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fragment + padding for moderate DPI'**
+  String get profileModerateDesc;
+
+  /// No description provided for @profileAggressiveDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Full fragmentation + sleep + mixed SNI for heavy DPI'**
+  String get profileAggressiveDesc;
+
+  /// No description provided for @fragment.
+  ///
+  /// In en, this message translates to:
+  /// **'Fragment'**
+  String get fragment;
+
+  /// No description provided for @fragmentSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Split TLS ClientHello into fragments'**
+  String get fragmentSubtitle;
+
+  /// No description provided for @fragmentSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Fragment Size'**
+  String get fragmentSize;
+
+  /// No description provided for @sleepMs.
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep (ms)'**
+  String get sleepMs;
+
+  /// No description provided for @padding.
+  ///
+  /// In en, this message translates to:
+  /// **'Padding'**
+  String get padding;
+
+  /// No description provided for @paddingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add padding to TLS records'**
+  String get paddingSubtitle;
+
+  /// No description provided for @mixedSniCase.
+  ///
+  /// In en, this message translates to:
+  /// **'Mixed SNI Case'**
+  String get mixedSniCase;
+
+  /// No description provided for @mixedSniSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Randomize letter case in SNI field'**
+  String get mixedSniSubtitle;
+
+  /// No description provided for @dataSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Data'**
+  String get dataSection;
+
+  /// No description provided for @clearCachedData.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Cached Data'**
+  String get clearCachedData;
+
+  /// No description provided for @clearCacheSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Geo rules, subscription cache, logs'**
+  String get clearCacheSubtitle;
+
+  /// No description provided for @clearCacheTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Cached Data?'**
+  String get clearCacheTitle;
+
+  /// No description provided for @clearCacheBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This will clear:\n• Downloaded geo rule files\n• Subscription response cache\n• Log files\n\nServer configs and preferences will NOT be affected.'**
+  String get clearCacheBody;
+
+  /// No description provided for @clearCacheConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Cache'**
+  String get clearCacheConfirm;
+
+  /// No description provided for @keepData.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep Data'**
+  String get keepData;
+
+  /// No description provided for @cachedDataCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Cached data cleared'**
+  String get cachedDataCleared;
+
+  /// No description provided for @couldntUpdateRules.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t update rules. Check your connection and try again.'**
+  String get couldntUpdateRules;
 }
 
 class _AppLocalizationsDelegate

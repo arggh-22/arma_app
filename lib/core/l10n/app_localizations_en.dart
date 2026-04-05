@@ -332,4 +332,223 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diagnosticsSection => 'Diagnostics';
+
+  @override
+  String get regionPresets => 'Region Presets';
+
+  @override
+  String get domainRules => 'Domain Rules';
+
+  @override
+  String get perAppProxy => 'Per-App Proxy';
+
+  @override
+  String get enablePerAppProxy => 'Enable Per-App Proxy';
+
+  @override
+  String get searchApps => 'Search apps…';
+
+  @override
+  String appsSelectedCount(int count) {
+    return '$count apps selected';
+  }
+
+  @override
+  String get blacklistMode => 'Blacklist';
+
+  @override
+  String get whitelistMode => 'Whitelist';
+
+  @override
+  String get blacklistDescription =>
+      'All apps route through VPN except selected';
+
+  @override
+  String get whitelistDescription => 'Only selected apps route through VPN';
+
+  @override
+  String switchedToMode(String mode) {
+    return 'Switched to $mode mode';
+  }
+
+  @override
+  String get loadingApps => 'Loading installed apps…';
+
+  @override
+  String get noAppsSelected =>
+      'No apps selected — check apps to include or exclude them';
+
+  @override
+  String get addRule => 'Add Rule';
+
+  @override
+  String get addDomainRule => 'Add Domain Rule';
+
+  @override
+  String get discardRule => 'Discard';
+
+  @override
+  String get domainHint => 'example.com';
+
+  @override
+  String get invalidDomain => 'Enter a valid domain (e.g., example.com)';
+
+  @override
+  String get ruleRemoved => 'Rule removed';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get noRulesYet => 'No custom rules yet — tap Add Rule to get started';
+
+  @override
+  String get proxy => 'Proxy';
+
+  @override
+  String get direct => 'Direct';
+
+  @override
+  String get block => 'Block';
+
+  @override
+  String get updateRules => 'Update Rules';
+
+  @override
+  String get rulesUpdated => 'Rules updated';
+
+  @override
+  String get bundledRulesNote => 'Uses bundled rules. Tap ↓ to update.';
+
+  @override
+  String get regionIran => 'Iran 🇮🇷';
+
+  @override
+  String get regionChina => 'China 🇨🇳';
+
+  @override
+  String get regionRussia => 'Russia 🇷🇺';
+
+  @override
+  String get dnsSection => 'DNS';
+
+  @override
+  String get dnsProtocol => 'DNS Protocol';
+
+  @override
+  String get remoteDns => 'Remote DNS';
+
+  @override
+  String get directDns => 'Direct DNS';
+
+  @override
+  String get selectDnsServer => 'Select DNS Server';
+
+  @override
+  String get customDns => 'Custom...';
+
+  @override
+  String get enterDnsAddress => 'Enter DNS address';
+
+  @override
+  String get dnsUpdated => 'DNS updated';
+
+  @override
+  String get engineSettingsSection => 'Engine Settings';
+
+  @override
+  String get sniffing => 'Sniffing';
+
+  @override
+  String get sniffingSubtitle => 'Detect protocol type from traffic content';
+
+  @override
+  String get mux => 'Mux (Multiplexing)';
+
+  @override
+  String get muxSubtitle => 'Combine multiple connections into one';
+
+  @override
+  String get concurrency => 'Concurrency';
+
+  @override
+  String get antiCensorshipSection => 'Anti-Censorship';
+
+  @override
+  String get profile => 'Profile';
+
+  @override
+  String get profileNone => 'None';
+
+  @override
+  String get profileLight => 'Light';
+
+  @override
+  String get profileModerate => 'Moderate';
+
+  @override
+  String get profileAggressive => 'Aggressive';
+
+  @override
+  String get profileLightDesc => 'Minimal fragmentation for light filtering';
+
+  @override
+  String get profileModerateDesc => 'Fragment + padding for moderate DPI';
+
+  @override
+  String get profileAggressiveDesc =>
+      'Full fragmentation + sleep + mixed SNI for heavy DPI';
+
+  @override
+  String get fragment => 'Fragment';
+
+  @override
+  String get fragmentSubtitle => 'Split TLS ClientHello into fragments';
+
+  @override
+  String get fragmentSize => 'Fragment Size';
+
+  @override
+  String get sleepMs => 'Sleep (ms)';
+
+  @override
+  String get padding => 'Padding';
+
+  @override
+  String get paddingSubtitle => 'Add padding to TLS records';
+
+  @override
+  String get mixedSniCase => 'Mixed SNI Case';
+
+  @override
+  String get mixedSniSubtitle => 'Randomize letter case in SNI field';
+
+  @override
+  String get dataSection => 'Data';
+
+  @override
+  String get clearCachedData => 'Clear Cached Data';
+
+  @override
+  String get clearCacheSubtitle => 'Geo rules, subscription cache, logs';
+
+  @override
+  String get clearCacheTitle => 'Clear Cached Data?';
+
+  @override
+  String get clearCacheBody =>
+      'This will clear:\n• Downloaded geo rule files\n• Subscription response cache\n• Log files\n\nServer configs and preferences will NOT be affected.';
+
+  @override
+  String get clearCacheConfirm => 'Clear Cache';
+
+  @override
+  String get keepData => 'Keep Data';
+
+  @override
+  String get cachedDataCleared => 'Cached data cleared';
+
+  @override
+  String get couldntUpdateRules =>
+      'Couldn\'t update rules. Check your connection and try again.';
 }

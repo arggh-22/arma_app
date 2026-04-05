@@ -4,14 +4,16 @@ import 'package:go_router/go_router.dart';
 
 import 'package:arma_proxy_vpn_client/core/constants/app_constants.dart';
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
+import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/dns_settings_provider.dart';
+import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/engine_settings_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/locale_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/theme_provider.dart';
+import 'package:arma_proxy_vpn_client/features/settings/presentation/widgets/dns_picker_sheet.dart';
 
-/// Settings screen with functional theme toggle and language selector.
+/// Settings screen with theme, language, DNS, engine, and more.
 ///
-/// Theme: SegmentedButton with System/Light/Dark — persists via SharedPreferences.
-/// Language: ModalBottomSheet with 4 languages — persists via SharedPreferences.
-/// About: Version and open source licenses.
+/// Sections: General, DNS, Engine Settings, Diagnostics, About.
+/// All settings auto-save to SharedPreferences on change.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -22,6 +24,8 @@ class SettingsScreen extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
     final currentThemeMode = ref.watch(themeProvider);
     final currentLocale = ref.watch(localeProvider);
+    final dnsSettings = ref.watch(dnsSettingsProvider);
+    final engineSettings = ref.watch(engineSettingsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -89,6 +93,164 @@ class SettingsScreen extends ConsumerWidget {
               style: theme.textTheme.bodyMedium,
             ),
             onTap: () => _showLanguageSheet(context, ref),
+          ),
+
+          const Divider(),
+
+          // DNS section header
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+            child: Text(
+              l10n.dnsSection,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: colorScheme.primary,
+              ),
+            ),
+          ),
+
+          // DNS Protocol — SegmentedButton
+          ListTile(
+            leading: const Icon(Icons.dns_outlined),
+            title: Text(
+              l10n.dnsProtocol,
+              style: theme.textTheme.titleMedium,
+            ),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment(value: 'doh', label: Text('DoH')),
+                  ButtonSegment(value: 'dot', label: Text('DoT')),
+                  ButtonSegment(value: 'plain', label: Text('Plain')),
+                ],
+                selected: {dnsSettings.protocol},
+                onSelectionChanged: (values) {
+                  ref
+                      .read(dnsSettingsProvider.notifier)
+                      .setProtocol(values.first);
+                },
+              ),
+            ),
+          ),
+
+          // Remote DNS
+          ListTile(
+            leading: const Icon(Icons.cloud_outlined),
+            title: Text(
+              l10n.remoteDns,
+              style: theme.textTheme.titleMedium,
+            ),
+            trailing: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 180),
+              child: Text(
+                dnsSettings.remoteDns,
+                style: theme.textTheme.bodyMedium,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            onTap: () => _showDnsPicker(
+              context,
+              ref,
+              isRemote: true,
+            ),
+          ),
+
+          // Direct DNS
+          ListTile(
+            leading: const Icon(Icons.home_outlined),
+            title: Text(
+              l10n.directDns,
+              style: theme.textTheme.titleMedium,
+            ),
+            trailing: Text(
+              dnsSettings.directDns,
+              style: theme.textTheme.bodyMedium,
+            ),
+            onTap: () => _showDnsPicker(
+              context,
+              ref,
+              isRemote: false,
+            ),
+          ),
+
+          const Divider(),
+
+          // Engine Settings section header
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+            child: Text(
+              l10n.engineSettingsSection,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: colorScheme.primary,
+              ),
+            ),
+          ),
+
+          // Sniffing toggle — default ON (D-09)
+          SwitchListTile(
+            secondary: const Icon(Icons.visibility_outlined),
+            title: Text(
+              l10n.sniffing,
+              style: theme.textTheme.titleMedium,
+            ),
+            subtitle: Text(
+              l10n.sniffingSubtitle,
+              style: theme.textTheme.bodyMedium,
+            ),
+            value: engineSettings.sniffingEnabled,
+            onChanged: (v) =>
+                ref.read(engineSettingsProvider.notifier).setSniffing(v),
+          ),
+
+          // Mux toggle — default OFF (D-09)
+          SwitchListTile(
+            secondary: const Icon(Icons.merge_type),
+            title: Text(
+              l10n.mux,
+              style: theme.textTheme.titleMedium,
+            ),
+            subtitle: Text(
+              l10n.muxSubtitle,
+              style: theme.textTheme.bodyMedium,
+            ),
+            value: engineSettings.muxEnabled,
+            onChanged: (v) =>
+                ref.read(engineSettingsProvider.notifier).setMux(v),
+          ),
+
+          // Mux concurrency — visible only when mux ON, with AnimatedSize
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            child: engineSettings.muxEnabled
+                ? ListTile(
+                    leading: const Icon(Icons.tune),
+                    title: Text(
+                      l10n.concurrency,
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    trailing: Text(
+                      '${engineSettings.muxConcurrency}',
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                    subtitle: Slider(
+                      value: engineSettings.muxConcurrency.toDouble(),
+                      min: 1,
+                      max: 8,
+                      divisions: 7,
+                      label: engineSettings.muxConcurrency.toString(),
+                      onChanged: (v) => ref
+                          .read(engineSettingsProvider.notifier)
+                          .setMuxConcurrency(v.round()),
+                    ),
+                  )
+                : const SizedBox.shrink(),
           ),
 
           const Divider(),
@@ -192,6 +354,41 @@ class SettingsScreen extends ConsumerWidget {
               );
             }).toList(),
           ),
+        );
+      },
+    );
+  }
+
+  void _showDnsPicker(
+    BuildContext context,
+    WidgetRef ref, {
+    required bool isRemote,
+  }) {
+    final dnsSettings = ref.read(dnsSettingsProvider);
+    final currentDns =
+        isRemote ? dnsSettings.remoteDns : dnsSettings.directDns;
+    final l10n = AppLocalizations.of(context)!;
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) {
+        return DnsPickerSheet(
+          currentDns: currentDns,
+          protocol: dnsSettings.protocol,
+          onSelected: (dns) {
+            if (isRemote) {
+              ref.read(dnsSettingsProvider.notifier).setRemoteDns(dns);
+            } else {
+              ref.read(dnsSettingsProvider.notifier).setDirectDns(dns);
+            }
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n.dnsUpdated),
+                duration: AppConstants.snackBarDurationShort,
+              ),
+            );
+          },
         );
       },
     );

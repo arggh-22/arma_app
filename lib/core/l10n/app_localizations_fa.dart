@@ -332,4 +332,225 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get diagnosticsSection => 'عیب‌یابی';
+
+  @override
+  String get regionPresets => 'پیش‌فرض‌های منطقه‌ای';
+
+  @override
+  String get domainRules => 'قوانین دامنه';
+
+  @override
+  String get perAppProxy => 'پروکسی هر برنامه';
+
+  @override
+  String get enablePerAppProxy => 'فعال‌سازی پروکسی هر برنامه';
+
+  @override
+  String get searchApps => 'جستجوی برنامه‌ها…';
+
+  @override
+  String appsSelectedCount(int count) {
+    return '$count برنامه انتخاب شده';
+  }
+
+  @override
+  String get blacklistMode => 'لیست سیاه';
+
+  @override
+  String get whitelistMode => 'لیست سفید';
+
+  @override
+  String get blacklistDescription =>
+      'همه برنامه‌ها از VPN عبور می‌کنند به جز انتخاب‌شده‌ها';
+
+  @override
+  String get whitelistDescription =>
+      'فقط برنامه‌های انتخاب‌شده از VPN عبور می‌کنند';
+
+  @override
+  String switchedToMode(String mode) {
+    return 'تغییر به حالت $mode';
+  }
+
+  @override
+  String get loadingApps => 'بارگذاری برنامه‌های نصب‌شده…';
+
+  @override
+  String get noAppsSelected =>
+      'هیچ برنامه‌ای انتخاب نشده — برنامه‌ها را علامت بزنید';
+
+  @override
+  String get addRule => 'افزودن قانون';
+
+  @override
+  String get addDomainRule => 'افزودن قانون دامنه';
+
+  @override
+  String get discardRule => 'انصراف';
+
+  @override
+  String get domainHint => 'example.com';
+
+  @override
+  String get invalidDomain => 'یک دامنه معتبر وارد کنید (مثلاً example.com)';
+
+  @override
+  String get ruleRemoved => 'قانون حذف شد';
+
+  @override
+  String get undo => 'بازگردانی';
+
+  @override
+  String get noRulesYet => 'هنوز قانونی اضافه نشده — روی افزودن قانون بزنید';
+
+  @override
+  String get proxy => 'پروکسی';
+
+  @override
+  String get direct => 'مستقیم';
+
+  @override
+  String get block => 'مسدود';
+
+  @override
+  String get updateRules => 'به‌روزرسانی قوانین';
+
+  @override
+  String get rulesUpdated => 'قوانین به‌روز شد';
+
+  @override
+  String get bundledRulesNote =>
+      'از قوانین داخلی استفاده می‌شود. برای به‌روزرسانی ↓ بزنید.';
+
+  @override
+  String get regionIran => 'ایران 🇮🇷';
+
+  @override
+  String get regionChina => 'چین 🇨🇳';
+
+  @override
+  String get regionRussia => 'روسیه 🇷🇺';
+
+  @override
+  String get dnsSection => 'DNS';
+
+  @override
+  String get dnsProtocol => 'پروتکل DNS';
+
+  @override
+  String get remoteDns => 'DNS راه دور';
+
+  @override
+  String get directDns => 'DNS مستقیم';
+
+  @override
+  String get selectDnsServer => 'انتخاب سرور DNS';
+
+  @override
+  String get customDns => 'سفارشی...';
+
+  @override
+  String get enterDnsAddress => 'آدرس DNS را وارد کنید';
+
+  @override
+  String get dnsUpdated => 'DNS به‌روز شد';
+
+  @override
+  String get engineSettingsSection => 'تنظیمات موتور';
+
+  @override
+  String get sniffing => 'شناسایی';
+
+  @override
+  String get sniffingSubtitle => 'تشخیص نوع پروتکل از محتوای ترافیک';
+
+  @override
+  String get mux => 'Mux (چندگانه‌سازی)';
+
+  @override
+  String get muxSubtitle => 'ترکیب چند اتصال در یک اتصال';
+
+  @override
+  String get concurrency => 'همزمانی';
+
+  @override
+  String get antiCensorshipSection => 'ضد سانسور';
+
+  @override
+  String get profile => 'پروفایل';
+
+  @override
+  String get profileNone => 'هیچ';
+
+  @override
+  String get profileLight => 'سبک';
+
+  @override
+  String get profileModerate => 'متوسط';
+
+  @override
+  String get profileAggressive => 'تهاجمی';
+
+  @override
+  String get profileLightDesc => 'تکه‌تکه‌سازی حداقلی برای فیلترینگ سبک';
+
+  @override
+  String get profileModerateDesc => 'تکه‌تکه‌سازی + لایه‌گذاری برای DPI متوسط';
+
+  @override
+  String get profileAggressiveDesc =>
+      'تکه‌تکه‌سازی کامل + تأخیر + SNI مختلط برای DPI سنگین';
+
+  @override
+  String get fragment => 'تکه‌تکه‌سازی';
+
+  @override
+  String get fragmentSubtitle => 'تقسیم ClientHello TLS به قطعات';
+
+  @override
+  String get fragmentSize => 'اندازه قطعه';
+
+  @override
+  String get sleepMs => 'تأخیر (میلی‌ثانیه)';
+
+  @override
+  String get padding => 'لایه‌گذاری';
+
+  @override
+  String get paddingSubtitle => 'افزودن لایه به رکوردهای TLS';
+
+  @override
+  String get mixedSniCase => 'حروف مختلط SNI';
+
+  @override
+  String get mixedSniSubtitle => 'تصادفی‌سازی حروف بزرگ و کوچک در فیلد SNI';
+
+  @override
+  String get dataSection => 'داده';
+
+  @override
+  String get clearCachedData => 'پاک‌سازی داده‌های کش';
+
+  @override
+  String get clearCacheSubtitle => 'قوانین جغرافیایی، کش اشتراک، لاگ‌ها';
+
+  @override
+  String get clearCacheTitle => 'پاک‌سازی داده‌های کش؟';
+
+  @override
+  String get clearCacheBody =>
+      'این عمل پاک می‌کند:\n• فایل‌های قوانین جغرافیایی دانلودشده\n• کش پاسخ اشتراک\n• فایل‌های لاگ\n\nتنظیمات سرور و ترجیحات تأثیر نمی‌گیرد.';
+
+  @override
+  String get clearCacheConfirm => 'پاک‌سازی کش';
+
+  @override
+  String get keepData => 'نگه‌داشتن داده';
+
+  @override
+  String get cachedDataCleared => 'داده‌های کش پاک شد';
+
+  @override
+  String get couldntUpdateRules =>
+      'به‌روزرسانی قوانین ناموفق بود. اتصال خود را بررسی کنید.';
 }

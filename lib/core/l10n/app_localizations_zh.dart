@@ -323,4 +323,219 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diagnosticsSection => '诊断';
+
+  @override
+  String get regionPresets => '地区预设';
+
+  @override
+  String get domainRules => '域名规则';
+
+  @override
+  String get perAppProxy => '分应用代理';
+
+  @override
+  String get enablePerAppProxy => '启用分应用代理';
+
+  @override
+  String get searchApps => '搜索应用…';
+
+  @override
+  String appsSelectedCount(int count) {
+    return '已选择 $count 个应用';
+  }
+
+  @override
+  String get blacklistMode => '黑名单';
+
+  @override
+  String get whitelistMode => '白名单';
+
+  @override
+  String get blacklistDescription => '所有应用通过VPN，选中的除外';
+
+  @override
+  String get whitelistDescription => '仅选中的应用通过VPN';
+
+  @override
+  String switchedToMode(String mode) {
+    return '已切换到$mode模式';
+  }
+
+  @override
+  String get loadingApps => '正在加载已安装应用…';
+
+  @override
+  String get noAppsSelected => '未选择应用 — 勾选要包含或排除的应用';
+
+  @override
+  String get addRule => '添加规则';
+
+  @override
+  String get addDomainRule => '添加域名规则';
+
+  @override
+  String get discardRule => '放弃';
+
+  @override
+  String get domainHint => 'example.com';
+
+  @override
+  String get invalidDomain => '请输入有效域名（例如 example.com）';
+
+  @override
+  String get ruleRemoved => '规则已删除';
+
+  @override
+  String get undo => '撤销';
+
+  @override
+  String get noRulesYet => '暂无自定义规则 — 点击添加规则开始';
+
+  @override
+  String get proxy => '代理';
+
+  @override
+  String get direct => '直连';
+
+  @override
+  String get block => '拦截';
+
+  @override
+  String get updateRules => '更新规则';
+
+  @override
+  String get rulesUpdated => '规则已更新';
+
+  @override
+  String get bundledRulesNote => '使用内置规则。点击 ↓ 更新。';
+
+  @override
+  String get regionIran => '伊朗 🇮🇷';
+
+  @override
+  String get regionChina => '中国 🇨🇳';
+
+  @override
+  String get regionRussia => '俄罗斯 🇷🇺';
+
+  @override
+  String get dnsSection => 'DNS';
+
+  @override
+  String get dnsProtocol => 'DNS 协议';
+
+  @override
+  String get remoteDns => '远程 DNS';
+
+  @override
+  String get directDns => '直连 DNS';
+
+  @override
+  String get selectDnsServer => '选择 DNS 服务器';
+
+  @override
+  String get customDns => '自定义...';
+
+  @override
+  String get enterDnsAddress => '输入 DNS 地址';
+
+  @override
+  String get dnsUpdated => 'DNS 已更新';
+
+  @override
+  String get engineSettingsSection => '引擎设置';
+
+  @override
+  String get sniffing => '流量嗅探';
+
+  @override
+  String get sniffingSubtitle => '从流量内容检测协议类型';
+
+  @override
+  String get mux => 'Mux（多路复用）';
+
+  @override
+  String get muxSubtitle => '将多个连接合并为一个';
+
+  @override
+  String get concurrency => '并发数';
+
+  @override
+  String get antiCensorshipSection => '反审查';
+
+  @override
+  String get profile => '配置';
+
+  @override
+  String get profileNone => '无';
+
+  @override
+  String get profileLight => '轻度';
+
+  @override
+  String get profileModerate => '中度';
+
+  @override
+  String get profileAggressive => '强力';
+
+  @override
+  String get profileLightDesc => '轻度过滤的最小分片';
+
+  @override
+  String get profileModerateDesc => '分片 + 填充适用于中度 DPI';
+
+  @override
+  String get profileAggressiveDesc => '完全分片 + 延迟 + 混合 SNI 适用于重度 DPI';
+
+  @override
+  String get fragment => '分片';
+
+  @override
+  String get fragmentSubtitle => '将 TLS ClientHello 拆分为片段';
+
+  @override
+  String get fragmentSize => '分片大小';
+
+  @override
+  String get sleepMs => '延迟（毫秒）';
+
+  @override
+  String get padding => '填充';
+
+  @override
+  String get paddingSubtitle => '向 TLS 记录添加填充';
+
+  @override
+  String get mixedSniCase => '混合 SNI 大小写';
+
+  @override
+  String get mixedSniSubtitle => '随机化 SNI 字段中的字母大小写';
+
+  @override
+  String get dataSection => '数据';
+
+  @override
+  String get clearCachedData => '清除缓存数据';
+
+  @override
+  String get clearCacheSubtitle => '地理规则、订阅缓存、日志';
+
+  @override
+  String get clearCacheTitle => '清除缓存数据？';
+
+  @override
+  String get clearCacheBody =>
+      '将清除：\n• 已下载的地理规则文件\n• 订阅响应缓存\n• 日志文件\n\n服务器配置和偏好设置不会受影响。';
+
+  @override
+  String get clearCacheConfirm => '清除缓存';
+
+  @override
+  String get keepData => '保留数据';
+
+  @override
+  String get cachedDataCleared => '缓存数据已清除';
+
+  @override
+  String get couldntUpdateRules => '无法更新规则。请检查网络连接后重试。';
 }

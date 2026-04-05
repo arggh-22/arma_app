@@ -333,4 +333,227 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get diagnosticsSection => 'Диагностика';
+
+  @override
+  String get regionPresets => 'Региональные пресеты';
+
+  @override
+  String get domainRules => 'Правила доменов';
+
+  @override
+  String get perAppProxy => 'Прокси для приложений';
+
+  @override
+  String get enablePerAppProxy => 'Включить прокси для приложений';
+
+  @override
+  String get searchApps => 'Поиск приложений…';
+
+  @override
+  String appsSelectedCount(int count) {
+    return '$count приложений выбрано';
+  }
+
+  @override
+  String get blacklistMode => 'Чёрный список';
+
+  @override
+  String get whitelistMode => 'Белый список';
+
+  @override
+  String get blacklistDescription =>
+      'Все приложения через VPN, кроме выбранных';
+
+  @override
+  String get whitelistDescription => 'Только выбранные приложения через VPN';
+
+  @override
+  String switchedToMode(String mode) {
+    return 'Переключено на режим $mode';
+  }
+
+  @override
+  String get loadingApps => 'Загрузка установленных приложений…';
+
+  @override
+  String get noAppsSelected => 'Приложения не выбраны — отметьте приложения';
+
+  @override
+  String get addRule => 'Добавить правило';
+
+  @override
+  String get addDomainRule => 'Добавить правило домена';
+
+  @override
+  String get discardRule => 'Отменить';
+
+  @override
+  String get domainHint => 'example.com';
+
+  @override
+  String get invalidDomain =>
+      'Введите корректный домен (например, example.com)';
+
+  @override
+  String get ruleRemoved => 'Правило удалено';
+
+  @override
+  String get undo => 'Отменить';
+
+  @override
+  String get noRulesYet => 'Пока нет правил — нажмите Добавить правило';
+
+  @override
+  String get proxy => 'Прокси';
+
+  @override
+  String get direct => 'Напрямую';
+
+  @override
+  String get block => 'Блокировать';
+
+  @override
+  String get updateRules => 'Обновить правила';
+
+  @override
+  String get rulesUpdated => 'Правила обновлены';
+
+  @override
+  String get bundledRulesNote =>
+      'Используются встроенные правила. Нажмите ↓ для обновления.';
+
+  @override
+  String get regionIran => 'Иран 🇮🇷';
+
+  @override
+  String get regionChina => 'Китай 🇨🇳';
+
+  @override
+  String get regionRussia => 'Россия 🇷🇺';
+
+  @override
+  String get dnsSection => 'DNS';
+
+  @override
+  String get dnsProtocol => 'Протокол DNS';
+
+  @override
+  String get remoteDns => 'Удалённый DNS';
+
+  @override
+  String get directDns => 'Прямой DNS';
+
+  @override
+  String get selectDnsServer => 'Выбрать DNS сервер';
+
+  @override
+  String get customDns => 'Другой...';
+
+  @override
+  String get enterDnsAddress => 'Введите адрес DNS';
+
+  @override
+  String get dnsUpdated => 'DNS обновлён';
+
+  @override
+  String get engineSettingsSection => 'Настройки движка';
+
+  @override
+  String get sniffing => 'Обнаружение';
+
+  @override
+  String get sniffingSubtitle =>
+      'Определение типа протокола из содержимого трафика';
+
+  @override
+  String get mux => 'Mux (мультиплексирование)';
+
+  @override
+  String get muxSubtitle => 'Объединение нескольких соединений в одно';
+
+  @override
+  String get concurrency => 'Параллельность';
+
+  @override
+  String get antiCensorshipSection => 'Антицензура';
+
+  @override
+  String get profile => 'Профиль';
+
+  @override
+  String get profileNone => 'Нет';
+
+  @override
+  String get profileLight => 'Лёгкий';
+
+  @override
+  String get profileModerate => 'Средний';
+
+  @override
+  String get profileAggressive => 'Агрессивный';
+
+  @override
+  String get profileLightDesc =>
+      'Минимальная фрагментация для лёгкой фильтрации';
+
+  @override
+  String get profileModerateDesc =>
+      'Фрагментация + заполнение для среднего DPI';
+
+  @override
+  String get profileAggressiveDesc =>
+      'Полная фрагментация + задержка + смешанный SNI для тяжёлого DPI';
+
+  @override
+  String get fragment => 'Фрагментация';
+
+  @override
+  String get fragmentSubtitle => 'Разделение TLS ClientHello на фрагменты';
+
+  @override
+  String get fragmentSize => 'Размер фрагмента';
+
+  @override
+  String get sleepMs => 'Задержка (мс)';
+
+  @override
+  String get padding => 'Заполнение';
+
+  @override
+  String get paddingSubtitle => 'Добавление заполнения к записям TLS';
+
+  @override
+  String get mixedSniCase => 'Смешанный регистр SNI';
+
+  @override
+  String get mixedSniSubtitle => 'Случайный регистр букв в поле SNI';
+
+  @override
+  String get dataSection => 'Данные';
+
+  @override
+  String get clearCachedData => 'Очистить кеш';
+
+  @override
+  String get clearCacheSubtitle => 'Геоправила, кеш подписок, логи';
+
+  @override
+  String get clearCacheTitle => 'Очистить кеш?';
+
+  @override
+  String get clearCacheBody =>
+      'Будут удалены:\n• Загруженные файлы геоправил\n• Кеш ответов подписок\n• Файлы логов\n\nНастройки серверов и предпочтения НЕ будут затронуты.';
+
+  @override
+  String get clearCacheConfirm => 'Очистить';
+
+  @override
+  String get keepData => 'Оставить';
+
+  @override
+  String get cachedDataCleared => 'Кеш очищен';
+
+  @override
+  String get couldntUpdateRules =>
+      'Не удалось обновить правила. Проверьте подключение.';
 }
