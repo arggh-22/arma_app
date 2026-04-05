@@ -8,6 +8,7 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
+import kotlinx.coroutines.*
 import com.arma.vpn.ipc.VpnServiceConnection
 import com.arma.vpn.service.ArmaVpnService
 
@@ -94,6 +95,29 @@ class MainActivity : FlutterActivity() {
                 }
                 "requestVpnPermission" -> {
                     requestVpnPermission(result)
+                }
+                "measureDelay" -> {
+                    val config = call.argument<String>("config")
+                    val url = call.argument<String>("url") ?: "https://www.google.com/generate_204"
+                    if (config == null) {
+                        result.error("INVALID_ARGS", "config required", null)
+                        return@setMethodCallHandler
+                    }
+                    Log.w(TAG, "measureDelay — url=$url, config.length=${config.length}")
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            val delay = libv2ray.Libv2ray.measureOutboundDelay(config, url)
+                            Log.w(TAG, "measureDelay result: ${delay}ms")
+                            withContext(Dispatchers.Main) {
+                                result.success(delay)
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "measureDelay error: ${e.message}")
+                            withContext(Dispatchers.Main) {
+                                result.error("MEASURE_FAILED", e.message, null)
+                            }
+                        }
+                    }
                 }
                 else -> result.notImplemented()
             }

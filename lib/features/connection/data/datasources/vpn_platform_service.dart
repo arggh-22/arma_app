@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 /// Dart-side wrapper around the native VPN platform channels.
@@ -48,6 +49,31 @@ class VpnPlatformService {
     final result = await _methodChannel.invokeMethod<bool>('requestVpnPermission') ?? false;
     print('[VpnPlatformService] requestVpnPermission result: $result');
     return result;
+  }
+
+  /// Measure latency to a server by sending an HTTP request through a temporary Xray instance.
+  /// Returns delay in milliseconds, or -1 on failure.
+  /// [configJson] must be a complete Xray JSON config (use XrayConfigBuilder.build()).
+  /// [testUrl] defaults to Google's generate_204 endpoint (~0 bytes response body).
+  Future<int> measureDelay(
+    String configJson, {
+    String testUrl = 'https://www.google.com/generate_204',
+  }) async {
+    try {
+      final result = await _methodChannel.invokeMethod<Object>('measureDelay', {
+        'config': configJson,
+        'url': testUrl,
+      });
+      // Go returns Long → platform channel may deliver as int or num
+      if (result is int) return result;
+      if (result is num) return result.toInt();
+      return -1;
+    } on PlatformException catch (e) {
+      debugPrint('[VpnPlatformService] measureDelay error: ${e.message}');
+      return -1;
+    } catch (_) {
+      return -1;
+    }
   }
 
   /// Stream of VPN events from native (status changes + traffic stats).
