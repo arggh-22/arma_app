@@ -32,8 +32,8 @@
 - [ ] **CONF-06**: User can manually enter config via JSON paste
 - [ ] **CONF-07**: Subscription auto-updates on app launch (configurable toggle)
 - [x] **CONF-08**: User can set custom User-Agent for subscription fetches
-- [ ] **CONF-09**: App supports encrypted/hidden subscription formats
-- [ ] **CONF-10**: User can share/export a config as share link or QR code
+- [x] **CONF-09**: App supports encrypted/hidden subscription formats
+- [x] **CONF-10**: User can share/export a config as share link or QR code
 
 ### Server Management
 
@@ -142,8 +142,8 @@
 | CONF-06 | Phase 1 | Pending |
 | CONF-07 | Phase 3 | Pending |
 | CONF-08 | Phase 3 | Complete |
-| CONF-09 | Phase 3 | Pending |
-| CONF-10 | Phase 3 | Pending |
+| CONF-09 | Phase 3 | Complete |
+| CONF-10 | Phase 3 | Complete |
 | SERV-01 | Phase 1 | Pending |
 | SERV-02 | Phase 1 | Complete |
 | SERV-03 | Phase 3 | Pending |
