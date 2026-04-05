@@ -185,8 +185,8 @@ These colors are used as subtle background tints on domain rule action chips and
 | Action dropdown | `DropdownButton<String>` with 3 options: "Proxy" (teal), "Direct" (green), "Block" (red). Selected option text color matches action color. |
 | Delete rule | `IconButton` with `Icons.close`, 20dp icon, `onSurfaceVariant`. No confirmation — immediate removal with undo SnackBar. |
 | Add rule button | `OutlinedButton.icon` with `Icons.add` — "Add Rule". Below rule list. Full width with 16dp horizontal margin. |
-| Add rule dialog | `AlertDialog` with: `TextField` (autofocus, hint: "example.com", `TextInputType.url`), `SegmentedButton` for Proxy/Direct/Block (default: Proxy), "Cancel" `TextButton` + "Add" `FilledButton`. |
-| Empty state | Inside expansion: "No custom rules" — `bodyMedium`, `onSurfaceVariant`, centered, 24dp vertical padding. |
+| Add rule dialog | `AlertDialog` with: `TextField` (autofocus, hint: "example.com", `TextInputType.url`), `SegmentedButton` for Proxy/Direct/Block (default: Proxy), "Discard" `TextButton` + "Add Rule" `FilledButton`. |
+| Empty state | Inside expansion: "No custom rules yet — tap Add Rule to get started" — `bodyMedium`, `onSurfaceVariant`, centered, 24dp vertical padding. |
 | Validation | Domain field: reject empty, reject spaces, reject domains with protocol prefix (strip `http://`/`https://` automatically). |
 | Persistence | Hive box — list of `{domain, action}` records |
 
@@ -200,7 +200,7 @@ These colors are used as subtle background tints on domain rule action chips and
 | Mode description | Below SegmentedButton: `bodySmall`, `onSurfaceVariant`. Blacklist: "All apps route through VPN except selected". Whitelist: "Only selected apps route through VPN". |
 | Search bar | `SearchBar` (Material 3) with `Icons.search` leading icon, hint: "Search apps…" — `bodyMedium`. 16dp horizontal margin, 8dp vertical margin. Filters app list by name. |
 | App list | Scrollable column (NOT nested ListView — inside parent ListView use `Column` with `shrinkWrap` or `SliverList`). Max visible height: 400dp with `ConstrainedBox`. Shows installed apps from Android `PackageManager`. |
-| App list item | 56dp height row: `[App icon (32dp, circular clip)] [12dp] [App name — titleMedium] [flex] [Checkbox]` |
+| App list item | 56dp height row: `[App icon (32dp, circular clip)] [16dp] [App name — titleMedium] [flex] [Checkbox]` |
 | Loading state | While enumerating apps: centered `CircularProgressIndicator` with "Loading installed apps…" — `bodyMedium`, `onSurfaceVariant`. |
 | App count | Below search bar, right-aligned: "{N} apps selected" — `bodySmall`, `onSurfaceVariant`. |
 | Persistence | `SettingsLocalDatasource` — mode (blacklist/whitelist) + set of selected package names |
@@ -361,7 +361,7 @@ These colors are used as subtle background tints on domain rule action chips and
 │  Server configs and preferences     │
 │  will NOT be affected.              │
 │                                     │
-│           [Cancel]   [Clear]        │
+│           [Keep Data]   [Clear Cache]  │
 └─────────────────────────────────────┘
 ```
 
@@ -370,8 +370,8 @@ These colors are used as subtle background tints on domain rule action chips and
 | Dialog | `AlertDialog` |
 | Title | "Clear Cached Data?" — uses dialog default title style |
 | Body | Bullet list as plain text — `bodyMedium` |
-| Cancel | `TextButton` — "Cancel" |
-| Clear | `TextButton` with `colorScheme.error` foreground — "Clear" |
+| Cancel | `TextButton` — "Keep Data" |
+| Clear | `TextButton` with `colorScheme.error` foreground — "Clear Cache" |
 | Success feedback | SnackBar: "Cached data cleared" — 3 second duration |
 
 ---
@@ -382,15 +382,15 @@ These colors are used as subtle background tints on domain rule action chips and
 |---------|------|
 | **Primary CTA (Routing)** | "Add Rule" (add domain rule button + dialog action) |
 | **Primary CTA (Settings)** | "Save" (implicit — settings auto-save on change, no explicit save button) |
-| **Empty state — domain rules** | "No custom rules" |
-| **Empty state — per-app proxy** | "No apps selected" |
+| **Empty state — domain rules** | "No custom rules yet — tap Add Rule to get started" |
+| **Empty state — per-app proxy** | "No apps selected — check apps to include or exclude them" |
 | **Empty state — per-app loading** | "Loading installed apps…" |
 | **Error — invalid domain** | "Enter a valid domain (e.g., example.com)" |
 | **Error — DNS fetch fail** | "Couldn't update rules. Check your connection and try again." |
 | **Destructive — clear cache title** | "Clear Cached Data?" |
 | **Destructive — clear cache body** | "This will clear:\n• Downloaded geo rule files\n• Subscription response cache\n• Log files\n\nServer configs and preferences will NOT be affected." |
-| **Destructive — clear cache confirm** | "Clear" |
-| **Destructive — clear cache cancel** | "Cancel" |
+| **Destructive — clear cache confirm** | "Clear Cache" |
+| **Destructive — clear cache cancel** | "Keep Data" |
 | **Clear cache success** | "Cached data cleared" |
 | **Delete rule undo** | "Rule removed" + "Undo" action |
 | **DNS updated** | "DNS updated" |
@@ -413,6 +413,8 @@ These colors are used as subtle background tints on domain rule action chips and
 | **Search apps hint** | "Search apps…" |
 | **Apps selected count** | "{count} apps selected" |
 | **Add rule dialog title** | "Add Domain Rule" |
+| **Add rule dialog confirm** | "Add Rule" |
+| **Add rule dialog cancel** | "Discard" |
 | **Add rule domain hint** | "example.com" |
 | **Bypass LAN** | "Bypass LAN" (existing l10n key) |
 | **DNS Protocol** | "DNS Protocol" |
@@ -491,8 +493,8 @@ All settings in Engine Settings, Anti-Censorship, DNS, and Data sections auto-sa
 | Trigger | Action |
 |---------|--------|
 | Tap "Clear Cached Data" ListTile | Confirmation AlertDialog appears |
-| Tap "Clear" | Clears geo cache, subscription cache, log files. SnackBar "Cached data cleared". Dialog closes. |
-| Tap "Cancel" | Dialog closes. No action. |
+| Tap "Clear Cache" | Clears geo cache, subscription cache, log files. SnackBar "Cached data cleared". Dialog closes. |
+| Tap "Keep Data" | Dialog closes. No action. |
 
 ---
 
