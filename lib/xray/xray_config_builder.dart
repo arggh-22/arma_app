@@ -30,7 +30,7 @@ class XrayConfigBuilder {
         _buildDirectOutbound(),
         _buildBlockOutbound(),
       ],
-      'routing': _buildRouting(),
+      'routing': _buildRouting(serverAddress: server.address),
     };
     return jsonEncode(config);
   }
@@ -264,11 +264,29 @@ class XrayConfigBuilder {
     };
   }
 
-  /// Routing rules with LAN bypass per D-12.
-  static Map<String, dynamic> _buildRouting() {
+  /// Routing rules with LAN bypass per D-12 and proxy server direct rule.
+  ///
+  /// The proxy server's own address MUST route direct to prevent circular
+  /// dependency: TUN captures all traffic → Xray routes to proxy → proxy needs
+  /// to connect to server → needs DNS → goes through TUN → deadlock.
+  static Map<String, dynamic> _buildRouting({required String serverAddress}) {
+    // Rule to bypass the proxy server itself — MUST be first
+    final serverBypassRule = _isIpAddress(serverAddress)
+        ? {
+            'type': 'field',
+            'outboundTag': 'direct',
+            'ip': [serverAddress],
+          }
+        : {
+            'type': 'field',
+            'outboundTag': 'direct',
+            'domain': ['full:$serverAddress'],
+          };
+
     return {
       'domainStrategy': 'IPIfNonMatch',
       'rules': [
+        serverBypassRule,
         {
           'type': 'field',
           'outboundTag': 'direct',
@@ -286,5 +304,10 @@ class XrayConfigBuilder {
         },
       ],
     };
+  }
+
+  /// Check if an address is an IP (v4) rather than a hostname.
+  static bool _isIpAddress(String address) {
+    return RegExp(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$').hasMatch(address);
   }
 }
