@@ -53,8 +53,8 @@
 - [x] **MON-02**: Dashboard shows connection duration timer
 - [x] **MON-03**: Persistent notification displays connection status and current traffic speeds
 - [x] **MON-04**: App auto-reconnects when network changes (WiFi ↔ cellular)
-- [ ] **MON-05**: User can view Xray-core logs in a scrollable viewer
-- [ ] **MON-06**: User can export logs as a text file for debugging/support
+- [x] **MON-05**: User can view Xray-core logs in a scrollable viewer
+- [x] **MON-06**: User can export logs as a text file for debugging/support
 
 ### Routing & DNS
 
@@ -157,8 +157,8 @@
 | MON-02 | Phase 2 | Complete |
 | MON-03 | Phase 2 | Complete |
 | MON-04 | Phase 2 | Complete |
-| MON-05 | Phase 3 | Pending |
-| MON-06 | Phase 3 | Pending |
+| MON-05 | Phase 3 | Complete |
+| MON-06 | Phase 3 | Complete |
 | ROUTE-01 | Phase 2 | Complete |
 | ROUTE-02 | Phase 4 | Pending |
 | ROUTE-03 | Phase 4 | Pending |
