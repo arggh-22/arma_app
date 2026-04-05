@@ -3,7 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 
+import 'package:arma_proxy_vpn_client/core/constants/app_constants.dart';
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
+import 'package:arma_proxy_vpn_client/core/utils/clipboard_helper.dart';
+import 'package:arma_proxy_vpn_client/features/server/data/parsers/share_link_parser.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/active_server_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/server_list_provider.dart';
@@ -159,7 +162,66 @@ class ServerListScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
   ) async {
-    // Delegate to ImportFab's static method or use inline logic
-    // This is the empty-state shortcut — will be wired in Task 2
+    final l10n = AppLocalizations.of(context)!;
+    final text = await ClipboardHelper.getText();
+
+    if (!context.mounted) return;
+
+    if (text == null || text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.parseErrorEmptyClipboard),
+          duration: AppConstants.snackBarDurationLong,
+        ),
+      );
+      return;
+    }
+
+    final config = ShareLinkParser.parse(text);
+    if (config == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.parseErrorInvalidLink),
+          duration: AppConstants.snackBarDurationLong,
+        ),
+      );
+      return;
+    }
+
+    // Check for duplicates by address + port + protocol
+    final servers = await ref.read(serverListProvider.future);
+    if (!context.mounted) return;
+
+    final isDuplicate = servers.any(
+      (s) =>
+          s.address == config.address &&
+          s.port == config.port &&
+          s.protocol == config.protocol,
+    );
+
+    if (isDuplicate) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.duplicateServer),
+          duration: AppConstants.snackBarDurationDefault,
+        ),
+      );
+      return;
+    }
+
+    await ref.read(serverListProvider.notifier).addServer(config);
+
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${l10n.importSuccess} — ${config.name}'),
+        duration: AppConstants.snackBarDurationDefault,
+        backgroundColor: Colors.green.shade700,
+        action: SnackBarAction(
+          label: l10n.viewAction,
+          onPressed: () {},
+        ),
+      ),
+    );
   }
 }
