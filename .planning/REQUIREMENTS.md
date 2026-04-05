@@ -9,8 +9,8 @@
 
 - [x] **ENG-01**: App integrates Xray-core via Go-Mobile AAR with Android VpnService to capture all device traffic in TUN mode
 - [x] **ENG-02**: App generates valid Xray-core JSON config from user-facing settings (inbounds, outbounds, routing, dns sections)
-- [ ] **ENG-03**: User can connect/disconnect with a single tap from the dashboard
-- [ ] **ENG-04**: Connection state is clearly displayed: Disconnected → Connecting → Connected (with color coding)
+- [x] **ENG-03**: User can connect/disconnect with a single tap from the dashboard
+- [x] **ENG-04**: Connection state is clearly displayed: Disconnected → Connecting → Connected (with color coding)
 - [x] **ENG-05**: VPN runs as foreground service with persistent notification showing connection status
 
 ### Protocols
@@ -49,8 +49,8 @@
 
 ### Connection & Monitoring
 
-- [ ] **MON-01**: Dashboard shows real-time upload and download speeds (updated every 1-2 seconds)
-- [ ] **MON-02**: Dashboard shows connection duration timer
+- [x] **MON-01**: Dashboard shows real-time upload and download speeds (updated every 1-2 seconds)
+- [x] **MON-02**: Dashboard shows connection duration timer
 - [x] **MON-03**: Persistent notification displays connection status and current traffic speeds
 - [x] **MON-04**: App auto-reconnects when network changes (WiFi ↔ cellular)
 - [ ] **MON-05**: User can view Xray-core logs in a scrollable viewer
@@ -125,8 +125,8 @@
 |-------------|-------|--------|
 | ENG-01 | Phase 2 | Complete |
 | ENG-02 | Phase 2 | Complete |
-| ENG-03 | Phase 2 | Pending |
-| ENG-04 | Phase 2 | Pending |
+| ENG-03 | Phase 2 | Complete |
+| ENG-04 | Phase 2 | Complete |
 | ENG-05 | Phase 2 | Complete |
 | PROTO-01 | Phase 2 | Complete |
 | PROTO-02 | Phase 2 | Complete |
@@ -153,8 +153,8 @@
 | SERV-07 | Phase 3 | Pending |
 | SERV-08 | Phase 3 | Pending |
 | SERV-09 | Phase 3 | Pending |
-| MON-01 | Phase 2 | Pending |
-| MON-02 | Phase 2 | Pending |
+| MON-01 | Phase 2 | Complete |
+| MON-02 | Phase 2 | Complete |
 | MON-03 | Phase 2 | Complete |
 | MON-04 | Phase 2 | Complete |
 | MON-05 | Phase 3 | Pending |
