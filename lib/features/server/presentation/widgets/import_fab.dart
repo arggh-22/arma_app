@@ -6,6 +6,8 @@ import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/core/utils/clipboard_helper.dart';
 import 'package:arma_proxy_vpn_client/features/server/data/parsers/share_link_parser.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/server_list_provider.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/screens/qr_scanner_screen.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/add_subscription_dialog.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/paste_config_dialog.dart';
 
 /// Expandable floating action button for server import options.
@@ -163,11 +165,22 @@ class _ImportFabState extends ConsumerState<ImportFab>
                   label: l10n.scanQr,
                   onTap: () {
                     _toggle();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(l10n.disabledQrScan),
-                        duration: AppConstants.snackBarDurationShort,
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const QrScannerScreen(),
                       ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 8),
+                _MiniFabOption(
+                  icon: Icons.rss_feed,
+                  label: l10n.addSubscription,
+                  onTap: () {
+                    _toggle();
+                    showDialog<void>(
+                      context: context,
+                      builder: (_) => const AddSubscriptionDialog(),
                     );
                   },
                 ),
