@@ -51,8 +51,8 @@
 
 - [ ] **MON-01**: Dashboard shows real-time upload and download speeds (updated every 1-2 seconds)
 - [ ] **MON-02**: Dashboard shows connection duration timer
-- [ ] **MON-03**: Persistent notification displays connection status and current traffic speeds
-- [ ] **MON-04**: App auto-reconnects when network changes (WiFi ↔ cellular)
+- [x] **MON-03**: Persistent notification displays connection status and current traffic speeds
+- [x] **MON-04**: App auto-reconnects when network changes (WiFi ↔ cellular)
 - [ ] **MON-05**: User can view Xray-core logs in a scrollable viewer
 - [ ] **MON-06**: User can export logs as a text file for debugging/support
 
@@ -155,8 +155,8 @@
 | SERV-09 | Phase 3 | Pending |
 | MON-01 | Phase 2 | Pending |
 | MON-02 | Phase 2 | Pending |
-| MON-03 | Phase 2 | Pending |
-| MON-04 | Phase 2 | Pending |
+| MON-03 | Phase 2 | Complete |
+| MON-04 | Phase 2 | Complete |
 | MON-05 | Phase 3 | Pending |
 | MON-06 | Phase 3 | Pending |
 | ROUTE-01 | Phase 2 | Complete |

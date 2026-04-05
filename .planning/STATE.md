@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-02-PLAN.md
-last_updated: "2026-04-05T10:55:53.028Z"
+stopped_at: Completed 02-03-PLAN.md
+last_updated: "2026-04-05T11:04:30.119Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 10
-  completed_plans: 6
-  percent: 60
+  completed_plans: 7
+  percent: 70
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 ## Current Position
 
 Phase: 02 (VPN Engine & Core Connection) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-04-05
 
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P03 | 7min | 3 tasks | 13 files |
 | Phase 02 P01 | 5min | 2 tasks | 6 files |
 | Phase 02 P02 | 3min | 2 tasks | 4 files |
+| Phase 02 P03 | 5min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,8 @@ Recent decisions affecting current work:
 - [Phase 02]: VMess encryption 'none' maps to security 'auto' — Xray-core chooses optimal encryption
 - [Phase 02]: DNS simplified to 1.1.1.1 + localhost (not CN-specific) for general censored regions
 - [Phase 02]: H2 transport always forces TLS regardless of security field value
+- [Phase 02]: CoreCallbackHandler requires shutdown()+startup() callbacks (not just onEmitStatus) — AAR API discovery
+- [Phase 02]: startLoop() takes Int fd (not Long) — AAR API uses native Int for file descriptors
 
 ### Pending Todos
 
@@ -100,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T10:55:53.025Z
-Stopped at: Completed 02-02-PLAN.md
+Last session: 2026-04-05T11:04:30.117Z
+Stopped at: Completed 02-03-PLAN.md
 Resume file: None
