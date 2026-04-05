@@ -71,7 +71,16 @@ Plans:
   3. User can test latency for individual or all servers in bulk, see results inline, and enable auto-select to connect to the fastest server
   4. User can long-press to multi-select servers for bulk deletion, sort servers by latency/name/protocol, and filter by working/failed status
   5. User can view Xray-core logs in a scrollable viewer and export them as a text file for debugging
-**Plans**: TBD
+**Plans:** 6 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Subscription data model, dependencies, l10n keys (all 4 locales)
+- [ ] 03-02-PLAN.md — Subscription parsers (base64/SIP008/Clash) + share link generator (TDD)
+- [ ] 03-03-PLAN.md — Latency testing: native MeasureDelay bridge + Dart providers + auto-fallback
+- [ ] 03-04-PLAN.md — Log viewer + export (ring buffer, monospace viewer, share)
+- [ ] 03-05-PLAN.md — Subscription service + QR scanner + config export + auto-refresh
+- [ ] 03-06-PLAN.md — Server list UI: sort, filter, multi-select, subscription headers, full wiring
+
 **UI hint**: yes
 
 ### Phase 4: Routing, DNS & Advanced Settings
