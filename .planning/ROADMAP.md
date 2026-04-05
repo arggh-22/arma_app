@@ -92,7 +92,15 @@ Plans:
   2. User can enable per-app proxy (split tunneling) to choose which installed apps route through the VPN
   3. User can configure custom DNS servers (DoH/DoT) and connect via Hysteria2 protocol (UDP/QUIC)
   4. User can toggle Xray engine settings (sniffing, mux, fragment), configure TLS tricks (fragment size/sleep range, padding, mixed SNI case), and clear cached data from settings
-**Plans**: TBD
+**Plans:** 5 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Data foundation: settings persistence, models, Hysteria2 fields, l10n keys
+- [ ] 04-02-PLAN.md — Xray config builder extension + connection wiring (DNS, routing, mux, fragment, Hysteria2)
+- [ ] 04-03-PLAN.md — Native Kotlin per-app proxy (MethodChannel + VPN service split tunneling)
+- [ ] 04-04-PLAN.md — Settings screen UI: DNS, Engine Settings, Anti-Censorship, Data sections
+- [ ] 04-05-PLAN.md — Routing screen UI: region presets, domain rules, per-app proxy
+
 **UI hint**: yes
 
 ## Progress
@@ -105,4 +113,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Foundation & Config Import | 5/5 | ✅ Complete | 2026-04-04 |
 | 2. VPN Engine & Core Connection | 5/5 | ✅ Complete | 2026-04-05 |
 | 3. Subscriptions & Server Intelligence | 6/6 | ✅ Complete | 2026-04-05 |
-| 4. Routing, DNS & Advanced Settings | 0/TBD | Not started | - |
+| 4. Routing, DNS & Advanced Settings | 0/5 | Not started | - |
