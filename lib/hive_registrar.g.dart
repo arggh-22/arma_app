@@ -4,15 +4,18 @@
 
 import 'package:hive_ce/hive_ce.dart';
 import 'package:arma_proxy_vpn_client/features/server/data/models/server_config_model.dart';
+import 'package:arma_proxy_vpn_client/features/server/data/models/subscription_model.dart';
 
 extension HiveRegistrar on HiveInterface {
   void registerAdapters() {
     registerAdapter(ServerConfigModelAdapter());
+    registerAdapter(SubscriptionModelAdapter());
   }
 }
 
 extension IsolatedHiveRegistrar on IsolatedHiveInterface {
   void registerAdapters() {
     registerAdapter(ServerConfigModelAdapter());
+    registerAdapter(SubscriptionModelAdapter());
   }
 }
