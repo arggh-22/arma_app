@@ -1,8 +1,13 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:arma_proxy_vpn_client/features/connection/domain/entities/connection_status.dart';
 import 'package:arma_proxy_vpn_client/features/connection/data/datasources/vpn_platform_service.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/providers/active_server_provider.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/providers/best_server_provider.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/providers/latency_provider.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/providers/server_list_provider.dart';
 import 'package:arma_proxy_vpn_client/xray/xray_config_builder.dart';
 
 part 'connection_provider.g.dart';
@@ -22,6 +27,8 @@ class ConnectionNotifier extends _$ConnectionNotifier {
   final VpnPlatformService _platformService = VpnPlatformService();
   StreamSubscription<Map<String, dynamic>>? _eventSubscription;
   Timer? _durationTimer;
+  int _fallbackAttempts = 0;
+  static const _maxFallbackAttempts = 3;
 
   @override
   ConnectionStatus build() {
@@ -59,9 +66,15 @@ class ConnectionNotifier extends _$ConnectionNotifier {
   }
 
   /// Connect to the given [server].
-  Future<void> connect(ServerConfig server) async {
+  ///
+  /// Set [isManual] to false when called from auto-fallback to preserve
+  /// the fallback attempt counter.
+  Future<void> connect(ServerConfig server, {bool isManual = true}) async {
     print('[ConnectionNotifier] connect(${server.name}) — current state: $state');
     if (state is Connecting || state is Connected) return;
+
+    // Reset fallback counter only on user-initiated connect
+    if (isManual) _fallbackAttempts = 0;
 
     state = Connecting(server.name);
 
@@ -116,6 +129,7 @@ class ConnectionNotifier extends _$ConnectionNotifier {
       case 'connected':
         final serverName =
             state is Connecting ? (state as Connecting).serverName : 'Active';
+        _fallbackAttempts = 0; // Reset on successful connection
         state = Connected(serverName: serverName, connectedAt: DateTime.now());
       case 'disconnected':
         _durationTimer?.cancel();
@@ -124,6 +138,46 @@ class ConnectionNotifier extends _$ConnectionNotifier {
         _durationTimer?.cancel();
         state =
             Disconnected(event['message'] as String? ?? 'Connection error');
+        // D-17: Auto-fallback — try next best server on connection failure
+        _attemptAutoFallback();
+    }
+  }
+
+  /// D-17: When selected server fails, automatically try the next best server.
+  /// Bounded to [_maxFallbackAttempts] consecutive failures to prevent infinite loops.
+  Future<void> _attemptAutoFallback() async {
+    if (_fallbackAttempts >= _maxFallbackAttempts) {
+      debugPrint(
+        '[ConnectionNotifier] Auto-fallback limit reached ($_maxFallbackAttempts)',
+      );
+      return;
+    }
+    _fallbackAttempts++;
+
+    try {
+      final servers = await ref.read(serverListProvider.future);
+      final latencyMap = ref.read(latencyProvider);
+      if (latencyMap.isEmpty) return; // No latency data — can't auto-select
+
+      final activeServer = ref.read(activeServerProvider);
+      final nextBest = selectBestServer(
+        servers,
+        latencyMap,
+        excludeServerId: activeServer?.id,
+      );
+
+      if (nextBest != null) {
+        debugPrint(
+          '[ConnectionNotifier] Auto-fallback to: ${nextBest.name} '
+          '(attempt $_fallbackAttempts/$_maxFallbackAttempts)',
+        );
+        ref.read(activeServerProvider.notifier).selectServer(nextBest);
+        // Small delay before retry to avoid rapid reconnection loops
+        await Future.delayed(const Duration(seconds: 2));
+        await connect(nextBest, isManual: false);
+      }
+    } catch (e) {
+      debugPrint('[ConnectionNotifier] Auto-fallback error: $e');
     }
   }
 
