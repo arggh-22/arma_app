@@ -57,7 +57,7 @@ Plans:
 - [x] 02-02-PLAN.md — Xray JSON config builder (TDD): all 4 protocols × 4 transports + split DNS + LAN bypass
 - [x] 02-03-PLAN.md — VPN Service implementation: XrayCoreManager, notification, traffic monitor, ArmaVpnService
 - [x] 02-04-PLAN.md — IPC bridge + connection layer: ServiceConnection, MainActivity channels, Dart providers
-- [ ] 02-05-PLAN.md — Dashboard UI: animated connect button, connection timer, traffic stats cards
+- [x] 02-05-PLAN.md — Dashboard UI: animated connect button, connection timer, traffic stats cards
 
 **UI hint**: yes
 
