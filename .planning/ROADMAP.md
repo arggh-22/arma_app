@@ -53,7 +53,7 @@ Plans:
 **Plans:** 5 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Native setup: AAR integration, Gradle config, AndroidManifest permissions, geo assets
+- [x] 02-01-PLAN.md — Native setup: AAR integration, Gradle config, AndroidManifest permissions, geo assets
 - [ ] 02-02-PLAN.md — Xray JSON config builder (TDD): all 4 protocols × 4 transports + split DNS + LAN bypass
 - [ ] 02-03-PLAN.md — VPN Service implementation: XrayCoreManager, notification, traffic monitor, ArmaVpnService
 - [ ] 02-04-PLAN.md — IPC bridge + connection layer: ServiceConnection, MainActivity channels, Dart providers
