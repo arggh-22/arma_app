@@ -50,6 +50,7 @@ class ArmaVpnService : VpnService() {
         const val MSG_COMMAND_START = 4
         const val MSG_COMMAND_STOP = 5
         const val MSG_IS_RUNNING = 6
+        const val MSG_DEBUG_LOG = 7
         private const val TAG = "ArmaVpnService"
     }
 
@@ -109,17 +110,22 @@ class ArmaVpnService : VpnService() {
 
     override fun onCreate() {
         super.onCreate()
+        Log.w(TAG, "=== onCreate() — VPN service created in :vpn_process ===")
         // Go runtime performs network operations during init (Pitfall #15)
         StrictMode.setThreadPolicy(StrictMode.ThreadPolicy.Builder().permitAll().build())
         VpnNotificationManager.createNotificationChannel(this)
+        Log.w(TAG, "Initializing XrayCoreManager...")
         XrayCoreManager.initialize(this)
+        Log.w(TAG, "XrayCoreManager initialized, Xray version: ${XrayCoreManager.getVersion()}")
     }
 
     override fun onBind(intent: Intent?): IBinder {
+        Log.w(TAG, "onBind() — client binding to VPN service")
         return incomingMessenger.binder
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.w(TAG, "onStartCommand() action=${intent?.action}, isRunning=$isRunning")
         when (intent?.action) {
             ACTION_START -> {
                 val config = intent.getStringExtra(EXTRA_CONFIG) ?: return START_NOT_STICKY
@@ -153,77 +159,119 @@ class ArmaVpnService : VpnService() {
      * 6. Notify client of connected state
      */
     private fun startVpn(config: String, serverName: String) {
+        Log.w(TAG, "=== startVpn() called, serverName=$serverName, isRunning=$isRunning ===")
+        debugLog("startVpn called, serverName=$serverName, isRunning=$isRunning")
         if (isRunning) {
             Log.w(TAG, "VPN already running, ignoring duplicate start")
+            debugLog("VPN already running, ignoring duplicate start")
             return
         }
         currentServerName = serverName
         isRunning = true
 
         // 1. Start foreground service with notification — must be within 5 seconds
+        Log.w(TAG, "Step 1: Starting foreground notification")
         startForeground(
             VpnNotificationManager.NOTIFICATION_ID,
             VpnNotificationManager.buildNotification(this, "Connecting...", serverName)
         )
 
         // 2. Send connecting status to client
+        Log.w(TAG, "Step 2: Sending 'connecting' status to client")
         sendStatusToClient("connecting")
 
         try {
             // 3. Configure TUN interface
+            Log.w(TAG, "Step 3: Configuring TUN interface...")
             tunInterface = configureTunInterface()
+            Log.w(TAG, "TUN configured: fd=${tunInterface!!.fd}")
+            debugLog("TUN fd=${tunInterface!!.fd}")
 
             // 4. Create core callback — CRITICAL: must protect outbound sockets!
-            // When Xray-core creates an outbound connection, it calls onEmitStatus
-            // with the socket fd. We MUST call VpnService.protect(fd) to exclude
-            // that socket from TUN routing, otherwise traffic loops:
-            // Xray outbound → TUN → back to Xray → infinite loop → no internet.
             val vpnService = this@ArmaVpnService
             val callback = object : CoreCallbackHandler {
                 override fun onEmitStatus(p0: Long, p1: String?): Long {
-                    Log.d(TAG, "Core status: code=$p0, msg=$p1")
+                    Log.w(TAG, ">>> onEmitStatus(p0=$p0, p1='$p1') <<<")
+                    debugLog("onEmitStatus: p0=$p0, p1=$p1")
                     // Protect outbound sockets from VPN routing loop
                     return if (p0 > 0) {
                         val protected = vpnService.protect(p0.toInt())
-                        Log.d(TAG, "protect(fd=$p0) = $protected")
+                        Log.w(TAG, "protect(fd=$p0) = $protected")
+                        debugLog("protect(fd=$p0)=$protected")
                         if (protected) 0L else 1L
                     } else {
                         0L
                     }
                 }
                 override fun shutdown(): Long {
-                    Log.d(TAG, "Core shutdown callback")
+                    Log.w(TAG, ">>> Core shutdown callback <<<")
+                    debugLog("Core shutdown callback")
                     return 0
                 }
                 override fun startup(): Long {
-                    Log.d(TAG, "Core startup callback")
+                    Log.w(TAG, ">>> Core startup callback <<<")
+                    debugLog("Core startup callback")
                     return 0
                 }
             }
+            Log.w(TAG, "Step 4: Creating CoreController...")
             coreController = XrayCoreManager.createController(callback)
-            Log.i(TAG, "Starting Xray loop with TUN fd=${tunInterface!!.fd}, config length=${config.length}")
-            Log.i(TAG, "Xray config (first 500 chars): ${config.take(500)}")
-            coreController?.startLoop(config, tunInterface!!.fd)
-            Log.i(TAG, "Xray startLoop returned successfully, isRunning=${coreController?.isRunning}")
+            Log.w(TAG, "CoreController created: $coreController")
 
-            // 5. Start traffic monitoring — polls QueryStats every 1 second
+            Log.w(TAG, "Step 5: Calling startLoop(config.length=${config.length}, tunFd=${tunInterface!!.fd})")
+            Log.w(TAG, "=== FULL XRAY CONFIG START ===")
+            // Log config in chunks (logcat has line length limits)
+            config.chunked(1000).forEachIndexed { i, chunk ->
+                Log.w(TAG, "CONFIG[$i]: $chunk")
+            }
+            Log.w(TAG, "=== FULL XRAY CONFIG END ===")
+            debugLog("Calling startLoop, config.length=${config.length}, tunFd=${tunInterface!!.fd}")
+
+            coreController?.startLoop(config, tunInterface!!.fd)
+
+            val running = coreController?.isRunning ?: false
+            Log.w(TAG, "Step 6: startLoop returned, isRunning=$running")
+            debugLog("startLoop returned, isRunning=$running")
+
+            // 7. Schedule delayed health check
+            Handler(Looper.getMainLooper()).postDelayed({
+                val stillRunning = coreController?.isRunning ?: false
+                Log.w(TAG, "=== Health check (2s after start): isRunning=$stillRunning ===")
+                debugLog("Health check 2s: isRunning=$stillRunning")
+                try {
+                    val upStats = coreController?.queryStats("proxy", "uplink") ?: -1
+                    val downStats = coreController?.queryStats("proxy", "downlink") ?: -1
+                    Log.w(TAG, "QueryStats: proxy uplink=$upStats, downlink=$downStats")
+                    debugLog("QueryStats: up=$upStats, down=$downStats")
+                } catch (e: Exception) {
+                    Log.e(TAG, "QueryStats failed", e)
+                    debugLog("QueryStats failed: ${e.message}")
+                }
+            }, 2000)
+
+            // 8. Start traffic monitoring
+            Log.w(TAG, "Step 7: Starting traffic monitor")
             trafficMonitor = TrafficMonitor(coreController!!) { up, down ->
                 sendStatsToClient(up, down)
                 updateNotification(serverName, up, down)
             }
             trafficMonitor?.start()
 
-            // 6. Register network callback for auto-reconnect (D-10)
+            // 9. Register network callback for auto-reconnect (D-10)
+            Log.w(TAG, "Step 8: Registering network callback")
             registerNetworkCallback()
 
-            // 7. Notify client of connected state
+            // 10. Notify client of connected state
+            Log.w(TAG, "Step 9: Sending 'connected' status to client")
             sendStatusToClient("connected")
+            debugLog("VPN started successfully!")
 
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to start VPN", e)
+            Log.e(TAG, "!!! FAILED to start VPN !!!", e)
+            debugLog("FAILED to start VPN: ${e.message}")
+            debugLog("Stack: ${e.stackTraceToString().take(500)}")
             sendStatusToClient("error", e.message ?: "Failed to start VPN engine")
             isRunning = false
-            // Clean up partial state
             trafficMonitor?.stop()
             trafficMonitor = null
             try { coreController?.stopLoop() } catch (_: Exception) {}
@@ -251,35 +299,41 @@ class ArmaVpnService : VpnService() {
      * NEVER close TUN fd before stopSelf() — causes port-in-use errors on reconnect.
      */
     private fun stopVpn() {
+        Log.w(TAG, "=== stopVpn() called, isRunning=$isRunning ===")
+        debugLog("stopVpn called, isRunning=$isRunning")
         isRunning = false
         sendStatusToClient("disconnected")
 
         // D-09: Shutdown order is CRITICAL
-        // 1. Stop traffic monitoring
+        Log.w(TAG, "Stop step 1: Stopping traffic monitor")
         trafficMonitor?.stop()
         trafficMonitor = null
 
-        // 2. Stop xray-core loop FIRST
+        Log.w(TAG, "Stop step 2: Stopping xray-core loop")
         try {
             coreController?.stopLoop()
+            Log.w(TAG, "stopLoop completed")
         } catch (e: Exception) {
             Log.w(TAG, "Error stopping core", e)
         }
         coreController = null
 
-        // 3. Unregister network callback
+        Log.w(TAG, "Stop step 3: Unregistering network callback")
         unregisterNetworkCallback()
 
-        // 4. Stop the Android service (calls onDestroy)
+        Log.w(TAG, "Stop step 4: stopSelf()")
         stopSelf()
 
-        // 5. LAST: close the TUN file descriptor
+        Log.w(TAG, "Stop step 5: Closing TUN fd")
         try {
             tunInterface?.close()
+            Log.w(TAG, "TUN closed")
         } catch (e: Exception) {
             Log.w(TAG, "Error closing TUN", e)
         }
         tunInterface = null
+        Log.w(TAG, "=== stopVpn() complete ===")
+        debugLog("stopVpn complete")
     }
 
     // =========================================================================
@@ -299,20 +353,22 @@ class ArmaVpnService : VpnService() {
      * @throws IllegalStateException if builder.establish() returns null
      */
     private fun configureTunInterface(): ParcelFileDescriptor {
+        Log.w(TAG, "configureTunInterface: building TUN...")
         val builder = Builder()
         builder.setMtu(9000)
         builder.addAddress("26.26.26.1", 30)
         builder.addRoute("0.0.0.0", 0)
         builder.addDnsServer("1.1.1.1")
         builder.addDnsServer("8.8.8.8")
-        // IPv6 — prevent leakage (Pitfall #21)
         builder.addAddress("da26:2626::1", 126)
         builder.addRoute("::", 0)
         builder.setSession("Arma VPN")
-        // CRITICAL: Exclude self to prevent routing loop (Pitfall #12)
         builder.addDisallowedApplication(packageName)
-        return builder.establish()
+        Log.w(TAG, "TUN config: MTU=9000, addr=26.26.26.1/30, route=0.0.0.0/0, DNS=1.1.1.1+8.8.8.8, excl=$packageName")
+        val iface = builder.establish()
             ?: throw IllegalStateException("VPN builder.establish() returned null")
+        Log.w(TAG, "TUN established: fd=${iface.fd}")
+        return iface
     }
 
     // =========================================================================
@@ -373,6 +429,7 @@ class ArmaVpnService : VpnService() {
      * @param message Optional error message (for "error" status)
      */
     private fun sendStatusToClient(status: String, message: String? = null) {
+        Log.w(TAG, "sendStatusToClient: status=$status, message=$message, clientMessenger=${clientMessenger != null}")
         lastStatus = status
         try {
             val msg = Message.obtain(null, MSG_VPN_STATUS)
@@ -383,6 +440,22 @@ class ArmaVpnService : VpnService() {
             clientMessenger?.send(msg)
         } catch (e: Exception) {
             Log.w(TAG, "Failed to send status", e)
+        }
+    }
+
+    /**
+     * Forward a debug log message from :vpn_process to the main process
+     * via Messenger, so it appears in Flutter's EventChannel/logcat output.
+     */
+    private fun debugLog(message: String) {
+        try {
+            val msg = Message.obtain(null, MSG_DEBUG_LOG)
+            msg.data = Bundle().apply {
+                putString("log", message)
+            }
+            clientMessenger?.send(msg)
+        } catch (_: Exception) {
+            // Can't forward — client not connected yet. Native logcat still has it.
         }
     }
 

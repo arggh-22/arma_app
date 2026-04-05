@@ -7,6 +7,7 @@ import android.os.IBinder
 import android.os.Looper
 import android.os.Message
 import android.os.Messenger
+import android.util.Log
 import com.arma.vpn.service.ArmaVpnService
 
 /**
@@ -31,6 +32,7 @@ class VpnServiceConnection(
         when (msg.what) {
             ArmaVpnService.MSG_VPN_STATUS -> {
                 val status = msg.data.getString("status") ?: "disconnected"
+                Log.w("VpnServiceConnection", "IPC received: status=$status")
                 onStatusUpdate(mapOf("type" to "status", "state" to status))
             }
             ArmaVpnService.MSG_TRAFFIC_STATS -> {
@@ -40,7 +42,13 @@ class VpnServiceConnection(
             }
             ArmaVpnService.MSG_IS_RUNNING -> {
                 val running = msg.data.getBoolean("running", false)
+                Log.w("VpnServiceConnection", "IPC received: isRunning=$running")
                 onStatusUpdate(mapOf("type" to "isRunning", "running" to running))
+            }
+            ArmaVpnService.MSG_DEBUG_LOG -> {
+                val logMsg = msg.data.getString("log") ?: ""
+                Log.w("VpnProcess", "[VPN] $logMsg")
+                onStatusUpdate(mapOf("type" to "debug", "message" to logMsg))
             }
         }
         true

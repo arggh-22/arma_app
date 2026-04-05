@@ -17,42 +17,51 @@ class VpnPlatformService {
 
   /// Start the VPN with a complete Xray JSON config and server display name.
   Future<bool> startVpn(String configJson, String serverName) async {
-    return await _methodChannel.invokeMethod<bool>(
+    print('[VpnPlatformService] startVpn(configJson.length=${configJson.length}, serverName=$serverName)');
+    final result = await _methodChannel.invokeMethod<bool>(
           'startVpn',
           {'config': configJson, 'serverName': serverName},
         ) ??
         false;
+    print('[VpnPlatformService] startVpn result: $result');
+    return result;
   }
 
   /// Stop the currently active VPN connection.
   Future<bool> stopVpn() async {
-    return await _methodChannel.invokeMethod<bool>('stopVpn') ?? false;
+    print('[VpnPlatformService] stopVpn()');
+    final result = await _methodChannel.invokeMethod<bool>('stopVpn') ?? false;
+    print('[VpnPlatformService] stopVpn result: $result');
+    return result;
   }
 
   /// Check whether the VPN service is currently running.
   Future<bool> get isRunning async {
-    return await _methodChannel.invokeMethod<bool>('isRunning') ?? false;
+    final result = await _methodChannel.invokeMethod<bool>('isRunning') ?? false;
+    print('[VpnPlatformService] isRunning: $result');
+    return result;
   }
 
   /// Request VPN permission from the Android system.
-  ///
-  /// Returns true if permission was granted (or was already granted).
-  /// Returns false if the user denied the permission dialog.
   Future<bool> requestVpnPermission() async {
-    return await _methodChannel.invokeMethod<bool>('requestVpnPermission') ??
-        false;
+    print('[VpnPlatformService] requestVpnPermission()');
+    final result = await _methodChannel.invokeMethod<bool>('requestVpnPermission') ?? false;
+    print('[VpnPlatformService] requestVpnPermission result: $result');
+    return result;
   }
 
   /// Stream of VPN events from native (status changes + traffic stats).
-  ///
-  /// Returns a shared broadcast stream — safe for multiple subscribers.
-  /// Each event is a Map with "type" key:
-  ///   - {"type": "status", "state": "connecting"|"connected"|"disconnected"|"error", "message": "..."}
-  ///   - {"type": "stats", "uplink": int, "downlink": int}
   Stream<Map<String, dynamic>> get vpnEvents {
     _sharedEventStream ??= _eventChannel
         .receiveBroadcastStream()
-        .map((event) => Map<String, dynamic>.from(event as Map))
+        .map((event) {
+          final mapped = Map<String, dynamic>.from(event as Map);
+          // Log all events EXCEPT frequent traffic stats
+          if (mapped['type'] != 'stats') {
+            print('[VpnPlatformService] EVENT: $mapped');
+          }
+          return mapped;
+        })
         .asBroadcastStream();
     return _sharedEventStream!;
   }

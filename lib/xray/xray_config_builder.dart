@@ -36,7 +36,7 @@ class XrayConfigBuilder {
   }
 
   static Map<String, dynamic> _buildLog() {
-    return {'loglevel': 'info'};
+    return {'loglevel': 'debug'};
   }
 
   /// Enables traffic stats collection — CRITICAL for QueryStats() to work.

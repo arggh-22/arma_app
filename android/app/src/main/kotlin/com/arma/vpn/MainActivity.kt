@@ -3,6 +3,7 @@ package com.arma.vpn
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
@@ -42,28 +43,33 @@ class MainActivity : FlutterActivity() {
         private const val METHOD_CHANNEL = "com.arma.vpn/method"
         private const val EVENT_CHANNEL = "com.arma.vpn/vpn_status"
         private const val VPN_PERMISSION_REQUEST_CODE = 24
+        private const val TAG = "ArmaMainActivity"
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        Log.w(TAG, "configureFlutterEngine — setting up channels")
 
         // Initialize IPC bridge — events from VPN process forwarded to Flutter EventChannel
         vpnConnection = VpnServiceConnection { event ->
             runOnUiThread {
-                // Track actual VPN running state from service events
                 if (event["type"] == "status") {
                     isVpnActive = event["state"] == "connected" || event["state"] == "connecting"
+                    Log.w(TAG, "VPN status event: state=${event["state"]}, isVpnActive=$isVpnActive")
+                }
+                if (event["type"] == "debug") {
+                    Log.w(TAG, "[VPN-DEBUG] ${event["message"]}")
                 }
                 eventSink?.success(event)
             }
         }
 
-        // Bind to VPN service (but don't start it — just establish IPC channel)
         bindVpnService()
+        Log.w(TAG, "VPN service bind initiated")
 
-        // MethodChannel setup — Flutter → native commands
         methodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, METHOD_CHANNEL)
         methodChannel.setMethodCallHandler { call, result ->
+            Log.w(TAG, "MethodChannel call: ${call.method}")
             when (call.method) {
                 "startVpn" -> {
                     val config = call.argument<String>("config")

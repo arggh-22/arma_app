@@ -1,6 +1,7 @@
 package com.arma.vpn.core
 
 import android.content.Context
+import android.util.Log
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.atomic.AtomicBoolean
@@ -22,6 +23,7 @@ import libv2ray.Libv2ray
 object XrayCoreManager {
 
     private val initialized = AtomicBoolean(false)
+    private const val TAG = "XrayCoreManager"
 
     /**
      * Initialize the Xray-core Go runtime. Safe to call multiple times —
@@ -35,15 +37,23 @@ object XrayCoreManager {
     fun initialize(context: Context) {
         if (initialized.compareAndSet(false, true)) {
             try {
-                // CRITICAL: Set Android context for Go runtime JNI — Pitfall #4
+                Log.w(TAG, "Initializing Xray-core Go runtime...")
                 go.Seq.setContext(context.applicationContext)
+                Log.w(TAG, "Go runtime context set")
 
-                // Copy geo assets from APK assets to internal storage
                 val assetPath = copyAssetsToInternal(context)
+                Log.w(TAG, "Geo assets copied to: $assetPath")
 
-                // Initialize Xray-core environment
+                // List files in asset directory
+                val assetDir = File(assetPath)
+                assetDir.listFiles()?.forEach { f ->
+                    Log.w(TAG, "Asset: ${f.name} (${f.length()} bytes)")
+                }
+
                 Libv2ray.initCoreEnv(assetPath, "")
+                Log.w(TAG, "initCoreEnv completed, version=${Libv2ray.checkVersionX()}")
             } catch (e: Exception) {
+                Log.e(TAG, "Failed to initialize Xray core", e)
                 initialized.set(false)
                 throw RuntimeException("Failed to initialize Xray core", e)
             }

@@ -25,11 +25,13 @@ class ConnectionNotifier extends _$ConnectionNotifier {
 
   @override
   ConnectionStatus build() {
+    print('[ConnectionNotifier] build() — subscribing to vpnEvents');
     _eventSubscription = _platformService.vpnEvents
         .where((e) => e['type'] == 'status')
         .listen(_handleStatusEvent);
 
     ref.onDispose(() {
+      print('[ConnectionNotifier] dispose() — cleaning up');
       _eventSubscription?.cancel();
       _durationTimer?.cancel();
     });
@@ -38,50 +40,47 @@ class ConnectionNotifier extends _$ConnectionNotifier {
   }
 
   /// Connect to the given [server].
-  ///
-  /// Flow:
-  /// 1. Request VPN permission (shows system dialog on first use)
-  /// 2. Build Xray JSON config from ServerConfig (D-02: all config logic in Dart)
-  /// 3. Start VPN via MethodChannel
-  /// 4. Connected state set by EventChannel callback from native
   Future<void> connect(ServerConfig server) async {
+    print('[ConnectionNotifier] connect(${server.name}) — current state: $state');
     if (state is Connecting || state is Connected) return;
 
     state = Connecting(server.name);
 
-    // 1. Request VPN permission if needed
     final hasPermission = await _platformService.requestVpnPermission();
+    print('[ConnectionNotifier] VPN permission: $hasPermission');
     if (!hasPermission) {
       state = const Disconnected('VPN permission denied');
       return;
     }
 
-    // 2. Build Xray JSON config (D-02: all config logic in Dart)
     final configJson = XrayConfigBuilder.build(server);
+    print('[ConnectionNotifier] === FULL XRAY CONFIG ===');
+    print(configJson);
+    print('[ConnectionNotifier] === END CONFIG ===');
 
-    // 3. Start VPN via platform channel
     try {
+      print('[ConnectionNotifier] Calling startVpn...');
       final started = await _platformService.startVpn(configJson, server.name);
+      print('[ConnectionNotifier] startVpn returned: $started');
       if (!started) {
         state = const Disconnected('Failed to start VPN');
       }
-      // Connected state will be set by EventChannel callback
     } catch (e) {
+      print('[ConnectionNotifier] startVpn ERROR: $e');
       state = Disconnected('Error: $e');
     }
   }
 
   /// Disconnect from the current VPN connection.
-  ///
-  /// Can be called from Connecting or Connected states.
-  /// Disconnected state set by EventChannel callback from native.
   Future<void> disconnect() async {
+    print('[ConnectionNotifier] disconnect() — current state: $state');
     if (state is Disconnected || state is Disconnecting) return;
     state = const Disconnecting();
     try {
       await _platformService.stopVpn();
-      // Disconnected state will be set by EventChannel callback
+      print('[ConnectionNotifier] stopVpn called');
     } catch (e) {
+      print('[ConnectionNotifier] stopVpn ERROR: $e');
       state = const Disconnected();
     }
   }
@@ -89,6 +88,7 @@ class ConnectionNotifier extends _$ConnectionNotifier {
   /// Handle status events from the native VPN process via EventChannel.
   void _handleStatusEvent(Map<String, dynamic> event) {
     final status = event['state'] as String?;
+    print('[ConnectionNotifier] _handleStatusEvent: status=$status, current=$state');
     switch (status) {
       case 'connecting':
         if (state is! Connecting) {
