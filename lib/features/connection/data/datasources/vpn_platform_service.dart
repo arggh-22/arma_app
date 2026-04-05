@@ -92,6 +92,19 @@ class VpnPlatformService {
     return _sharedEventStream!;
   }
 
+  /// Get list of installed user apps from Android PackageManager.
+  /// Returns list of maps: {packageName: String, appName: String, icon: String (base64 PNG)}.
+  Future<List<Map<String, dynamic>>> getInstalledApps() async {
+    try {
+      final result =
+          await _methodChannel.invokeListMethod<Map>('getInstalledApps');
+      return result?.map((e) => Map<String, dynamic>.from(e)).toList() ?? [];
+    } on PlatformException catch (e) {
+      debugPrint('[VpnPlatformService] getInstalledApps error: ${e.message}');
+      return [];
+    }
+  }
+
   /// Configure per-app proxy routing on the native side.
   ///
   /// When [mode] is non-null, the VPN service will apply per-app routing:
@@ -99,14 +112,17 @@ class VpnPlatformService {
   /// - "whitelist": only [selectedApps] are proxied
   ///
   /// When [mode] is null, per-app routing is disabled (all apps proxied).
-  /// Stub implementation — full native integration added in Plan 03.
   Future<void> setPerAppConfig({
     required String? mode,
     required List<String> selectedApps,
   }) async {
-    debugPrint(
-      '[VpnPlatformService] setPerAppConfig(mode=$mode, apps=${selectedApps.length})',
-    );
-    // TODO(plan-03): Forward to native via MethodChannel
+    try {
+      await _methodChannel.invokeMethod('setPerAppConfig', {
+        'mode': mode,
+        'selectedApps': selectedApps,
+      });
+    } on PlatformException catch (e) {
+      debugPrint('[VpnPlatformService] setPerAppConfig error: ${e.message}');
+    }
   }
 }
