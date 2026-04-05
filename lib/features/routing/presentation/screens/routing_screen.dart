@@ -6,6 +6,7 @@ import 'package:arma_proxy_vpn_client/features/routing/domain/entities/domain_ru
 import 'package:arma_proxy_vpn_client/features/routing/presentation/providers/routing_settings_provider.dart';
 import 'package:arma_proxy_vpn_client/features/routing/presentation/widgets/add_domain_rule_dialog.dart';
 import 'package:arma_proxy_vpn_client/features/routing/presentation/widgets/domain_rule_row.dart';
+import 'package:arma_proxy_vpn_client/features/routing/presentation/widgets/app_picker_list.dart';
 import 'package:arma_proxy_vpn_client/features/routing/presentation/widgets/region_presets_section.dart';
 
 /// Full routing configuration screen with 3 collapsible sections:
@@ -151,8 +152,87 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
           ),
           const Divider(),
 
-          // Per-App Proxy section placeholder — completed in Task 2
-          // ExpansionTile for Per-App Proxy goes here
+          // Per-App Proxy — ExpansionTile, initially collapsed (D-04, D-05)
+          ExpansionTile(
+            leading: const Icon(Icons.apps),
+            title: Text(
+              l10n.perAppProxy,
+              style: theme.textTheme.labelLarge
+                  ?.copyWith(color: colorScheme.primary),
+            ),
+            children: [
+              // Enable toggle
+              SwitchListTile(
+                title: Text(
+                  l10n.enablePerAppProxy,
+                  style: theme.textTheme.titleMedium,
+                ),
+                value: settings.perAppEnabled,
+                onChanged: (v) => ref
+                    .read(routingSettingsProvider.notifier)
+                    .setPerAppEnabled(v),
+              ),
+              // Mode selector + app list — visible only when enabled
+              AnimatedSize(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+                child: settings.perAppEnabled
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Blacklist / Whitelist SegmentedButton
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16),
+                            child: SegmentedButton<String>(
+                              segments: [
+                                ButtonSegment(
+                                  value: 'blacklist',
+                                  label: Text(l10n.blacklistMode),
+                                ),
+                                ButtonSegment(
+                                  value: 'whitelist',
+                                  label: Text(l10n.whitelistMode),
+                                ),
+                              ],
+                              selected: {settings.perAppMode},
+                              onSelectionChanged: (v) {
+                                ref
+                                    .read(routingSettingsProvider.notifier)
+                                    .setPerAppMode(v.first);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content:
+                                        Text(l10n.switchedToMode(v.first)),
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          // Mode description
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 4,
+                            ),
+                            child: Text(
+                              settings.perAppMode == 'blacklist'
+                                  ? l10n.blacklistDescription
+                                  : l10n.whitelistDescription,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                          // App picker list
+                          const AppPickerList(),
+                        ],
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            ],
+          ),
 
           // Bottom padding for nav bar clearance
           const SizedBox(height: 88),
