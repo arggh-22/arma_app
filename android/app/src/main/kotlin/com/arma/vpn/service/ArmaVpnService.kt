@@ -414,7 +414,40 @@ class ArmaVpnService : VpnService() {
         builder.addAddress("da26:2626::1", 126)
         builder.addRoute("::", 0)
         builder.setSession("Arma VPN")
-        builder.addDisallowedApplication(packageName)
+
+        // Read per-app proxy config (Phase 4, D-04, ROUTE-04)
+        val perAppPrefs = applicationContext.getSharedPreferences("per_app_config", MODE_PRIVATE)
+        val perAppMode = perAppPrefs.getString("per_app_mode", null)
+        val selectedApps = perAppPrefs.getStringSet("selected_apps", emptySet()) ?: emptySet()
+
+        if (perAppMode == "whitelist" && selectedApps.isNotEmpty()) {
+            // Whitelist mode: only selected apps route through VPN
+            // Do NOT call addDisallowedApplication — can't mix with addAllowedApplication (Pitfall 3)
+            // Self-exclusion is implicit: our app is not in the allowed list
+            for (pkg in selectedApps) {
+                try {
+                    builder.addAllowedApplication(pkg)
+                } catch (e: Exception) {
+                    Log.w(TAG, "Skipping uninstalled whitelist app: $pkg")
+                }
+            }
+            Log.w(TAG, "Per-app whitelist: ${selectedApps.size} apps allowed")
+        } else {
+            // Default or blacklist mode: all apps through VPN, exclude selected + self
+            builder.addDisallowedApplication(packageName) // Self-exclusion (Pitfall #12)
+            if (perAppMode == "blacklist" && selectedApps.isNotEmpty()) {
+                for (pkg in selectedApps) {
+                    if (pkg == packageName) continue // Already excluded
+                    try {
+                        builder.addDisallowedApplication(pkg)
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Skipping uninstalled blacklist app: $pkg")
+                    }
+                }
+                Log.w(TAG, "Per-app blacklist: ${selectedApps.size} apps excluded")
+            }
+        }
+
         Log.w(TAG, "TUN config: MTU=9000, addr=26.26.26.1/30, route=0.0.0.0/0, DNS=1.1.1.1+8.8.8.8, excl=$packageName")
         val iface = builder.establish()
             ?: throw IllegalStateException("VPN builder.establish() returned null")
