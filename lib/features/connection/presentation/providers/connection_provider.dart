@@ -1,14 +1,20 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:hive_ce/hive_ce.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:arma_proxy_vpn_client/features/connection/domain/entities/connection_status.dart';
 import 'package:arma_proxy_vpn_client/features/connection/data/datasources/vpn_platform_service.dart';
+import 'package:arma_proxy_vpn_client/features/routing/data/datasources/routing_local_datasource.dart';
+import 'package:arma_proxy_vpn_client/features/routing/data/models/domain_rule_model.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/active_server_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/best_server_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/latency_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/server_list_provider.dart';
+import 'package:arma_proxy_vpn_client/features/settings/data/datasources/settings_local_datasource.dart';
+import 'package:arma_proxy_vpn_client/features/settings/domain/entities/vpn_settings.dart';
 import 'package:arma_proxy_vpn_client/xray/xray_config_builder.dart';
 
 part 'connection_provider.g.dart';
@@ -130,7 +136,34 @@ class ConnectionNotifier extends _$ConnectionNotifier
       return;
     }
 
-    final configJson = XrayConfigBuilder.build(server);
+    // Read current Phase 4 settings from persistence
+    final prefs = await SharedPreferences.getInstance();
+    final settingsDatasource = SettingsLocalDatasource(prefs);
+    final rulesBox = Hive.box<DomainRuleModel>('domain_rules');
+    final routingDatasource = RoutingLocalDatasource(rulesBox);
+    final vpnSettings = VpnSettings.fromDatasource(
+      settingsDatasource,
+      routingDatasource.getAllRules(),
+    );
+
+    final configJson = XrayConfigBuilder.build(server, settings: vpnSettings);
+
+    // Pass per-app proxy config to native side (Plan 03 adds setPerAppConfig)
+    try {
+      if (vpnSettings.perAppEnabled && vpnSettings.selectedApps.isNotEmpty) {
+        await _platformService.setPerAppConfig(
+          mode: vpnSettings.perAppMode,
+          selectedApps: vpnSettings.selectedApps,
+        );
+      } else {
+        await _platformService.setPerAppConfig(
+          mode: null,
+          selectedApps: [],
+        );
+      }
+    } catch (e) {
+      debugPrint('[ConnectionNotifier] setPerAppConfig not available: $e');
+    }
 
     try {
       print('[ConnectionNotifier] Calling startVpn...');

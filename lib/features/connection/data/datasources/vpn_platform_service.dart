@@ -91,4 +91,22 @@ class VpnPlatformService {
         .asBroadcastStream();
     return _sharedEventStream!;
   }
+
+  /// Configure per-app proxy routing on the native side.
+  ///
+  /// When [mode] is non-null, the VPN service will apply per-app routing:
+  /// - "blacklist": all apps proxied except [selectedApps]
+  /// - "whitelist": only [selectedApps] are proxied
+  ///
+  /// When [mode] is null, per-app routing is disabled (all apps proxied).
+  /// Stub implementation — full native integration added in Plan 03.
+  Future<void> setPerAppConfig({
+    required String? mode,
+    required List<String> selectedApps,
+  }) async {
+    debugPrint(
+      '[VpnPlatformService] setPerAppConfig(mode=$mode, apps=${selectedApps.length})',
+    );
+    // TODO(plan-03): Forward to native via MethodChannel
+  }
 }
