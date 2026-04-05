@@ -30,7 +30,7 @@
 - [x] **CONF-04**: User can add subscription URLs that deliver multiple server configs
 - [x] **CONF-05**: App parses both VMess formats: legacy base64-JSON and standard URI
 - [ ] **CONF-06**: User can manually enter config via JSON paste
-- [ ] **CONF-07**: Subscription auto-updates on app launch (configurable toggle)
+- [x] **CONF-07**: Subscription auto-updates on app launch (configurable toggle)
 - [x] **CONF-08**: User can set custom User-Agent for subscription fetches
 - [x] **CONF-09**: App supports encrypted/hidden subscription formats
 - [x] **CONF-10**: User can share/export a config as share link or QR code
@@ -140,7 +140,7 @@
 | CONF-04 | Phase 3 | Complete |
 | CONF-05 | Phase 1 | Complete |
 | CONF-06 | Phase 1 | Pending |
-| CONF-07 | Phase 3 | Pending |
+| CONF-07 | Phase 3 | Complete |
 | CONF-08 | Phase 3 | Complete |
 | CONF-09 | Phase 3 | Complete |
 | CONF-10 | Phase 3 | Complete |
