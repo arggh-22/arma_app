@@ -36,6 +36,7 @@ class MainActivity : FlutterActivity() {
     private var eventSink: EventChannel.EventSink? = null
     private var vpnPermissionResult: MethodChannel.Result? = null
     private lateinit var vpnConnection: VpnServiceConnection
+    private var isVpnActive = false
 
     companion object {
         private const val METHOD_CHANNEL = "com.arma.vpn/method"
@@ -48,10 +49,16 @@ class MainActivity : FlutterActivity() {
 
         // Initialize IPC bridge — events from VPN process forwarded to Flutter EventChannel
         vpnConnection = VpnServiceConnection { event ->
-            runOnUiThread { eventSink?.success(event) }
+            runOnUiThread {
+                // Track actual VPN running state from service events
+                if (event["type"] == "status") {
+                    isVpnActive = event["state"] == "connected" || event["state"] == "connecting"
+                }
+                eventSink?.success(event)
+            }
         }
 
-        // Bind to VPN service
+        // Bind to VPN service (but don't start it — just establish IPC channel)
         bindVpnService()
 
         // MethodChannel setup — Flutter → native commands
@@ -69,13 +76,12 @@ class MainActivity : FlutterActivity() {
                     result.success(true)
                 }
                 "stopVpn" -> {
-                    vpnConnection.sendStop()
+                    stopVpnService()
                     result.success(true)
                 }
                 "isRunning" -> {
-                    // For simplicity, check if Messenger is bound.
-                    // EventChannel keeps state in sync for real-time updates.
-                    result.success(vpnConnection.isConnected)
+                    // Return actual VPN state, not just Messenger binding state
+                    result.success(isVpnActive)
                 }
                 "requestVpnPermission" -> {
                     requestVpnPermission(result)
@@ -116,11 +122,19 @@ class MainActivity : FlutterActivity() {
             putExtra(ArmaVpnService.EXTRA_SERVER_NAME, serverName)
         }
         startForegroundService(intent)
+    }
 
-        // Also send via Messenger if bound (covers race where service is already running)
-        if (vpnConnection.isConnected) {
-            vpnConnection.sendStart(config, serverName)
+    /**
+     * Stop the VPN service via both Intent and Messenger for reliability.
+     */
+    private fun stopVpnService() {
+        // Send stop via Messenger (fastest path if bound)
+        vpnConnection.sendStop()
+        // Also send stop Intent in case Messenger isn't connected
+        val intent = Intent(this, ArmaVpnService::class.java).apply {
+            action = ArmaVpnService.ACTION_STOP
         }
+        startService(intent)
     }
 
     /**

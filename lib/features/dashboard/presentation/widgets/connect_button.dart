@@ -58,20 +58,18 @@ class ConnectButton extends ConsumerWidget {
           if (activeServer != null) {
             ref.read(connectionProvider.notifier).connect(activeServer);
           }
+        case Connecting():
         case Connected():
           ref.read(connectionProvider.notifier).disconnect();
-        case Connecting():
         case Disconnecting():
-          break; // Ignore taps during transition
+          break; // Ignore taps during shutdown
       }
     }
 
     return Semantics(
       label: semanticLabel,
       child: GestureDetector(
-        onTap: (status is Connecting || status is Disconnecting)
-            ? null
-            : handleTap,
+        onTap: status is Disconnecting ? null : handleTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           width: 120,

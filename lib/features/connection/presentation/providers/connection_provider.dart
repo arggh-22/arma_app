@@ -34,9 +34,6 @@ class ConnectionNotifier extends _$ConnectionNotifier {
       _durationTimer?.cancel();
     });
 
-    // Sync with native on build (app resume)
-    _syncWithNative();
-
     return const Disconnected();
   }
 
@@ -76,6 +73,7 @@ class ConnectionNotifier extends _$ConnectionNotifier {
 
   /// Disconnect from the current VPN connection.
   ///
+  /// Can be called from Connecting or Connected states.
   /// Disconnected state set by EventChannel callback from native.
   Future<void> disconnect() async {
     if (state is Disconnected || state is Disconnecting) return;
@@ -110,18 +108,4 @@ class ConnectionNotifier extends _$ConnectionNotifier {
     }
   }
 
-  /// Sync state with native on app resume / provider build.
-  ///
-  /// Handles the case where the VPN service is running but the Flutter
-  /// side was restarted (e.g., hot restart, process death + restore).
-  Future<void> _syncWithNative() async {
-    try {
-      final running = await _platformService.isRunning;
-      if (running && state is Disconnected) {
-        state = Connected(serverName: 'Active', connectedAt: DateTime.now());
-      }
-    } catch (_) {
-      // Platform channel not ready yet — ignore
-    }
-  }
 }

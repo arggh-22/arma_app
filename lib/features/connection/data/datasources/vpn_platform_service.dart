@@ -10,6 +10,11 @@ class VpnPlatformService {
   static const _methodChannel = MethodChannel('com.arma.vpn/method');
   static const _eventChannel = EventChannel('com.arma.vpn/vpn_status');
 
+  /// Cached broadcast stream — MUST be shared across all subscribers.
+  /// Creating multiple receiveBroadcastStream() calls on the same EventChannel
+  /// causes the second to overwrite the native handler, killing the first.
+  static Stream<Map<String, dynamic>>? _sharedEventStream;
+
   /// Start the VPN with a complete Xray JSON config and server display name.
   Future<bool> startVpn(String configJson, String serverName) async {
     return await _methodChannel.invokeMethod<bool>(
@@ -40,12 +45,15 @@ class VpnPlatformService {
 
   /// Stream of VPN events from native (status changes + traffic stats).
   ///
+  /// Returns a shared broadcast stream — safe for multiple subscribers.
   /// Each event is a Map with "type" key:
   ///   - {"type": "status", "state": "connecting"|"connected"|"disconnected"|"error", "message": "..."}
   ///   - {"type": "stats", "uplink": int, "downlink": int}
   Stream<Map<String, dynamic>> get vpnEvents {
-    return _eventChannel.receiveBroadcastStream().map(
-          (event) => Map<String, dynamic>.from(event as Map),
-        );
+    _sharedEventStream ??= _eventChannel
+        .receiveBroadcastStream()
+        .map((event) => Map<String, dynamic>.from(event as Map))
+        .asBroadcastStream();
+    return _sharedEventStream!;
   }
 }

@@ -59,6 +59,7 @@ class ArmaVpnService : VpnService() {
     private var trafficMonitor: TrafficMonitor? = null
     private var currentServerName: String = ""
     private var isRunning = false
+    private var lastStatus: String = "disconnected"
     private var clientMessenger: Messenger? = null
     private val incomingMessenger = Messenger(IncomingHandler())
 
@@ -81,7 +82,11 @@ class ArmaVpnService : VpnService() {
     private inner class IncomingHandler : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             when (msg.what) {
-                MSG_REGISTER_CLIENT -> clientMessenger = msg.replyTo
+                MSG_REGISTER_CLIENT -> {
+                    clientMessenger = msg.replyTo
+                    // Send current status immediately so Flutter gets synced state
+                    sendStatusToClient(lastStatus)
+                }
                 MSG_COMMAND_START -> {
                     val config = msg.data.getString("config") ?: return
                     val serverName = msg.data.getString("serverName") ?: "Unknown"
@@ -148,6 +153,10 @@ class ArmaVpnService : VpnService() {
      * 6. Notify client of connected state
      */
     private fun startVpn(config: String, serverName: String) {
+        if (isRunning) {
+            Log.w(TAG, "VPN already running, ignoring duplicate start")
+            return
+        }
         currentServerName = serverName
         isRunning = true
 
@@ -160,39 +169,54 @@ class ArmaVpnService : VpnService() {
         // 2. Send connecting status to client
         sendStatusToClient("connecting")
 
-        // 3. Configure TUN interface
-        tunInterface = configureTunInterface()
+        try {
+            // 3. Configure TUN interface
+            tunInterface = configureTunInterface()
 
-        // 4. Create core callback and start Xray-core loop
-        val callback = object : CoreCallbackHandler {
-            override fun onEmitStatus(p0: Long, p1: String?): Long {
-                Log.d(TAG, "Core status: code=$p0, msg=$p1")
-                return 0
+            // 4. Create core callback and start Xray-core loop
+            val callback = object : CoreCallbackHandler {
+                override fun onEmitStatus(p0: Long, p1: String?): Long {
+                    Log.d(TAG, "Core status: code=$p0, msg=$p1")
+                    return 0
+                }
+                override fun shutdown(): Long {
+                    Log.d(TAG, "Core shutdown callback")
+                    return 0
+                }
+                override fun startup(): Long {
+                    Log.d(TAG, "Core startup callback")
+                    return 0
+                }
             }
-            override fun shutdown(): Long {
-                Log.d(TAG, "Core shutdown callback")
-                return 0
+            coreController = XrayCoreManager.createController(callback)
+            coreController?.startLoop(config, tunInterface!!.fd)
+
+            // 5. Start traffic monitoring — polls QueryStats every 1 second
+            trafficMonitor = TrafficMonitor(coreController!!) { up, down ->
+                sendStatsToClient(up, down)
+                updateNotification(serverName, up, down)
             }
-            override fun startup(): Long {
-                Log.d(TAG, "Core startup callback")
-                return 0
-            }
+            trafficMonitor?.start()
+
+            // 6. Register network callback for auto-reconnect (D-10)
+            registerNetworkCallback()
+
+            // 7. Notify client of connected state
+            sendStatusToClient("connected")
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to start VPN", e)
+            sendStatusToClient("error", e.message ?: "Failed to start VPN engine")
+            isRunning = false
+            // Clean up partial state
+            trafficMonitor?.stop()
+            trafficMonitor = null
+            try { coreController?.stopLoop() } catch (_: Exception) {}
+            coreController = null
+            try { tunInterface?.close() } catch (_: Exception) {}
+            tunInterface = null
+            stopSelf()
         }
-        coreController = XrayCoreManager.createController(callback)
-        coreController?.startLoop(config, tunInterface!!.fd)
-
-        // 5. Start traffic monitoring — polls QueryStats every 1 second
-        trafficMonitor = TrafficMonitor(coreController!!) { up, down ->
-            sendStatsToClient(up, down)
-            updateNotification(serverName, up, down)
-        }
-        trafficMonitor?.start()
-
-        // 6. Register network callback for auto-reconnect (D-10)
-        registerNetworkCallback()
-
-        // 7. Notify client of connected state
-        sendStatusToClient("connected")
     }
 
     // =========================================================================
@@ -330,12 +354,17 @@ class ArmaVpnService : VpnService() {
     /**
      * Send connection status to the main process client.
      *
-     * @param status One of: "connecting", "connected", "disconnected"
+     * @param status One of: "connecting", "connected", "disconnected", "error"
+     * @param message Optional error message (for "error" status)
      */
-    private fun sendStatusToClient(status: String) {
+    private fun sendStatusToClient(status: String, message: String? = null) {
+        lastStatus = status
         try {
             val msg = Message.obtain(null, MSG_VPN_STATUS)
-            msg.data = Bundle().apply { putString("status", status) }
+            msg.data = Bundle().apply {
+                putString("status", status)
+                if (message != null) putString("message", message)
+            }
             clientMessenger?.send(msg)
         } catch (e: Exception) {
             Log.w(TAG, "Failed to send status", e)
