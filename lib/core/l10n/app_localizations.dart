@@ -389,6 +389,300 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Connected'**
   String get connected;
+
+  /// No description provided for @addSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Subscription'**
+  String get addSubscription;
+
+  /// No description provided for @noLogsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No logs yet'**
+  String get noLogsYet;
+
+  /// No description provided for @noLogsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to a server to see logs'**
+  String get noLogsBody;
+
+  /// No description provided for @subscriptionFetchError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to fetch subscription. Check the URL and try again.'**
+  String get subscriptionFetchError;
+
+  /// No description provided for @latencyTestFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach server'**
+  String get latencyTestFailed;
+
+  /// No description provided for @qrUnrecognized.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t recognize this QR code'**
+  String get qrUnrecognized;
+
+  /// No description provided for @cameraPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera permission required to scan QR codes. Enable in Settings.'**
+  String get cameraPermissionDenied;
+
+  /// No description provided for @deleteServersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {count} servers?'**
+  String deleteServersTitle(int count);
+
+  /// No description provided for @deleteServersBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This will permanently remove the selected servers. Servers from subscriptions will reappear on next refresh.'**
+  String get deleteServersBody;
+
+  /// No description provided for @deleteServersConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {count}'**
+  String deleteServersConfirm(int count);
+
+  /// No description provided for @keepServers.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep Servers'**
+  String get keepServers;
+
+  /// No description provided for @subscriptionRefreshSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {count} subscriptions'**
+  String subscriptionRefreshSuccess(int count);
+
+  /// No description provided for @subscriptionRefreshNoChange.
+  ///
+  /// In en, this message translates to:
+  /// **'All up to date'**
+  String get subscriptionRefreshNoChange;
+
+  /// No description provided for @subscriptionRefreshFail.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update {name}. Check your connection.'**
+  String subscriptionRefreshFail(String name);
+
+  /// No description provided for @qrSubscriptionPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'This looks like a subscription URL. Add as subscription?'**
+  String get qrSubscriptionPrompt;
+
+  /// No description provided for @notNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Now'**
+  String get notNow;
+
+  /// No description provided for @dismissDialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get dismissDialog;
+
+  /// No description provided for @sortBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort'**
+  String get sortBy;
+
+  /// No description provided for @sortByName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get sortByName;
+
+  /// No description provided for @sortByLatency.
+  ///
+  /// In en, this message translates to:
+  /// **'Latency'**
+  String get sortByLatency;
+
+  /// No description provided for @sortByProtocol.
+  ///
+  /// In en, this message translates to:
+  /// **'Protocol'**
+  String get sortByProtocol;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get filterAll;
+
+  /// No description provided for @filterWorking.
+  ///
+  /// In en, this message translates to:
+  /// **'Working'**
+  String get filterWorking;
+
+  /// No description provided for @filterFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get filterFailed;
+
+  /// No description provided for @testAllServers.
+  ///
+  /// In en, this message translates to:
+  /// **'Test All'**
+  String get testAllServers;
+
+  /// No description provided for @bestServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Best Server'**
+  String get bestServer;
+
+  /// No description provided for @selectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String selectedCount(int count);
+
+  /// No description provided for @selectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select All'**
+  String get selectAll;
+
+  /// No description provided for @scanQrTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR Code'**
+  String get scanQrTitle;
+
+  /// No description provided for @scanQrInstruction.
+  ///
+  /// In en, this message translates to:
+  /// **'Point camera at a QR code'**
+  String get scanQrInstruction;
+
+  /// No description provided for @shareServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Server'**
+  String get shareServer;
+
+  /// No description provided for @copyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Link'**
+  String get copyLink;
+
+  /// No description provided for @linkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied'**
+  String get linkCopied;
+
+  /// No description provided for @shareLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Link'**
+  String get shareLink;
+
+  /// No description provided for @exportLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Logs'**
+  String get exportLogs;
+
+  /// No description provided for @viewLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'View Logs'**
+  String get viewLogs;
+
+  /// No description provided for @autoScroll.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-scroll'**
+  String get autoScroll;
+
+  /// No description provided for @linesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} lines'**
+  String linesCount(int count);
+
+  /// No description provided for @autoUpdateOnLaunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-update on app launch'**
+  String get autoUpdateOnLaunch;
+
+  /// No description provided for @userAgentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave empty for default browser UA'**
+  String get userAgentHint;
+
+  /// No description provided for @subscriptionUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'URL'**
+  String get subscriptionUrl;
+
+  /// No description provided for @subscriptionName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get subscriptionName;
+
+  /// No description provided for @subscriptionInfoFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} servers'**
+  String subscriptionInfoFormat(int count);
+
+  /// No description provided for @importedServersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported {count} servers'**
+  String importedServersCount(int count);
+
+  /// No description provided for @logFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get logFilterAll;
+
+  /// No description provided for @logFilterInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Info'**
+  String get logFilterInfo;
+
+  /// No description provided for @logFilterWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning'**
+  String get logFilterWarning;
+
+  /// No description provided for @logFilterError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get logFilterError;
+
+  /// No description provided for @diagnosticsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostics'**
+  String get diagnosticsSection;
 }
 
 class _AppLocalizationsDelegate

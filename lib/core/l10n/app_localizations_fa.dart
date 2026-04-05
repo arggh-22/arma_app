@@ -165,4 +165,171 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get connected => 'متصل';
+
+  @override
+  String get addSubscription => 'افزودن اشتراک';
+
+  @override
+  String get noLogsYet => 'هنوز لاگی نیست';
+
+  @override
+  String get noLogsBody => 'برای مشاهده لاگ‌ها به سرور متصل شوید';
+
+  @override
+  String get subscriptionFetchError =>
+      'دریافت اشتراک ناموفق بود. آدرس را بررسی کنید.';
+
+  @override
+  String get latencyTestFailed => 'سرور در دسترس نیست';
+
+  @override
+  String get qrUnrecognized => 'محتوای QR قابل شناسایی نیست';
+
+  @override
+  String get cameraPermissionDenied =>
+      'برای اسکن QR به دسترسی دوربین نیاز است. در تنظیمات فعال کنید.';
+
+  @override
+  String deleteServersTitle(int count) {
+    return 'حذف $count سرور؟';
+  }
+
+  @override
+  String get deleteServersBody =>
+      'سرورهای انتخاب شده حذف خواهند شد. سرورهای اشتراکی در بروزرسانی بعدی بازمی‌گردند.';
+
+  @override
+  String deleteServersConfirm(int count) {
+    return 'حذف $count';
+  }
+
+  @override
+  String get keepServers => 'نگه داشتن';
+
+  @override
+  String subscriptionRefreshSuccess(int count) {
+    return '$count اشتراک بروزرسانی شد';
+  }
+
+  @override
+  String get subscriptionRefreshNoChange => 'همه بروز هستند';
+
+  @override
+  String subscriptionRefreshFail(String name) {
+    return 'بروزرسانی $name ناموفق بود.';
+  }
+
+  @override
+  String get qrSubscriptionPrompt =>
+      'این یک آدرس اشتراک به نظر می‌رسد. افزودن به عنوان اشتراک؟';
+
+  @override
+  String get notNow => 'الان نه';
+
+  @override
+  String get dismissDialog => 'بستن';
+
+  @override
+  String get sortBy => 'مرتب‌سازی';
+
+  @override
+  String get sortByName => 'نام';
+
+  @override
+  String get sortByLatency => 'تأخیر';
+
+  @override
+  String get sortByProtocol => 'پروتکل';
+
+  @override
+  String get filterAll => 'همه';
+
+  @override
+  String get filterWorking => 'فعال';
+
+  @override
+  String get filterFailed => 'ناموفق';
+
+  @override
+  String get testAllServers => 'تست همه';
+
+  @override
+  String get bestServer => 'بهترین سرور';
+
+  @override
+  String selectedCount(int count) {
+    return '$count انتخاب شده';
+  }
+
+  @override
+  String get selectAll => 'انتخاب همه';
+
+  @override
+  String get scanQrTitle => 'اسکن QR';
+
+  @override
+  String get scanQrInstruction => 'دوربین را به سمت QR بگیرید';
+
+  @override
+  String get shareServer => 'اشتراک‌گذاری سرور';
+
+  @override
+  String get copyLink => 'کپی لینک';
+
+  @override
+  String get linkCopied => 'لینک کپی شد';
+
+  @override
+  String get shareLink => 'اشتراک‌گذاری لینک';
+
+  @override
+  String get exportLogs => 'خروجی لاگ‌ها';
+
+  @override
+  String get viewLogs => 'مشاهده لاگ‌ها';
+
+  @override
+  String get autoScroll => 'اسکرول خودکار';
+
+  @override
+  String linesCount(int count) {
+    return '$count خط';
+  }
+
+  @override
+  String get autoUpdateOnLaunch => 'بروزرسانی خودکار هنگام اجرا';
+
+  @override
+  String get userAgentHint => 'خالی بگذارید برای UA پیش‌فرض';
+
+  @override
+  String get subscriptionUrl => 'آدرس';
+
+  @override
+  String get subscriptionName => 'نام';
+
+  @override
+  String subscriptionInfoFormat(int count) {
+    return '$count سرور';
+  }
+
+  @override
+  String importedServersCount(int count) {
+    return '$count سرور وارد شد';
+  }
+
+  @override
+  String get logFilterAll => 'همه';
+
+  @override
+  String get logFilterInfo => 'اطلاعات';
+
+  @override
+  String get logFilterWarning => 'هشدار';
+
+  @override
+  String get logFilterError => 'خطا';
+
+  @override
+  String get diagnosticsSection => 'عیب‌یابی';
 }
