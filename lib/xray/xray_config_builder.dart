@@ -35,6 +35,24 @@ class XrayConfigBuilder {
     return jsonEncode(config);
   }
 
+  /// Builds a minimal Xray config for latency testing via MeasureDelay.
+  ///
+  /// Unlike [build], this config:
+  /// - Has NO inbounds (MeasureDelay creates its own internal connection)
+  /// - Has NO routing rules referencing geoip/geosite (the static Go call
+  ///   doesn't run initCoreEnv, so geo data files are unavailable)
+  /// - Uses only the proxy outbound (all traffic goes through the proxy)
+  static String buildForLatencyTest(ServerConfig server) {
+    final config = <String, dynamic>{
+      'log': {'loglevel': 'warning'},
+      'outbounds': [
+        _buildProxyOutbound(server),
+        _buildDirectOutbound(),
+      ],
+    };
+    return jsonEncode(config);
+  }
+
   static Map<String, dynamic> _buildLog() {
     return {'loglevel': 'debug'};
   }

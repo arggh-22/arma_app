@@ -22,7 +22,7 @@ class LatencyNotifier extends _$LatencyNotifier {
   Future<int> testServer(ServerConfig server) async {
     // Mark as testing (-2 = in progress)
     state = {...state, server.id: -2};
-    final configJson = XrayConfigBuilder.build(server);
+    final configJson = XrayConfigBuilder.buildForLatencyTest(server);
     final delay = await _platformService.measureDelay(configJson);
     state = {...state, server.id: delay};
     debugPrint('[LatencyNotifier] testServer(${server.name}): ${delay}ms');
@@ -46,7 +46,7 @@ class LatencyNotifier extends _$LatencyNotifier {
     for (var i = 0; i < servers.length; i += 3) {
       final batch = servers.skip(i).take(3).toList();
       await Future.wait(batch.map((server) async {
-        final configJson = XrayConfigBuilder.build(server);
+        final configJson = XrayConfigBuilder.buildForLatencyTest(server);
         final delay = await _platformService.measureDelay(configJson);
         state = {...state, server.id: delay};
         debugPrint(
