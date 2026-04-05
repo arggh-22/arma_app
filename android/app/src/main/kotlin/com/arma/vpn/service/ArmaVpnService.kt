@@ -278,7 +278,7 @@ class ArmaVpnService : VpnService() {
             coreController = null
             try { tunInterface?.close() } catch (_: Exception) {}
             tunInterface = null
-            stopSelf()
+            stopForeground(STOP_FOREGROUND_REMOVE)
         }
     }
 
@@ -321,8 +321,11 @@ class ArmaVpnService : VpnService() {
         Log.w(TAG, "Stop step 3: Unregistering network callback")
         unregisterNetworkCallback()
 
-        Log.w(TAG, "Stop step 4: stopSelf()")
-        stopSelf()
+        // Don't call stopSelf() — keep the service alive for fast reconnect.
+        // The service is bound from MainActivity, so it stays alive anyway.
+        // Just remove the foreground notification.
+        Log.w(TAG, "Stop step 4: Removing foreground notification")
+        stopForeground(STOP_FOREGROUND_REMOVE)
 
         Log.w(TAG, "Stop step 5: Closing TUN fd")
         try {
