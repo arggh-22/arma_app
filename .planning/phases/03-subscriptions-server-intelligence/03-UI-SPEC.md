@@ -29,21 +29,25 @@ created: 2026-04-06
 
 ## Spacing Scale
 
-Declared values (must be multiples of 4):
+Declared values (must be multiples of 4, from standard set {4, 8, 16, 24, 32, 48, 64}):
 
 | Token | Value | Usage |
 |-------|-------|-------|
 | xs | 4px | Icon gaps, inline badge padding, gap between header/first card |
-| sm | 8px | Compact element spacing, card internal gaps, mini-FAB stack spacing |
-| md | 12px | Card vertical padding (compact), stat card padding |
+| sm | 8px | Compact element spacing, card internal gaps, mini-FAB stack spacing, compact card vertical padding, stat card padding |
 | lg | 16px | Default card padding, horizontal screen margins, section gaps |
 | xl | 24px | Between server groups, major section breaks |
 | 2xl | 32px | Empty state horizontal padding, page-level content inset |
 | 3xl | 48px | Not used this phase |
 | 4xl | 64px | Empty state icon size |
-| 5xl | 88px | Bottom list padding (FAB clearance) |
 
 Exceptions: Touch targets must be minimum 48×48dp per Material accessibility guidelines. Mini-FAB options already use 40×40dp (acceptable per M3 spec for secondary actions).
+
+**Functional constants (not design tokens):**
+
+| Constant | Value | Usage |
+|----------|-------|-------|
+| `kFabClearance` | 88px | Bottom list padding to clear the FAB and mini-FAB stack |
 
 **Source:** Established spacing from Phase 1 `ServerCard` (16px padding), `ServerGroupHeader` (16px horizontal, 8px vertical), `ImportFab` (8px stack spacing), `EmptyServerState` (16px/24px/32px).
 
@@ -53,12 +57,14 @@ Exceptions: Touch targets must be minimum 48×48dp per Material accessibility gu
 
 All typography uses Material 3 `TextTheme` roles — no custom font sizes. This ensures automatic scaling with system accessibility settings and Dynamic Type.
 
-| Role | M3 TextTheme | Weight | Line Height | Usage in Phase 3 |
-|------|-------------|--------|-------------|-------------------|
-| Body | `bodyMedium` (14sp) | 400 (regular) | 1.43 (20sp) | Server address, subscription data info, log lines, filter labels |
-| Label | `labelMedium` (12sp) | 500 (medium) | 1.33 (16sp) | Protocol badges, latency values, sort/filter chip text, timestamp prefixes |
-| Title | `titleMedium` (16sp) | 500 (medium) | 1.5 (24sp) | Server name, subscription group header name, dialog titles |
-| Headline | `headlineSmall` (24sp) | 400 (regular) | 1.33 (32sp) | Empty state headings, log viewer screen title |
+| Role | M3 TextTheme | Size | Weight | Line Height | Usage in Phase 3 |
+|------|-------------|------|--------|-------------|-------------------|
+| Body | `bodyMedium` | 14sp | 400 (regular) | 1.43 (20sp) | Server address, subscription data info, log lines, filter labels |
+| Body small | `bodySmall` | 12sp | 400 (regular) | 1.33 (16sp) | Share link preview text, helper text, error messages below fields |
+| Label | `labelMedium` | 12sp | 500 (medium) | 1.33 (16sp) | Protocol badges, latency values, sort/filter chip text, timestamp prefixes |
+| Label small | `labelSmall` | 11sp | 500 (medium) | 1.45 (16sp) | Log viewer line count, metadata captions |
+| Title | `titleMedium` | 16sp | 500 (medium) | 1.5 (24sp) | Server name, subscription group header name, dialog titles |
+| Headline | `headlineSmall` | 24sp | 400 (regular) | 1.33 (32sp) | Empty state headings, log viewer screen title |
 
 Additional role for log viewer only:
 
@@ -173,12 +179,14 @@ This phase inherits the Material 3 dynamic color scheme from `ColorScheme.fromSe
 
 **File:** `lib/features/server/presentation/screens/server_list_screen.dart`
 
+**Focal point:** The server card list is the primary visual focus. On first load, the list occupies 70%+ of viewport height with no competing elements above the fold. The SortFilterBar is visually recessive (muted chip colors, no borders) so it doesn't compete with card content.
+
 **New elements:**
 - **Sort/Filter bar:** Horizontal row below AppBar. Contains sort dropdown + filter chips.
 - **Multi-select AppBar:** When multi-select is active, AppBar transforms: title shows `"{count} selected"`, leading shows `IconButton(Icons.close)` to exit selection, actions show `[Select All]` and `[Delete]` icons.
 - **Pull-to-refresh:** `RefreshIndicator` wrapping the ListView. Triggers subscription auto-update for all subscriptions.
 - **"Best Server" button:** In AppBar actions (normal mode), `IconButton(Icons.auto_awesome)` — runs auto-select algorithm. Disabled (greyed) if no latency data.
-- **"Test All" button:** In AppBar actions (normal mode), `IconButton(Icons.speed)` — triggers bulk latency test.
+- **"Test All" button:** In AppBar actions (normal mode), `IconButton(Icons.speed)` with `Semantics(label: 'Test all servers')` — triggers bulk latency test.
 
 **AppBar (normal mode):**
 ```
@@ -240,7 +248,7 @@ Sort: [Latency ▼]   [All] [Working] [Failed]
 
 **Auto-detect behavior (D-07):**
 - Share link detected → auto-import, pop screen, show success snackbar
-- HTTP(S) URL detected → show dialog: "This looks like a subscription URL. Add as subscription?" with [Cancel] [Add Subscription] buttons
+- HTTP(S) URL detected → show dialog: "This looks like a subscription URL. Add as subscription?" with [Not Now] [Add Subscription] buttons
 - Unrecognized content → show error snackbar: "Couldn't recognize QR code content"
 
 **Navigation:** Pushed as a MaterialPageRoute (not a tab). Back returns to server list.
@@ -262,16 +270,16 @@ Sort: [Latency ▼]   [All] [Working] [Failed]
 │      │                 │        │
 │      └─────────────────┘        │
 │                                 │
-│   vless://uuid@host:port...     │  ← bodySmall, onSurfaceVariant, 2 lines max, ellipsis
+│   vless://uuid@host:port...     │  ← bodySmall (12sp), onSurfaceVariant, 2 lines max, ellipsis
 │                                 │
-│   [Copy Link]     [Share]       │  ← Two FilledButton.tonal, row
+│   [Copy Link]   [Share Link]    │  ← Two FilledButton.tonal, row
 └─────────────────────────────────┘
 ```
 
 - **QR code:** `QrImageView` from `qr_flutter`, 220×220dp, white background, black modules, `QrVersions.auto`, error correction level `QrErrorCorrectLevel.M`
-- **Share link text:** `bodySmall` (11sp), `onSurfaceVariant`, maxLines 2, ellipsis overflow. Full text available via copy.
+- **Share link text:** `bodySmall` (12sp), `onSurfaceVariant`, maxLines 2, ellipsis overflow. Full text available via copy.
 - **Copy Link button:** `FilledButton.tonal`, `Icons.copy` prefix icon, copies share link to clipboard, shows "Copied!" snackbar
-- **Share button:** `FilledButton.tonal`, `Icons.share` prefix icon, opens system share sheet via `share_plus`
+- **Share Link button:** `FilledButton.tonal`, `Icons.share` prefix icon, opens system share sheet via `share_plus`
 - **Padding:** 24px all sides, 16px between elements
 
 #### 9. AddSubscriptionDialog
@@ -301,7 +309,7 @@ Sort: [Latency ▼]   [All] [Working] [Failed]
 │                                 │
 │  ☑ Auto-update on app launch    │  ← CheckboxListTile, default ON
 │                                 │
-│         [Cancel]   [Add]        │
+│       [Dismiss]   [Add]         │
 └─────────────────────────────────┘
 ```
 
@@ -309,7 +317,7 @@ Sort: [Latency ▼]   [All] [Working] [Failed]
 - **Name field:** `TextFormField`, optional. If empty, derive from URL hostname.
 - **User-Agent field:** `TextFormField`, optional, `bodySmall` helper text: "Leave empty for default browser UA"
 - **Auto-update toggle:** `CheckboxListTile`, default `true`
-- **Cancel button:** `TextButton`
+- **Dismiss button:** `TextButton`, l10n key `dismissDialog` → "Dismiss". Dialog also closes on outside tap.
 - **Add button:** `FilledButton`, disabled until URL is non-empty. Shows `CircularProgressIndicator` (16dp) while fetching. On success: pop dialog, refresh server list, show success snackbar with server count.
 - **Error state:** If fetch fails, show error text below URL field in `colorScheme.error`, `bodySmall`: "Failed to fetch subscription. Check URL and try again."
 
@@ -346,7 +354,7 @@ Sort: [Latency ▼]   [All] [Working] [Failed]
 - **Search field:** `TextField` with `Icons.search` prefix, filters log lines by substring match. `bodyMedium`.
 - **Export button:** AppBar action, `Icons.upload_file`, 24dp. Triggers `LogService.exportToFile()` then `share_plus` share sheet.
 - **Auto-scroll toggle:** Bottom bar, `Switch` — when ON, list auto-scrolls to latest. When user scrolls up manually, auto-scroll disables. Tapping toggle re-enables and scrolls to bottom.
-- **Line count:** Bottom bar, `labelSmall`, `onSurfaceVariant`: `"{count} lines"`.
+- **Line count:** Bottom bar, `labelSmall` (11sp), `onSurfaceVariant`: `"{count} lines"`.
 - **Empty state:** Center text: "No logs yet. Connect to a server to see logs." `bodyMedium`, `onSurfaceVariant`.
 
 **Navigation entry point:** Settings screen → "View Logs" list tile, OR long-press menu on dashboard.
@@ -373,9 +381,10 @@ Delete {count} servers?
 This will permanently remove the selected servers.
 Servers from subscriptions will reappear on next refresh.
 
-                    [Cancel]   [Delete {count}]
+                [Keep Servers]   [Delete {count}]
 ```
-- Delete button: `TextButton` with `colorScheme.error` foreground
+- "Keep Servers" button: `TextButton`, dismisses dialog without deleting
+- "Delete {count}" button: `TextButton` with `colorScheme.error` foreground
 
 ### Latency Testing (SERV-03, SERV-04)
 
@@ -411,7 +420,7 @@ Servers from subscriptions will reappear on next refresh.
 | Trigger | Action |
 |---------|--------|
 | Detect share link QR | Auto-import server, pop scanner, show success snackbar |
-| Detect HTTP(S) URL QR | Show dialog: "Add as subscription?" with [Cancel] [Add Subscription] |
+| Detect HTTP(S) URL QR | Show dialog: "Add as subscription?" with [Not Now] [Add Subscription] |
 | Detect unknown content | Error snackbar: "Couldn't recognize this QR code" |
 | Tap flash toggle | Toggle camera flash on/off |
 | Tap back button | Pop scanner, return to server list |
@@ -422,7 +431,7 @@ Servers from subscriptions will reappear on next refresh.
 |---------|--------|
 | Long-press server card → "Share" (context menu) | Open `QrDisplayDialog` modal bottom sheet |
 | Tap "Copy Link" | Copy share link to clipboard, snackbar: "Link copied" |
-| Tap "Share" | Open system share sheet with share link text |
+| Tap "Share Link" | Open system share sheet with share link text |
 
 ---
 
@@ -445,10 +454,13 @@ All copy uses l10n keys for 4-language support (en, fa, ru, zh). Values below ar
 | **Bulk delete title** | `deleteServersTitle` | "Delete {count} servers?" |
 | **Bulk delete body** | `deleteServersBody` | "This will permanently remove the selected servers. Servers from subscriptions will reappear on next refresh." |
 | **Bulk delete confirm** | `deleteServersConfirm` | "Delete {count}" |
+| **Bulk delete dismiss** | `keepServers` | "Keep Servers" |
 | **Subscription refresh success** | `subscriptionRefreshSuccess` | "Updated {count} subscriptions" |
 | **Subscription refresh no change** | `subscriptionRefreshNoChange` | "All up to date" |
 | **Subscription refresh fail** | `subscriptionRefreshFail` | "Failed to update {name}. Check your connection." |
 | **QR subscription prompt** | `qrSubscriptionPrompt` | "This looks like a subscription URL. Add as subscription?" |
+| **QR subscription dismiss** | `notNow` | "Not Now" |
+| **Add subscription dismiss** | `dismissDialog` | "Dismiss" |
 | **Sort label** | `sortBy` | "Sort" |
 | **Sort: name** | `sortByName` | "Name" |
 | **Sort: latency** | `sortByLatency` | "Latency" |
@@ -465,7 +477,7 @@ All copy uses l10n keys for 4-language support (en, fa, ru, zh). Values below ar
 | **Share server title** | `shareServer` | "Share Server" |
 | **Copy link** | `copyLink` | "Copy Link" |
 | **Link copied** | `linkCopied` | "Link copied" |
-| **Share** | `share` | "Share" |
+| **Share link** | `shareLink` | "Share Link" |
 | **Export logs** | `exportLogs` | "Export Logs" |
 | **View logs** | `viewLogs` | "View Logs" |
 | **Auto-scroll** | `autoScroll` | "Auto-scroll" |
@@ -487,7 +499,7 @@ All copy uses l10n keys for 4-language support (en, fa, ru, zh). Values below ar
 | Action | Confirmation Approach |
 |--------|----------------------|
 | Delete single server | Existing AlertDialog with "Delete" / "Keep Server" (reuse from Phase 1) |
-| Bulk delete servers | AlertDialog: "Delete {count} servers?" with count in button label |
+| Bulk delete servers | AlertDialog: "Delete {count} servers?" with "Keep Servers" dismiss / "Delete {count}" confirm |
 | Refresh subscription (replaces servers) | No confirmation — silent replace per D-13. If active server affected, auto-handle per D-14. |
 
 ---
@@ -534,7 +546,7 @@ Tab: Settings (/settings)
 
 | Requirement | Implementation |
 |-------------|---------------|
-| Screen reader labels | All interactive elements have `Semantics` labels (follow existing `ServerCard` pattern) |
+| Screen reader labels | All interactive elements have `Semantics` labels (follow existing `ServerCard` pattern). "Test All" button uses `Semantics(label: 'Test all servers')`. |
 | Touch targets | Minimum 48×48dp for all tappable areas |
 | Color contrast | Material 3 `ColorScheme.fromSeed` guarantees WCAG AA for text on surface tokens |
 | Latency colors | Never rely on color alone — always include numeric text alongside color |
