@@ -96,10 +96,10 @@ Plans:
 
 Plans:
 - [ ] 04-01-PLAN.md — Data foundation: settings persistence, models, Hysteria2 fields, l10n keys
-- [ ] 04-02-PLAN.md — Xray config builder extension + connection wiring (DNS, routing, mux, fragment, Hysteria2)
-- [ ] 04-03-PLAN.md — Native Kotlin per-app proxy (MethodChannel + VPN service split tunneling)
-- [ ] 04-04-PLAN.md — Settings screen UI: DNS, Engine Settings, Anti-Censorship, Data sections
-- [ ] 04-05-PLAN.md — Routing screen UI: region presets, domain rules, per-app proxy
+- [x] 04-02-PLAN.md — Xray config builder extension + connection wiring (DNS, routing, mux, fragment, Hysteria2)
+- [x] 04-03-PLAN.md — Native Kotlin per-app proxy (MethodChannel + VPN service split tunneling)
+- [x] 04-04-PLAN.md — Settings screen UI: DNS, Engine Settings, Anti-Censorship, Data sections
+- [x] 04-05-PLAN.md — Routing screen UI: region presets, domain rules, per-app proxy
 
 **UI hint**: yes
 
