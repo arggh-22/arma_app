@@ -189,7 +189,10 @@ class ArmaVpnService : VpnService() {
                 }
             }
             coreController = XrayCoreManager.createController(callback)
+            Log.i(TAG, "Starting Xray loop with TUN fd=${tunInterface!!.fd}, config length=${config.length}")
+            Log.i(TAG, "Xray config (first 500 chars): ${config.take(500)}")
             coreController?.startLoop(config, tunInterface!!.fd)
+            Log.i(TAG, "Xray startLoop returned successfully, isRunning=${coreController?.isRunning}")
 
             // 5. Start traffic monitoring — polls QueryStats every 1 second
             trafficMonitor = TrafficMonitor(coreController!!) { up, down ->
