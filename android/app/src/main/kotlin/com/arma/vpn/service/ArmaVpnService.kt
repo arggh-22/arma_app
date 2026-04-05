@@ -161,11 +161,17 @@ class ArmaVpnService : VpnService() {
     private fun startVpn(config: String, serverName: String) {
         Log.w(TAG, "=== startVpn() called, serverName=$serverName, isRunning=$isRunning ===")
         debugLog("startVpn called, serverName=$serverName, isRunning=$isRunning")
+
+        // Clean up any leftover state from a previous session
         if (isRunning) {
-            Log.w(TAG, "VPN already running, ignoring duplicate start")
-            debugLog("VPN already running, ignoring duplicate start")
-            return
+            Log.w(TAG, "VPN still marked running, cleaning up first...")
+            debugLog("Cleaning up previous session before reconnect")
+            cleanupPreviousSession()
+        } else {
+            // Even if not "running", ensure no stale resources
+            cleanupPreviousSession()
         }
+
         currentServerName = serverName
         isRunning = true
 
@@ -279,6 +285,39 @@ class ArmaVpnService : VpnService() {
             try { tunInterface?.close() } catch (_: Exception) {}
             tunInterface = null
             stopForeground(STOP_FOREGROUND_REMOVE)
+        }
+    }
+
+    // =========================================================================
+    // Cleanup — ensure no stale resources from previous session
+    // =========================================================================
+
+    /**
+     * Cleanup any leftover resources from a previous VPN session.
+     * Called at the start of startVpn to ensure clean state for reconnection.
+     * The gVisor TCP/IP stack runs goroutines that may not stop instantly
+     * when coreInstance.Close() is called, so we give it time.
+     */
+    private fun cleanupPreviousSession() {
+        trafficMonitor?.stop()
+        trafficMonitor = null
+
+        if (coreController != null) {
+            Log.w(TAG, "Cleaning up old CoreController...")
+            try { coreController?.stopLoop() } catch (_: Exception) {}
+            coreController = null
+            // Give gVisor goroutines time to stop
+            Thread.sleep(300)
+        }
+
+        unregisterNetworkCallback()
+
+        if (tunInterface != null) {
+            Log.w(TAG, "Closing old TUN interface...")
+            try { tunInterface?.close() } catch (_: Exception) {}
+            tunInterface = null
+            // Give Android time to release VPN routing
+            Thread.sleep(200)
         }
     }
 
