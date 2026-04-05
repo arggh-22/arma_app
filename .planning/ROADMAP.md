@@ -12,9 +12,9 @@ Arma delivers a privacy-first Xray-based VPN client for Android. The roadmap fol
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation & Config Import** - Project architecture, UI shells, theming, localization, share link parsing, and local config persistence
-- [ ] **Phase 2: VPN Engine & Core Connection** - Xray-core AAR integration, VpnService, all core protocols, connect/disconnect, traffic monitoring, basic routing & DNS
-- [ ] **Phase 3: Subscriptions & Server Intelligence** - Subscription management, QR scanning, latency testing, bulk operations, server sorting/filtering, log viewer
+- [x] **Phase 1: Foundation & Config Import** - Project architecture, UI shells, theming, localization, share link parsing, and local config persistence
+- [x] **Phase 2: VPN Engine & Core Connection** - Xray-core AAR integration, VpnService, all core protocols, connect/disconnect, traffic monitoring, basic routing & DNS
+- [x] **Phase 3: Subscriptions & Server Intelligence** - Subscription management, QR scanning, latency testing, bulk operations, server sorting/filtering, log viewer
 - [ ] **Phase 4: Routing, DNS & Advanced Settings** - Per-domain/per-app routing, custom DNS, region presets, Hysteria2, TLS tricks, Xray engine toggles
 
 ## Phase Details
@@ -102,7 +102,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Config Import | 0/5 | Not started | - |
-| 2. VPN Engine & Core Connection | 0/TBD | Not started | - |
-| 3. Subscriptions & Server Intelligence | 0/TBD | Not started | - |
+| 1. Foundation & Config Import | 5/5 | ✅ Complete | 2026-04-04 |
+| 2. VPN Engine & Core Connection | 5/5 | ✅ Complete | 2026-04-05 |
+| 3. Subscriptions & Server Intelligence | 6/6 | ✅ Complete | 2026-04-05 |
 | 4. Routing, DNS & Advanced Settings | 0/TBD | Not started | - |
