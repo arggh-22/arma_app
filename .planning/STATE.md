@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-05-PLAN.md
-last_updated: "2026-04-05T16:04:05.928Z"
-last_activity: 2026-04-05 -- Phase 03 planning complete
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-04-05T16:12:49.179Z"
+last_activity: 2026-04-05
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 16
-  completed_plans: 9
-  percent: 56
+  completed_plans: 10
+  percent: 63
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
-**Current focus:** Phase 02 — VPN Engine & Core Connection
+**Current focus:** Phase 03 — Subscriptions & Server Intelligence
 
 ## Current Position
 
-Phase: 3
-Plan: Not started
+Phase: 03 (Subscriptions & Server Intelligence) — EXECUTING
+Plan: 2 of 6
 Status: Ready to execute
-Last activity: 2026-04-05 -- Phase 03 planning complete
+Last activity: 2026-04-05
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -62,6 +62,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02 P03 | 5min | 2 tasks | 4 files |
 | Phase 02 P04 | 3min | 2 tasks | 9 files |
 | Phase 02 P05 | 4min | 2 tasks | 13 files |
+| Phase 03 P01 | 4min | 2 tasks | 30 files |
 
 ## Accumulated Context
 
@@ -98,6 +99,8 @@ Recent decisions affecting current work:
 - [Phase 02]: flutter_animate used for pulsing scale + shimmer animation on connecting state (D-03)
 - [Phase 02]: ConnectionTimer uses DateTime.now().difference(connectedAt) for drift-free elapsed time
 - [Phase 02]: l10n keys connecting/connected added to all 4 locales rather than hardcoding
+- [Phase 03]: SubscriptionModel uses factory constructor fromDomain for cleaner API (vs extension static method)
+- [Phase 03]: Used flutter pub run build_runner — system dart too old, Flutter-bundled dart meets SDK constraint
 
 ### Pending Todos
 
@@ -111,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T11:17:36.006Z
-Stopped at: Completed 02-05-PLAN.md
+Last session: 2026-04-05T16:12:49.176Z
+Stopped at: Completed 03-01-PLAN.md
 Resume file: None

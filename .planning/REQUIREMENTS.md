@@ -25,13 +25,13 @@
 ### Config Import
 
 - [x] **CONF-01**: User can import configs by pasting share links (vless://, vmess://, trojan://, ss://, hysteria2://)
-- [ ] **CONF-02**: User can import configs by scanning QR codes via camera
+- [x] **CONF-02**: User can import configs by scanning QR codes via camera
 - [ ] **CONF-03**: User can import configs from clipboard with one tap
-- [ ] **CONF-04**: User can add subscription URLs that deliver multiple server configs
+- [x] **CONF-04**: User can add subscription URLs that deliver multiple server configs
 - [x] **CONF-05**: App parses both VMess formats: legacy base64-JSON and standard URI
 - [ ] **CONF-06**: User can manually enter config via JSON paste
 - [ ] **CONF-07**: Subscription auto-updates on app launch (configurable toggle)
-- [ ] **CONF-08**: User can set custom User-Agent for subscription fetches
+- [x] **CONF-08**: User can set custom User-Agent for subscription fetches
 - [ ] **CONF-09**: App supports encrypted/hidden subscription formats
 - [ ] **CONF-10**: User can share/export a config as share link or QR code
 
@@ -44,7 +44,7 @@
 - [ ] **SERV-05**: User can long-press to enter multi-select mode for bulk deletion
 - [ ] **SERV-06**: User can sort servers by latency, name, or protocol
 - [ ] **SERV-07**: User can filter servers by working/failed status
-- [ ] **SERV-08**: App displays subscription info: data used, data remaining, expiry date (from subscription-userinfo header)
+- [x] **SERV-08**: App displays subscription info: data used, data remaining, expiry date (from subscription-userinfo header)
 - [ ] **SERV-09**: App can auto-select the best server based on lowest latency
 
 ### Connection & Monitoring
@@ -135,13 +135,13 @@
 | PROTO-05 | Phase 4 | Pending |
 | PROTO-06 | Phase 2 | Complete |
 | CONF-01 | Phase 1 | Complete |
-| CONF-02 | Phase 3 | Pending |
+| CONF-02 | Phase 3 | Complete |
 | CONF-03 | Phase 1 | Pending |
-| CONF-04 | Phase 3 | Pending |
+| CONF-04 | Phase 3 | Complete |
 | CONF-05 | Phase 1 | Complete |
 | CONF-06 | Phase 1 | Pending |
 | CONF-07 | Phase 3 | Pending |
-| CONF-08 | Phase 3 | Pending |
+| CONF-08 | Phase 3 | Complete |
 | CONF-09 | Phase 3 | Pending |
 | CONF-10 | Phase 3 | Pending |
 | SERV-01 | Phase 1 | Pending |
@@ -151,7 +151,7 @@
 | SERV-05 | Phase 3 | Pending |
 | SERV-06 | Phase 3 | Pending |
 | SERV-07 | Phase 3 | Pending |
-| SERV-08 | Phase 3 | Pending |
+| SERV-08 | Phase 3 | Complete |
 | SERV-09 | Phase 3 | Pending |
 | MON-01 | Phase 2 | Complete |
 | MON-02 | Phase 2 | Complete |
