@@ -98,41 +98,46 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ENGINE-01 | — | Pending |
-| ENGINE-02 | — | Pending |
-| ENGINE-03 | — | Pending |
-| ENGINE-04 | — | Pending |
-| ENGINE-05 | — | Pending |
-| CONFIG-01 | — | Pending |
-| CONFIG-02 | — | Pending |
-| CONFIG-03 | — | Pending |
-| CONFIG-04 | — | Pending |
-| CONFIG-05 | — | Pending |
-| CONFIG-06 | — | Pending |
-| CONFIG-07 | — | Pending |
-| CONFIG-08 | — | Pending |
-| MONITOR-01 | — | Pending |
-| MONITOR-02 | — | Pending |
-| MONITOR-03 | — | Pending |
-| MONITOR-04 | — | Pending |
-| MONITOR-05 | — | Pending |
-| ROUTE-01 | — | Pending |
-| ROUTE-02 | — | Pending |
-| ROUTE-03 | — | Pending |
-| ROUTE-04 | — | Pending |
-| ROUTE-05 | — | Pending |
-| ROUTE-06 | — | Pending |
-| ROUTE-07 | — | Pending |
-| CENSOR-01 | — | Pending |
-| CENSOR-02 | — | Pending |
-| CENSOR-03 | — | Pending |
-| PERAPP-01 | — | Pending |
+| ENGINE-01 | Phase 5 | Pending |
+| ENGINE-02 | Phase 6 | Pending |
+| ENGINE-03 | Phase 6 | Pending |
+| ENGINE-04 | Phase 7 | Pending |
+| ENGINE-05 | Phase 5 | Pending |
+| CONFIG-01 | Phase 5 | Pending |
+| CONFIG-02 | Phase 5 | Pending |
+| CONFIG-03 | Phase 5 | Pending |
+| CONFIG-04 | Phase 5 | Pending |
+| CONFIG-05 | Phase 5 | Pending |
+| CONFIG-06 | Phase 5 | Pending |
+| CONFIG-07 | Phase 5 | Pending |
+| CONFIG-08 | Phase 5 | Pending |
+| MONITOR-01 | Phase 6 | Pending |
+| MONITOR-02 | Phase 6 | Pending |
+| MONITOR-03 | Phase 6 | Pending |
+| MONITOR-04 | Phase 6 | Pending |
+| MONITOR-05 | Phase 6 | Pending |
+| ROUTE-01 | Phase 7 | Pending |
+| ROUTE-02 | Phase 7 | Pending |
+| ROUTE-03 | Phase 7 | Pending |
+| ROUTE-04 | Phase 7 | Pending |
+| ROUTE-05 | Phase 7 | Pending |
+| ROUTE-06 | Phase 7 | Pending |
+| ROUTE-07 | Phase 7 | Pending |
+| CENSOR-01 | Phase 7 | Pending |
+| CENSOR-02 | Phase 7 | Pending |
+| CENSOR-03 | Phase 7 | Pending |
+| PERAPP-01 | Phase 7 | Pending |
 
 **Coverage:**
-- v1.1 requirements: 27 total
-- Mapped to phases: 0
-- Unmapped: 27 ⚠️ (pending roadmap creation)
+- v1.1 requirements: 29 total
+- Mapped to phases: 29 ✓
+- Unmapped: 0
+
+**Phase distribution:**
+- Phase 5 (Engine Foundation & Config Builder): 10 requirements
+- Phase 6 (VPN Service & Connection Monitoring): 7 requirements
+- Phase 7 (Feature Parity & Dual-Engine Safety): 12 requirements
 
 ---
 *Requirements defined: 2026-04-08*
-*Last updated: 2026-04-08 after initial definition*
+*Last updated: 2026-04-08 after roadmap creation*
