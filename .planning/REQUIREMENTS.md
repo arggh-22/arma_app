@@ -1,191 +1,138 @@
 # Requirements: Arma Proxy & VPN Client
 
-**Defined:** 2026-04-04
-**Core Value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
+**Defined:** 2026-04-08
+**Core Value:** Privacy-first VPN client that just works — one tap to connect, zero technical knowledge required
 
-## v1 Requirements
+## v1.0 Requirements (Validated)
 
-### VPN Engine
+All v1.0 requirements completed and shipped. See MILESTONES.md for details.
 
-- [x] **ENG-01**: App integrates Xray-core via Go-Mobile AAR with Android VpnService to capture all device traffic in TUN mode
-- [x] **ENG-02**: App generates valid Xray-core JSON config from user-facing settings (inbounds, outbounds, routing, dns sections)
-- [x] **ENG-03**: User can connect/disconnect with a single tap from the dashboard
-- [x] **ENG-04**: Connection state is clearly displayed: Disconnected → Connecting → Connected (with color coding)
-- [x] **ENG-05**: VPN runs as foreground service with persistent notification showing connection status
+## v1.1 Requirements
 
-### Protocols
+Requirements for sing-box engine migration. Each maps to roadmap phases.
 
-- [x] **PROTO-01**: User can connect via VLESS protocol including Reality and XTLS-Vision support
-- [x] **PROTO-02**: User can connect via VMess protocol (AES-128-GCM/ChaCha20)
-- [x] **PROTO-03**: User can connect via Trojan protocol
-- [x] **PROTO-04**: User can connect via Shadowsocks protocol
-- [ ] **PROTO-05**: User can connect via Hysteria2 protocol (UDP/QUIC)
-- [x] **PROTO-06**: All protocols support common transport types: TCP, WebSocket, gRPC, HTTP/2
+### Engine Core
 
-### Config Import
+- [ ] **ENGINE-01**: App integrates sing-box library (libbox.aar) replacing Xray-core as VPN engine
+- [ ] **ENGINE-02**: App starts and stops VPN through sing-box CommandServer lifecycle
+- [ ] **ENGINE-03**: VPN service implements sing-box PlatformInterface with inverted TUN control
+- [ ] **ENGINE-04**: User can toggle between sing-box and Xray-core engines via Settings (dual-engine rollback)
+- [ ] **ENGINE-05**: App validates generated config via `checkConfig()` before connecting
 
-- [x] **CONF-01**: User can import configs by pasting share links (vless://, vmess://, trojan://, ss://, hysteria2://)
-- [x] **CONF-02**: User can import configs by scanning QR codes via camera
-- [ ] **CONF-03**: User can import configs from clipboard with one tap
-- [x] **CONF-04**: User can add subscription URLs that deliver multiple server configs
-- [x] **CONF-05**: App parses both VMess formats: legacy base64-JSON and standard URI
-- [ ] **CONF-06**: User can manually enter config via JSON paste
-- [x] **CONF-07**: Subscription auto-updates on app launch (configurable toggle)
-- [x] **CONF-08**: User can set custom User-Agent for subscription fetches
-- [x] **CONF-09**: App supports encrypted/hidden subscription formats
-- [x] **CONF-10**: User can share/export a config as share link or QR code
+### Config Builder
 
-### Server Management
+- [ ] **CONFIG-01**: App generates valid sing-box JSON for VLESS (including Reality + XTLS Vision)
+- [ ] **CONFIG-02**: App generates valid sing-box JSON for VMess
+- [ ] **CONFIG-03**: App generates valid sing-box JSON for Trojan
+- [ ] **CONFIG-04**: App generates valid sing-box JSON for Shadowsocks
+- [ ] **CONFIG-05**: App generates valid sing-box JSON for Hysteria2
+- [ ] **CONFIG-06**: App generates valid sing-box config for TCP, WebSocket, gRPC, HTTP/2 transports
+- [ ] **CONFIG-07**: App generates valid sing-box config for ECH (Encrypted Client Hello)
+- [ ] **CONFIG-08**: App generates valid sing-box config for HTTPUpgrade transport
 
-- [ ] **SERV-01**: User sees a list of all servers grouped by subscription with protocol badges and latency
-- [x] **SERV-02**: User can tap a server to select it as the active node
-- [x] **SERV-03**: User can test latency for individual servers (HTTP ping / TCPing)
-- [x] **SERV-04**: User can test latency for all servers in bulk
-- [x] **SERV-05**: User can long-press to enter multi-select mode for bulk deletion
-- [x] **SERV-06**: User can sort servers by latency, name, or protocol
-- [x] **SERV-07**: User can filter servers by working/failed status
-- [x] **SERV-08**: App displays subscription info: data used, data remaining, expiry date (from subscription-userinfo header)
-- [x] **SERV-09**: App can auto-select the best server based on lowest latency
+### Traffic & Monitoring
 
-### Connection & Monitoring
-
-- [x] **MON-01**: Dashboard shows real-time upload and download speeds (updated every 1-2 seconds)
-- [x] **MON-02**: Dashboard shows connection duration timer
-- [x] **MON-03**: Persistent notification displays connection status and current traffic speeds
-- [x] **MON-04**: App auto-reconnects when network changes (WiFi ↔ cellular)
-- [x] **MON-05**: User can view Xray-core logs in a scrollable viewer
-- [x] **MON-06**: User can export logs as a text file for debugging/support
+- [ ] **MONITOR-01**: App displays real-time upload/download speed via CommandClient subscription
+- [ ] **MONITOR-02**: App displays connection status via CommandClient status streaming
+- [ ] **MONITOR-03**: App displays active connection count
+- [ ] **MONITOR-04**: App displays per-outbound traffic statistics
+- [ ] **MONITOR-05**: User can test server latency using sing-box-compatible approach
 
 ### Routing & DNS
 
-- [x] **ROUTE-01**: App bypasses LAN traffic by default (192.168.x.x, 10.x.x.x)
-- [ ] **ROUTE-02**: User can configure custom DNS servers (DoH/DoT supported)
-- [ ] **ROUTE-03**: User can set per-domain routing rules: Proxy, Direct, or Block
-- [ ] **ROUTE-04**: User can enable per-app proxy (split tunneling) to choose which apps use the proxy
-- [ ] **ROUTE-05**: App provides region-specific bypass presets (Iran, China, Russia domestic traffic)
-- [x] **ROUTE-06**: DNS is split: remote DNS for proxied domains, direct DNS for local domains (no DNS leaks)
+- [ ] **ROUTE-01**: App uses sing-box rule-set format (.srs) for geo-based routing
+- [ ] **ROUTE-02**: Region presets (Iran, China, Russia) work with sing-box rule-sets
+- [ ] **ROUTE-03**: LAN bypass works via `ip_is_private` route rule
+- [ ] **ROUTE-04**: DNS configuration uses sing-box typed server format (DoH/DoT/Plain)
+- [ ] **ROUTE-05**: FakeIP DNS mode is available as user option
+- [ ] **ROUTE-06**: Protocol sniffing works via sing-box route rules
+- [ ] **ROUTE-07**: Rule-sets auto-update from remote sources with cache
 
-### UI & Settings
+### Anti-Censorship
 
-- [x] **UI-01**: App has a clean, modern design with Light and Dark theme (Material 3)
-- [x] **UI-02**: Dashboard has a prominent connect/disconnect button with satisfying visual feedback
-- [x] **UI-03**: App supports multiple languages: English, Persian (RTL), Russian, Chinese
-- [ ] **UI-04**: Settings screen includes Xray toggles: Sniffing, Mux (multiplexing), Fragment handling
-- [ ] **UI-05**: Settings screen includes TLS tricks: fragment size/sleep range, padding, mixed SNI case
-- [ ] **UI-06**: User can clear cached data and export app logs from settings
-- [ ] **UI-07**: FAB on config screen expands with import options: QR, Clipboard, Subscription, Manual
+- [ ] **CENSOR-01**: TLS fragment (boolean) is configurable in Settings
+- [ ] **CENSOR-02**: TLS record_fragment is configurable in Settings
+- [ ] **CENSOR-03**: Mux with padding (h2mux/yamux) is configurable in Settings
 
-### Storage
+### Per-App Proxy
 
-- [x] **STOR-01**: All configs and subscriptions persist locally across app restarts (hive_ce)
-- [x] **STOR-02**: User preferences (theme, language, routing rules, Xray settings) persist locally
+- [ ] **PERAPP-01**: Per-app proxy uses sing-box TUN-level `include_package`/`exclude_package`
 
-## v2 Requirements
+## Future Requirements
+
+Deferred to v1.2+. Tracked but not in current roadmap.
+
+### Anti-Censorship (Hiddify Fork)
+
+- **CENSOR-F01**: Granular TLS fragment with configurable min/max length and sleep intervals
+- **CENSOR-F02**: Mixed SNI case randomization for DPI evasion
+- **CENSOR-F03**: TLS padding with configurable size
+
+### New Protocols
+
+- **PROTO-F01**: User can connect via WireGuard protocol
+- **PROTO-F02**: User can connect via TUIC protocol
+- **PROTO-F03**: User can connect via NaiveProxy protocol
 
 ### Cross-Platform
 
-- **XPLAT-01**: App builds and runs on iOS
-- **XPLAT-02**: App builds and runs on macOS
-- **XPLAT-03**: App builds and runs on Windows
-- **XPLAT-04**: App builds and runs on Linux
-
-### Advanced Features
-
-- **ADV-01**: WARP integration (Cloudflare Warp as fallback connection)
-- **ADV-02**: Clash/Sing-box config import
-- **ADV-03**: Deep link support (arma://import/... or vless://... from other apps)
-- **ADV-04**: Auto-start VPN on device boot
-- **ADV-05**: Downloadable community geo rule sets
-- **ADV-06**: Proxy chain (double proxy for extra anonymity)
-- **ADV-07**: Android home screen widget for quick connect
-- **ADV-08**: Speed test through proxy (download throughput)
-
-### Web & Distribution
-
-- **WEB-01**: Documentation/download web site (GitBook-style clone of happ.su)
-- **WEB-02**: Bundled free/trial servers for first-time users
+- **PLAT-F01**: iOS build using sing-box iOS library
+- **PLAT-F02**: macOS build using sing-box desktop library
+- **PLAT-F03**: Windows build using sing-box desktop library
 
 ## Out of Scope
 
+Explicitly excluded. Documented to prevent scope creep.
+
 | Feature | Reason |
 |---------|--------|
-| User accounts / authentication | No backend; all config is local. Privacy-first. |
-| Analytics / telemetry | Privacy-first. Any analytics in a circumvention tool destroys trust. |
-| In-app ads | Users are bypassing censorship. Ads are tone-deaf. Revenue via donations. |
-| Full JSON config editor (visual) | 95% of users never edit raw JSON. Share links and subscriptions cover all cases. |
-| Protocol implementation from scratch | Xray-core exists and is battle-tested. Use it as a black box via Go-Mobile AAR. |
-| VPN kill switch (v1) | Complex to implement correctly. If done wrong, leaks traffic or bricks internet. Add in v2. |
-| Traffic interception / MITM | Security and legal minefield. Proxy traffic, don't inspect it. |
-| TV platform (v1) | Tiny user base, different UI paradigm (D-pad navigation). Defer to v2+. |
-| TUIC / WireGuard / SSH protocols | Growing but not critical for v1. Xray-core support varies. |
+| Hiddify fork of sing-box | Standard sing-box boolean fragment ships first; evaluate if sufficient in field testing |
+| iOS/macOS/Windows builds | sing-box enables this but deferred to v1.2+ after Android engine proven stable |
+| New protocols (WireGuard, TUIC, Naive) | sing-box supports them but not needed for migration milestone |
+| sing-box mux interop with Xray servers | sing-box mux not interoperable with Xray-core servers; mux only when both sides run sing-box |
+| Standard gRPC transport replacement | sing-box uses lightweight gRPC; full gRPC increases binary size, defer unless needed |
 
 ## Traceability
 
+Which phases cover which requirements. Updated during roadmap creation.
+
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ENG-01 | Phase 2 | Complete |
-| ENG-02 | Phase 2 | Complete |
-| ENG-03 | Phase 2 | Complete |
-| ENG-04 | Phase 2 | Complete |
-| ENG-05 | Phase 2 | Complete |
-| PROTO-01 | Phase 2 | Complete |
-| PROTO-02 | Phase 2 | Complete |
-| PROTO-03 | Phase 2 | Complete |
-| PROTO-04 | Phase 2 | Complete |
-| PROTO-05 | Phase 4 | Pending |
-| PROTO-06 | Phase 2 | Complete |
-| CONF-01 | Phase 1 | Complete |
-| CONF-02 | Phase 3 | Complete |
-| CONF-03 | Phase 1 | Pending |
-| CONF-04 | Phase 3 | Complete |
-| CONF-05 | Phase 1 | Complete |
-| CONF-06 | Phase 1 | Pending |
-| CONF-07 | Phase 3 | Complete |
-| CONF-08 | Phase 3 | Complete |
-| CONF-09 | Phase 3 | Complete |
-| CONF-10 | Phase 3 | Complete |
-| SERV-01 | Phase 1 | Pending |
-| SERV-02 | Phase 1 | Complete |
-| SERV-03 | Phase 3 | Complete |
-| SERV-04 | Phase 3 | Complete |
-| SERV-05 | Phase 3 | Complete |
-| SERV-06 | Phase 3 | Complete |
-| SERV-07 | Phase 3 | Complete |
-| SERV-08 | Phase 3 | Complete |
-| SERV-09 | Phase 3 | Complete |
-| MON-01 | Phase 2 | Complete |
-| MON-02 | Phase 2 | Complete |
-| MON-03 | Phase 2 | Complete |
-| MON-04 | Phase 2 | Complete |
-| MON-05 | Phase 3 | Complete |
-| MON-06 | Phase 3 | Complete |
-| ROUTE-01 | Phase 2 | Complete |
-| ROUTE-02 | Phase 4 | Pending |
-| ROUTE-03 | Phase 4 | Pending |
-| ROUTE-04 | Phase 4 | Pending |
-| ROUTE-05 | Phase 4 | Pending |
-| ROUTE-06 | Phase 2 | Complete |
-| UI-01 | Phase 1 | Complete |
-| UI-02 | Phase 2 | Complete |
-| UI-03 | Phase 1 | Complete |
-| UI-04 | Phase 4 | Pending |
-| UI-05 | Phase 4 | Pending |
-| UI-06 | Phase 4 | Pending |
-| UI-07 | Phase 1 | Pending |
-| STOR-01 | Phase 1 | Complete |
-| STOR-02 | Phase 1 | Complete |
+| ENGINE-01 | — | Pending |
+| ENGINE-02 | — | Pending |
+| ENGINE-03 | — | Pending |
+| ENGINE-04 | — | Pending |
+| ENGINE-05 | — | Pending |
+| CONFIG-01 | — | Pending |
+| CONFIG-02 | — | Pending |
+| CONFIG-03 | — | Pending |
+| CONFIG-04 | — | Pending |
+| CONFIG-05 | — | Pending |
+| CONFIG-06 | — | Pending |
+| CONFIG-07 | — | Pending |
+| CONFIG-08 | — | Pending |
+| MONITOR-01 | — | Pending |
+| MONITOR-02 | — | Pending |
+| MONITOR-03 | — | Pending |
+| MONITOR-04 | — | Pending |
+| MONITOR-05 | — | Pending |
+| ROUTE-01 | — | Pending |
+| ROUTE-02 | — | Pending |
+| ROUTE-03 | — | Pending |
+| ROUTE-04 | — | Pending |
+| ROUTE-05 | — | Pending |
+| ROUTE-06 | — | Pending |
+| ROUTE-07 | — | Pending |
+| CENSOR-01 | — | Pending |
+| CENSOR-02 | — | Pending |
+| CENSOR-03 | — | Pending |
+| PERAPP-01 | — | Pending |
 
 **Coverage:**
-- v1 requirements: 51 total
-- Mapped to phases: 51 ✓
-- Unmapped: 0
-
-**By Phase:**
-- Phase 1 (Foundation & Config Import): 11 requirements
-- Phase 2 (VPN Engine & Core Connection): 17 requirements
-- Phase 3 (Subscriptions & Server Intelligence): 15 requirements
-- Phase 4 (Routing, DNS & Advanced Settings): 8 requirements
+- v1.1 requirements: 27 total
+- Mapped to phases: 0
+- Unmapped: 27 ⚠️ (pending roadmap creation)
 
 ---
-*Requirements defined: 2026-04-04*
-*Last updated: 2026-04-05 after roadmap creation*
+*Requirements defined: 2026-04-08*
+*Last updated: 2026-04-08 after initial definition*
