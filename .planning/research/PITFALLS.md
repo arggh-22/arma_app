@@ -1,650 +1,772 @@
-# Domain Pitfalls
+# Domain Pitfalls — sing-box Engine Migration (v1.1)
 
-**Domain:** Flutter Proxy/VPN Client with Xray-core (Android)
-**Researched:** 2025-07-15
-**Sources:** V2rayNG source code (Kotlin/Go reference impl, 37k+ stars), Hiddify source code (Flutter/Go reference impl, 20k+ stars), XTLS/Xray-core, issue trackers from both projects, Android VpnService documentation
+**Domain:** Xray-core → sing-box migration in Flutter VPN Client (Android)
+**Researched:** 2025-07-19
+**Milestone:** v1.1 sing-box Engine Migration
+**Overall confidence:** HIGH (verified against sing-box source code on `testing` branch, libbox Go API, official documentation, and line-by-line comparison with existing Arma v1.0 codebase)
+
+**Sources:**
+- sing-box official docs: `sing-box.sagernet.org/configuration/` — configuration schema, migration guides
+- SagerNet/sing-box GitHub (`testing` branch): `experimental/libbox/` — service.go, platform.go, tun.go, config.go, setup.go, command_server.go, command_client.go
+- sing-box `docs/migration.md` — official breaking changes log (1.8.0 → 1.14.0)
+- Existing Arma v1.0 codebase: XrayConfigBuilder.dart, ArmaVpnService.kt, XrayCoreManager.kt, TrafficMonitor.kt, VpnServiceConnection.kt
+- Hiddify (Flutter + sing-box reference): architecture patterns for libbox integration
+
+**Note:** v1.0 pitfalls (VPN shutdown order, Go-Mobile build fragility, VPN permission flow, foreground service type, DNS leak, etc.) remain relevant and are preserved in `PITFALLS_v1.md`. This document covers **migration-specific** risks only.
 
 ---
 
 ## Critical Pitfalls
 
-Mistakes that cause rewrites, crashes, or fundamental breakage. Each learned from real production issues in V2rayNG and Hiddify.
+Mistakes that cause rewrites, broken migrations, or total loss of functionality.
 
 ---
 
-### Pitfall 1: VPN Service Shutdown Order — `stopSelf()` MUST Precede `mInterface.close()`
+### Pitfall 1: Config JSON Format Is Completely Incompatible — Zero Reuse of XrayConfigBuilder
 
-**What goes wrong:** When stopping the VPN, if you close the TUN file descriptor (`mInterface.close()`) before calling `stopSelf()`, the Xray-core process fails to stop and release its listening ports. On the next connection attempt, the core reports "port already in use" and fails to start.
+**Severity:** CRITICAL | **Likelihood:** CERTAIN | **Confidence:** HIGH
 
-**Why it happens:** The Android VPN system and Go runtime have an implicit dependency on service lifecycle. When the TUN fd closes first, the Go core's socket operations get interrupted in a way that prevents clean shutdown. The core goroutines hang instead of terminating.
+**What goes wrong:** The entire `XrayConfigBuilder` class (543 lines) produces Xray-core JSON that sing-box will reject. Every single top-level key, every nested field name, and the overall structure are different. Developers who try to incrementally modify the existing config builder will waste days finding silent failures.
 
-**Consequences:** Users see "connection failed" after toggling VPN off and on rapidly. The only recovery is force-killing the app process. This is documented in V2rayNG source code with an explicit comment: *"stopSelf has to be called ahead of mInterface.close(). otherwise v2ray core cannot be stopped. It's strange but true."*
+**Why it happens:** Xray-core and sing-box are independent projects with completely different configuration schemas. There is no shared format.
+
+**Key structural differences (verified against sing-box docs):**
+
+| Concept | Xray-core (current) | sing-box (target) |
+|---------|---------------------|-------------------|
+| Outbound wrapper | `vnext[]/servers[]` → `settings: {vnext: [{address, port, users: [{id, encryption}]}]}` | Flat: `{server, server_port, uuid, ...}` |
+| Protocol field | `outbound.protocol: "vless"` | `outbound.type: "vless"` |
+| TLS config | `streamSettings.tlsSettings: {serverName, fingerprint, alpn}` | `tls: {enabled: true, server_name, utls: {fingerprint}, alpn}` |
+| Reality config | `streamSettings.realitySettings: {publicKey, shortId}` | `tls: {enabled: true, reality: {enabled: true, public_key, short_id}}` |
+| Transport | `streamSettings.wsSettings: {path, headers: {Host}}` | `transport: {type: "ws", path, headers: {Host}}` |
+| Direct outbound | `{protocol: "freedom", settings: {}}` | `{type: "direct"}` |
+| Block outbound | `{protocol: "blackhole", settings: {response: {type: "http"}}}` | `{type: "block"}` |
+| TUN inbound | `{protocol: "tun", settings: {name, MTU}}` | `{type: "tun", interface_name, mtu, address: ["172.18.0.1/30"], auto_route: true}` |
+| Sniffing | `inbound.sniffing: {enabled, destOverride: ["http","tls"]}` | Top-level route `sniff: true` or inbound `sniff: true` |
+| Routing rules | `{type: "field", outboundTag: "direct", domain: ["geosite:cn"]}` | `{domain_suffix: [".cn"], action: "route", outbound: "direct"}` or via `rule_set` |
+| DNS | `dns.servers: [{address: "https://1.1.1.1/dns-query", domains: []}]` | `dns.servers: [{type: "https", tag: "remote", server: "1.1.1.1"}]` |
+| Stats | `stats: {}, policy: {system: {statsOutboundUplink: true}}` | `experimental: {v2ray_api: {listen, stats: {outbounds: ["proxy"]}}}` or Clash API |
+| Fragment | `streamSettings.sockopt.fragment: {packets: "tlshello", length, interval}` | `tls: {fragment: true, fragment_fallback_delay: "500ms"}` (since 1.12.0) |
+
+**Consequences:** Complete rewrite of config generation. No incremental migration path — you must build `SingboxConfigBuilder` from scratch.
 
 **Prevention:**
+1. Create a **new** `SingboxConfigBuilder` class. Do NOT modify `XrayConfigBuilder`.
+2. Keep `XrayConfigBuilder` intact for rollback capability.
+3. Build the new config builder protocol-by-protocol with tests against sing-box's `CheckConfig()` API.
+4. Use sing-box's `FormatConfig()` to validate and pretty-print generated configs during development.
+
+**Detection:** Feed any Xray JSON config to sing-box — it will fail with parse errors immediately.
+
+---
+
+### Pitfall 2: libbox API Is Fundamentally Different From libv2ray — New Integration Architecture Required
+
+**Severity:** CRITICAL | **Likelihood:** CERTAIN | **Confidence:** HIGH
+
+**What goes wrong:** The entire Kotlin native layer (`XrayCoreManager`, `ArmaVpnService`, `TrafficMonitor`, `ServiceConnection`) is built around libv2ray's API: `Libv2ray.initCoreEnv()`, `Libv2ray.newCoreController(callback)`, `controller.startLoop(config, tunFd)`, `controller.queryStats()`. sing-box's libbox has a completely different architecture — it doesn't take a TUN fd, it doesn't have `startLoop`, and it doesn't have `queryStats`.
+
+**libv2ray API (current — from XrayCoreManager.kt + ArmaVpnService.kt):**
 ```kotlin
-// CORRECT order — always stop service first, then close interface
-private fun stopAllService() {
-    isRunning = false
-    // 1. Stop tun2socks FIRST
-    tun2SocksService?.stopTun2Socks()
-    // 2. Stop Xray core
-    V2RayServiceManager.stopCoreLoop()
-    // 3. Stop the Android service
-    stopSelf()
-    // 4. LAST: close the TUN file descriptor
-    try { mInterface.close() } catch (e: Exception) { /* log */ }
-}
+// Init
+go.Seq.setContext(context)
+Libv2ray.initCoreEnv(assetPath, "")
+
+// Start
+val controller = Libv2ray.newCoreController(callback) // callback.onEmitStatus(fd) for socket protection
+controller.startLoop(configJson, tunFd)  // Pass TUN fd directly
+
+// Stats
+controller.queryStats("proxy", "uplink")  // Direct polling
+
+// Stop
+controller.stopLoop()
 ```
 
-**Detection:** Test by rapidly toggling VPN on/off 5-10 times in succession. If the 3rd or 4th attempt fails with port-in-use errors, this ordering bug is present.
-
-**Phase:** Phase 3 (VpnService implementation) — get this right from the first commit.
-
----
-
-### Pitfall 2: Go-Mobile AAR Build Fragility — Version Lock-Step Required
-
-**What goes wrong:** Building Xray-core via `gomobile bind` into an AAR silently produces corrupted or non-functional binaries when Go version, gomobile version, and Android NDK version are misaligned. The AAR compiles successfully but crashes at runtime with opaque JNI errors or Go panics.
-
-**Why it happens:** gomobile generates C bindings via cgo that depend on specific NDK toolchain versions. Go minor version changes can alter the runtime's threading model, garbage collector behavior, and cgo calling convention. Xray-core's dependency tree (especially the crypto libraries) has build constraints that silently change behavior between Go versions.
-
-**Consequences:** Days of debugging "works on my machine" issues. The AAR builds fine in CI but crashes on specific device architectures (usually armeabi-v7a). Hiddify's most persistent issue (#1936, 48+ comments) is "failed to start background core" — often traced to Go build environment mismatches.
-
-**Prevention:**
-1. **Pin exact versions in CI:** Go 1.22.x (the version Xray-core CI uses), gomobile from `golang.org/x/mobile/cmd/gomobile@latest` at a pinned commit, NDK r26b or whatever Xray-core's CI uses.
-2. **Use the same Makefile pattern as AndroidLibXrayLite:** Don't invent your own build system.
-3. **Build for ALL target ABIs in CI, test on real devices for each:** `arm64-v8a` (most phones), `armeabi-v7a` (old phones), `x86_64` (emulators).
-4. **Consider using pre-built AARs** from AndroidLibXrayLite releases if custom Go wrapper isn't needed immediately.
-
-**Detection:** If the app works on emulator (x86_64) but crashes on physical device (arm64), this is almost certainly a build environment issue.
-
-**Phase:** Phase 3 — but the build environment should be set up and validated in a pre-phase or Phase 0 spike. Don't attempt VpnService work without a confirmed-working AAR.
-
----
-
-### Pitfall 3: Running VPN Service in Same Process as Flutter — OOM and Crash Propagation
-
-**What goes wrong:** When the Xray-core Go runtime and Flutter's Dart VM run in the same OS process, a Go panic (nil pointer, OOB, deadlock) crashes the entire app with no recovery. Additionally, the Go runtime's memory usage (50-150MB for Xray-core with routing rules + geosite data) combined with Flutter's memory means the process exceeds Android's per-process memory limit, triggering OOM kills.
-
-**Why it happens:** Go's runtime uses its own memory manager, GC, and goroutine scheduler. When it panics, it calls `abort()` which kills the entire process. There's no way to catch a Go panic from the JVM/Dart side. V2rayNG explicitly runs the VPN service in a separate process: `android:process=":RunSoLibV2RayDaemon"`.
-
-**Consequences:** App randomly "disappears" (no crash dialog) under memory pressure. Go deadlocks during network errors silently kill the app. Users report the app as "unstable."
-
-**Prevention:**
-```xml
-<!-- AndroidManifest.xml -->
-<service
-    android:name=".service.ArmaVpnService"
-    android:process=":vpn_core"
-    android:permission="android.permission.BIND_VPN_SERVICE"
-    android:foregroundServiceType="specialUse"
-    android:exported="false">
-    <intent-filter>
-        <action android:name="android.net.VpnService" />
-    </intent-filter>
-</service>
-```
-**Important caveat:** When VPN runs in a separate process, Flutter platform channels don't work directly across processes. You need either:
-- A Messenger/AIDL IPC bridge between the Flutter process and the VPN process
-- A BroadcastReceiver pattern (what V2rayNG uses)
-- Or a gRPC local server (what Hiddify uses)
-
-**Detection:** Monitor app's PSS memory in Android profiler. If it exceeds 300MB with active VPN, OOM kills will follow on mid-range devices.
-
-**Phase:** Phase 3 — architectural decision. Must be decided before writing any VpnService code because it determines the entire communication pattern.
-
----
-
-### Pitfall 4: VPN Permission Activity Result Flow Broken in Flutter
-
-**What goes wrong:** `VpnService.prepare(context)` returns an `Intent` that must be launched via `startActivityForResult()` to get user consent. Flutter's `MethodChannel` has no built-in mechanism for Activity results. Naive implementations either skip the permission check (crashes on first use) or implement it incorrectly (works once, breaks on subsequent calls).
-
-**Why it happens:** Flutter's platform channel abstraction doesn't map cleanly to Android's Activity lifecycle. The Dart→Kotlin call initiates `prepare()`, but the result comes back asynchronously via `onActivityResult()` in the Activity, which must then be routed back to the Dart side.
-
-**Consequences:** App crashes with "VPN permission not granted" on first launch. Or works on first launch but breaks when system revokes VPN permission (e.g., another VPN app takes over).
-
-**Prevention:**
+**libbox API (target — from service.go, platform.go, config.go, setup.go):**
 ```kotlin
-// In your FlutterActivity or custom Activity
-class MainActivity : FlutterActivity() {
-    private var vpnPermissionResult: MethodChannel.Result? = null
-    
-    fun requestVpnPermission(result: MethodChannel.Result) {
-        val intent = VpnService.prepare(this)
-        if (intent != null) {
-            vpnPermissionResult = result
-            startActivityForResult(intent, VPN_PERMISSION_REQUEST_CODE)
-        } else {
-            result.success(true) // already granted
-        }
-    }
-    
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == VPN_PERMISSION_REQUEST_CODE) {
-            vpnPermissionResult?.success(resultCode == RESULT_OK)
-            vpnPermissionResult = null
-        }
-        super.onActivityResult(requestCode, resultCode, data)
-    }
+// Init
+val setupOptions = SetupOptions().apply {
+    basePath = context.filesDir.absolutePath
+    workingPath = "${context.filesDir}/sing-box"
+    tempPath = "${context.cacheDir}/sing-box"
+    // ...
 }
+Libbox.setup(setupOptions)
+
+// Start — CommandServer + PlatformInterface pattern
+val commandServer = Libbox.newCommandServer(handler, platformInterface)
+// platformInterface.openTun() is CALLED BY sing-box, not passed TO it
+// sing-box manages the config file, not a config string + fd
+
+// Stats — via CommandClient gRPC subscription
+val commandClient = Libbox.newCommandClient(handler, options)
+// handler.writeStatus(statusMessage) // Pushed, not polled
+
+// Stop — via CommandServer
+commandServer.stop()
 ```
-Also handle `onRevoke()` in VpnService — Android calls this when permission is revoked, and you must clean up immediately.
 
-**Detection:** Test on a device with another VPN app installed. Switch between apps to force permission revocation.
+**Key architectural inversion:** Xray-core receives a TUN fd from you. sing-box calls YOUR `PlatformInterface.OpenTun()` to request a TUN from the OS. This inverts the control flow of the entire VPN service.
 
-**Phase:** Phase 3 — implement this before the connect button works.
+**Consequences:** `XrayCoreManager.kt` → complete rewrite. `ArmaVpnService.kt` → heavy restructuring of TUN creation flow. `TrafficMonitor.kt` → replaced by CommandClient subscription model.
+
+**Prevention:**
+1. Study Hiddify's Android integration layer (or SFA — sing-box for Android official client) as reference.
+2. Implement `PlatformInterface` in Kotlin that handles `OpenTun`, `AutoDetectInterfaceControl` (socket protection), `StartDefaultInterfaceMonitor` (network changes).
+3. The config is passed as a string to `CommandServer`, NOT with a TUN fd. sing-box internally calls your `OpenTun` when it needs the TUN.
+4. Traffic stats come via `CommandClient` + `CommandClientHandler.WriteStatus()`, not polling.
+
+**Detection:** Any attempt to call `startLoop(config, tunFd)` will fail at compile time — the method doesn't exist.
 
 ---
 
-### Pitfall 5: Foreground Service Type Missing for Android 14+ (API 34+)
+### Pitfall 3: Geo Data Format Change — geoip.dat/geosite.dat Removed, Rule-Sets Required
 
-**What goes wrong:** Starting with Android 14, foreground services must declare a `foregroundServiceType` and the corresponding permission. Without `FOREGROUND_SERVICE_SPECIAL_USE` permission and `foregroundServiceType="specialUse"`, the service start call throws a `SecurityException` and the VPN silently fails to start.
+**Severity:** CRITICAL | **Likelihood:** CERTAIN | **Confidence:** HIGH
 
-**Why it happens:** Google tightened foreground service restrictions to prevent abuse. VPN services don't fit neatly into the predefined types (camera, location, etc.), so they must use `specialUse` with a `PROPERTY_SPECIAL_USE_FGS_SUBTYPE` metadata property.
+**What goes wrong:** The existing routing rules use Xray-core's `geoip:private`, `geosite:cn`, `geosite:category-ir`, `geoip:ir`, `geoip:ru`, etc. sing-box deprecated geoip/geosite in v1.8.0 (still available) and **removed** them in v1.12.0. The current latest stable is 1.11.x, but the testing branch (which will be released) has removed them entirely.
 
-**Consequences:** App works on Android 13 and below but completely fails on Android 14+. Since this is the fastest-growing Android version segment, this is a launch-blocker.
-
-**Prevention:**
-```xml
-<!-- AndroidManifest.xml -->
-<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-<uses-permission
-    android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"
-    android:minSdkVersion="34" />
-
-<service
-    android:name=".service.ArmaVpnService"
-    android:foregroundServiceType="specialUse"
-    ...>
-    <property
-        android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-        android:value="vpn" />
-</service>
-```
-Also need `CHANGE_NETWORK_STATE` for network callback registration on Android P+.
-
-**Detection:** Test on Android 14 emulator or device. The crash is immediate and appears in logcat as SecurityException.
-
-**Phase:** Phase 3 — must be in the AndroidManifest from day one.
-
----
-
-### Pitfall 6: Go `Seq.setContext()` Not Called Before Go Functions — JNI Crash
-
-**What goes wrong:** The very first call to any Go-Mobile generated function crashes with a JNI null pointer exception because the Go runtime's Android context hasn't been initialized. This manifests as an opaque native crash with no useful stack trace.
-
-**Why it happens:** gomobile generates Java bindings that internally use `go.Seq` to marshal data between JVM and Go. `Seq` requires an Android `Context` to be set before any marshaling occurs. Without it, the Go runtime can't access the filesystem, network, or other Android APIs.
-
-**Consequences:** Crash on app startup if any Go function is called during initialization (e.g., getting the Xray core version to display in settings).
-
-**Prevention:**
-```kotlin
-object XrayNativeManager {
-    private val initialized = AtomicBoolean(false)
-    
-    fun initializeGoRuntime(context: Context) {
-        if (initialized.compareAndSet(false, true)) {
-            try {
-                go.Seq.setContext(context.applicationContext) // MUST use applicationContext
-                Libv2ray.initCoreEnv(assetPath, deviceId)
-            } catch (e: Exception) {
-                initialized.set(false) // allow retry
-                throw e
-            }
-        }
-    }
-}
-```
-Use `AtomicBoolean` for thread-safe single initialization. Always pass `applicationContext`, not an Activity context (which can leak).
-
-**Detection:** Call any Go function immediately after app launch. If it crashes, context wasn't set.
-
-**Phase:** Phase 3 — first line of Go integration code.
-
----
-
-### Pitfall 7: VMess Share Link Has Two Incompatible Formats
-
-**What goes wrong:** VMess share links exist in two completely different formats:
-1. **Legacy format:** `vmess://` + base64-encoded JSON blob (`{"v":"2","ps":"name","add":"server","port":"443","id":"uuid",...}`)
-2. **Standard URI format:** `vmess://uuid@server:port?type=tcp&security=tls&...#name`
-
-Parsing only one format means ~40-50% of user configs fail silently with "invalid configuration."
-
-**Why it happens:** The original v2ray project defined the base64-JSON format. Later, a standardized URI format was proposed (matching VLESS/Trojan patterns). Both are widely used. V2rayNG handles this with explicit format detection: `if (str.indexOf('?') > 0 && str.indexOf('&') > 0)` routes to the standard parser, otherwise to the legacy parser.
-
-**Consequences:** Users import configs that "work in V2rayNG" but fail in your app. The #1 category of user complaints in V2ray client apps.
-
-**Prevention:**
+**Current codebase impact (from XrayConfigBuilder._buildRouting):**
 ```dart
-ProfileItem? parseVmess(String uri) {
-  final content = uri.replaceFirst('vmess://', '');
-  // Check for standard URI format
-  if (content.contains('?') && content.contains('&') && content.contains('@')) {
-    return _parseVmessStandardUri(uri);
-  }
-  // Legacy base64 JSON format
-  return _parseVmessBase64Json(content);
-}
+// These WILL NOT WORK in sing-box 1.12+
+rules.add({'type': 'field', 'outboundTag': 'direct', 'ip': ['geoip:private']});
+rules.add({'type': 'field', 'outboundTag': 'direct', 'domain': ['geosite:category-ir']});
+rules.add({'type': 'field', 'outboundTag': 'direct', 'ip': ['geoip:ir']});
+rules.add({'type': 'field', 'outboundTag': 'direct', 'domain': ['geosite:cn']});
 ```
-Test with configs from at least 5 different subscription providers to cover format variations.
 
-**Detection:** Collect 20+ real-world VMess share links from different providers. If any fail to parse, the parser is incomplete.
-
-**Phase:** Phase 2 (Configuration parsing) — get both formats right before any VPN integration.
-
----
-
-### Pitfall 8: DNS Leak Through VPN Tunnel
-
-**What goes wrong:** DNS queries bypass the proxy tunnel and go directly to the ISP's DNS server, revealing which domains the user is visiting. This completely defeats the purpose of a privacy-focused proxy app.
-
-**Why it happens:** Three common causes:
-1. Not adding DNS servers to `VpnService.Builder` — the system uses default DNS which isn't tunneled
-2. Using a DNS server that's blocked in the user's country (e.g., `1.1.1.1` is blocked in some regions of Iran/China)
-3. Not configuring Xray-core's internal DNS to route DNS queries through the proxy
-
-**Consequences:** In censored regions, leaked DNS queries trigger domain-based blocking, causing the proxy to appear "not working" even though the tunnel is up. Worse, it exposes user browsing to ISP monitoring.
-
-**Prevention:**
-```kotlin
-// In VpnService builder
-builder.addDnsServer("1.1.1.1") // gets tunneled through VPN
-// In Xray config JSON
+**sing-box replacement — rule-sets:**
+```json
 {
-  "dns": {
-    "servers": [
+  "route": {
+    "rule_set": [
       {
-        "address": "1.1.1.1", // remote DNS through proxy
-        "domains": ["geosite:geolocation-!cn"] // or all non-domestic
+        "type": "remote",
+        "tag": "geoip-ir",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-ir.srs"
       },
       {
-        "address": "223.5.5.5", // domestic DNS direct  
-        "domains": ["geosite:cn"] // only for domestic domains
+        "type": "remote",
+        "tag": "geosite-ir",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-category-ir.srs"
       }
+    ],
+    "rules": [
+      {"rule_set": ["geoip-ir", "geosite-ir"], "action": "route", "outbound": "direct"}
     ]
   }
 }
 ```
-Split DNS strategy: proxy DNS for foreign domains, direct DNS for domestic. Also enable Xray-core's sniffing feature to override DNS-based routing with actual domain detection.
 
-**Detection:** Use a DNS leak test site (dnsleaktest.com) while connected through the proxy. Any non-proxy DNS server in results = leak.
+**Consequences:**
+- All region presets (Iran, China, Russia) must be reimplemented with rule-sets.
+- No more bundled `.dat` files in APK assets — either use remote rule-sets (requires network on first launch) or bundle `.srs` binary files.
+- The `copyAssetsToInternal()` pattern in `XrayCoreManager.kt` for geoip.dat/geosite.dat becomes irrelevant.
+- LAN bypass (`geoip:private`) becomes `ip_is_private: true` in sing-box route rules.
 
-**Phase:** Phase 3 (VpnService + Xray config) — must be correct in the first working build.
+**Prevention:**
+1. **For LAN bypass:** Use `"ip_is_private": true` in route rules (no rule-set needed).
+2. **For region presets:** Use remote rule-sets from `github.com/SagerNet/sing-geoip` and `sing-geosite`. Cache via `experimental.cache_file.enabled: true`.
+3. **Bundle fallback .srs files** in APK assets for offline-first experience (users in censored regions may not have internet on first launch without VPN).
+4. **sing-box 1.10+ supports inline rule-sets** — for simple rules, embed directly in config.
+
+**Detection:** Any config using `geoip:` or `geosite:` prefix will fail with "unknown rule type" on sing-box 1.12+.
+
+---
+
+### Pitfall 4: TLS Fragment Anti-Censorship Has Different Behavior and Fewer Options
+
+**Severity:** CRITICAL | **Likelihood:** HIGH | **Confidence:** HIGH
+
+**What goes wrong:** The app's anti-censorship features (fragment, padding, mixed SNI) are critical for users in Iran/China/Russia. The Xray-core fragment implementation in `XrayConfigBuilder._buildStreamSettings()` uses `sockopt.fragment` with configurable `packets` (tlshello), `length` (min-max range), and `interval` (sleep min-max). sing-box's TLS fragment (added in 1.12.0) is a much simpler boolean flag with auto-detection and limited control.
+
+**Current Xray-core fragment (from XrayConfigBuilder):**
+```json
+{
+  "sockopt": {
+    "fragment": {
+      "packets": "tlshello",
+      "length": "10-100",
+      "interval": "0-0"
+    }
+  }
+}
+```
+Users can fine-tune `fragmentMin`, `fragmentMax`, `sleepMin`, `sleepMax` in Settings.
+
+**sing-box TLS fragment (from docs):**
+```json
+{
+  "tls": {
+    "fragment": true,
+    "fragment_fallback_delay": "500ms",
+    "record_fragment": false
+  }
+}
+```
+- `fragment: true` — fragments TLS handshakes, with **auto-detected** wait times on Linux/Apple/Windows.
+- `record_fragment: true` — splits into multiple TLS records (alternative approach).
+- `fragment_fallback_delay` — only used when auto-detection fails (Android falls into this category since auto-detection is listed for "Linux, Apple platforms, Windows" only).
+- **No min/max length control.** No interval control. No packet type selection.
+
+**Additional anti-censorship gaps:**
+- **Padding:** Xray's mux padding vs sing-box's multiplex padding — different implementation. sing-box mux uses smux/yamux/h2mux protocols with optional `"padding": true`.
+- **Mixed SNI:** This is a client-side technique not natively supported by sing-box. Would need custom implementation.
+
+**Consequences:** Users who rely on fine-tuned fragment settings for their specific network environment (common in Iran) may find sing-box's simpler fragment insufficient. This could be a migration blocker for the Iran user segment.
+
+**Prevention:**
+1. **Test fragment in target regions** before fully committing to migration. Deploy a test build.
+2. Use `record_fragment: true` as an alternative — it may work better for some censorship patterns.
+3. The `fragment_fallback_delay` value is the main tuning knob on Android. Expose it in Settings.
+4. Keep the Settings UI simpler: instead of min/max/sleep, offer "Fragment: On/Off" + "Delay: Fast/Medium/Slow" presets.
+5. For mixed SNI / advanced padding: these may require a custom sing-box build or fork. Evaluate if the user base actually depends on these features before blocking migration.
+6. **Fallback plan:** Keep libv2ray.aar as a selectable engine for users who need Xray's advanced fragment options.
+
+**Detection:** Test with a server behind GFW/Iran DPI. If connections that worked with Xray-core fail with sing-box, the fragment implementation difference is the likely cause.
+
+---
+
+### Pitfall 5: Traffic Stats Mechanism Completely Different — QueryStats Polling Doesn't Exist
+
+**Severity:** CRITICAL | **Likelihood:** CERTAIN | **Confidence:** HIGH
+
+**What goes wrong:** The current `TrafficMonitor.kt` polls `controller.queryStats("proxy", "uplink")` every second. This pattern doesn't exist in sing-box. The `v2ray_api` stats module exists in sing-box but is **not included by default** (requires `with_v2ray_api` build tag) and uses a gRPC server, not direct Go function calls.
+
+**Current implementation (TrafficMonitor.kt):**
+```kotlin
+val up = controller.queryStats("proxy", "uplink")   // Direct Go call
+val down = controller.queryStats("proxy", "downlink") // Resets counter on read
+```
+
+**sing-box options for traffic stats:**
+
+**Option A: Clash API (default, included)**
+```json
+{
+  "experimental": {
+    "clash_api": {
+      "external_controller": "127.0.0.1:9090"
+    }
+  }
+}
+```
+Then HTTP GET `http://127.0.0.1:9090/traffic` for real-time traffic stream. This opens a local port.
+
+**Option B: V2Ray API (requires build tag)**
+```json
+{
+  "experimental": {
+    "v2ray_api": {
+      "listen": "127.0.0.1:8080",
+      "stats": {
+        "enabled": true,
+        "outbounds": ["proxy", "direct"]
+      }
+    }
+  }
+}
+```
+gRPC-based, also opens a local port.
+
+**Option C: libbox CommandClient (recommended for mobile)**
+The `CommandClient` connects to `CommandServer` and receives status updates via gRPC streaming. This is the pattern used by SFA (sing-box for Android) and Hiddify.
+
+```kotlin
+val handler = object : CommandClientHandler {
+    override fun writeStatus(message: StatusMessage) {
+        // message contains uplink/downlink traffic
+    }
+}
+val options = CommandClientOptions().apply {
+    statusInterval = 1000 // ms
+    addCommand(CommandStatus)
+}
+val client = Libbox.newCommandClient(handler, options)
+client.connect() // Connects to CommandServer via Unix socket
+```
+
+**Consequences:** The entire `TrafficMonitor` class is obsolete. The dashboard's real-time speed display needs a different data source. The stats polling model becomes an event-driven subscription model.
+
+**Prevention:**
+1. Use the **CommandClient/CommandServer** pattern (Option C) — it's the native libbox approach.
+2. `CommandServer` runs in the VPN process, `CommandClient` connects from the Flutter process.
+3. The `StatusMessage` contains traffic data that can be forwarded to Dart via EventChannel.
+4. The `CommandServerListenPort` is configured in `SetupOptions`, not in the sing-box JSON config.
+
+**Detection:** Any attempt to call `queryStats` will fail — the method doesn't exist on any sing-box object.
+
+---
+
+## Major Pitfalls
+
+Mistakes that cause significant rework but don't block the entire migration.
+
+---
+
+### Pitfall 6: Socket Protection Callback Changes — AutoDetectInterfaceControl vs onEmitStatus
+
+**Severity:** HIGH | **Likelihood:** CERTAIN | **Confidence:** HIGH
+
+**What goes wrong:** Xray-core uses `CoreCallbackHandler.onEmitStatus(fd)` to request socket protection from the VPN service. The existing `ArmaVpnService` calls `vpnService.protect(fd.toInt())` in this callback. sing-box uses `PlatformInterface.AutoDetectInterfaceControl(fd)` instead, plus `auto_detect_interface: true` in route config.
+
+**Current implementation (ArmaVpnService.kt lines 198-210):**
+```kotlin
+val callback = object : CoreCallbackHandler {
+    override fun onEmitStatus(p0: Long, p1: String?): Long {
+        if (p0 > 0) {
+            val protected = vpnService.protect(p0.toInt())
+            return if (protected) 0L else 1L
+        }
+        return 0L
+    }
+}
+```
+
+**sing-box equivalent (PlatformInterface):**
+```kotlin
+class MyPlatformInterface : PlatformInterface {
+    override fun autoDetectInterfaceControl(fd: Int): Boolean {
+        return vpnService.protect(fd)
+    }
+    override fun usePlatformAutoDetectInterfaceControl(): Boolean = true
+    // ... many other required methods
+}
+```
+
+**The PlatformInterface has 15+ required methods**, not just socket protection:
+- `openTun(options: TunOptions): Int` — create TUN and return fd
+- `startDefaultInterfaceMonitor(listener: InterfaceUpdateListener)` — network change monitoring
+- `closeDefaultInterfaceMonitor(listener: InterfaceUpdateListener)`
+- `getInterfaces(): NetworkInterfaceIterator` — enumerate network interfaces
+- `findConnectionOwner(...)` — process identification
+- `useProcFS(): Boolean`
+- `readWIFIState(): WIFIState`
+- `systemCertificates(): StringIterator`
+- `clearDNSCache()`
+- `sendNotification(notification: Notification)`
+- `underNetworkExtension(): Boolean` (iOS)
+- `includeAllNetworks(): Boolean` (iOS)
+- `localDNSTransport(): LocalDNSTransport`
+- `registerMyInterface(name: String)`
+- `startNeighborMonitor/closeNeighborMonitor`
+
+**Consequences:** Implementing PlatformInterface is a large surface area. Missing or incorrect implementations cause runtime crashes in the Go layer with minimal error messages.
+
+**Prevention:**
+1. Study SFA (sing-box for Android) source code for the canonical PlatformInterface implementation.
+2. Implement methods incrementally — start with the essential ones: `openTun`, `autoDetectInterfaceControl`, `usePlatformAutoDetectInterfaceControl`, `startDefaultInterfaceMonitor`, `getInterfaces`.
+3. Stub the rest (iOS-specific methods like `underNetworkExtension` return false, etc.).
+4. **The route config must include `"auto_detect_interface": true`** for socket protection to work.
+
+---
+
+### Pitfall 7: V2Ray Transport Differences — No TCP, No mKCP, WebSocket Compatibility
+
+**Severity:** HIGH | **Likelihood:** HIGH | **Confidence:** HIGH
+
+**What goes wrong:** sing-box's V2Ray transport layer has explicit differences from Xray-core's implementation, documented in the sing-box source:
+
+1. **No TCP transport** — "plain HTTP is merged into the HTTP transport." The current `XrayConfigBuilder` generates `tcpSettings` blocks — these don't exist in sing-box.
+2. **No mKCP transport** — removed entirely. If any imported configs use mKCP, they'll fail silently.
+3. **No DomainSocket transport** — removed.
+4. **WebSocket early data** — to be compatible with Xray-core, `early_data_header_name` must be set to `"Sec-WebSocket-Protocol"`. Default is path-based (incompatible with Xray servers).
+5. **gRPC** — "standard gRPC" (with full gRPC library) is **not included by default**. The built-in gRPC is a lightweight custom implementation. May have compatibility issues with some servers.
+6. **HTTP transport** — TLS is NOT enforced (unlike Xray's `h2` which forces TLS). Must explicitly add TLS config.
+
+**Current code impact (XrayConfigBuilder._buildStreamSettings):**
+```dart
+case 'tcp':
+  settings['tcpSettings'] = {'header': {'type': 'none'}};  // NO EQUIVALENT in sing-box
+case 'h2':
+  settings['httpSettings'] = {'host': [...], 'path': ...};  // Different field name
+```
+
+**sing-box transport mapping:**
+```json
+// TCP with no header → just omit transport (sing-box defaults to raw TCP)
+// TCP with HTTP header → use transport type: "http"
+// WS → transport type: "ws" (mostly compatible)
+// gRPC → transport type: "grpc" (lightweight implementation)
+// H2 → transport type: "http" with TLS enabled
+```
+
+**Prevention:**
+1. **TCP:** If `network == "tcp"` and no special header, omit the `transport` field entirely.
+2. **WS:** Map `wsSettings.path` → `transport.path`, `wsSettings.headers.Host` → `transport.headers.Host`. Add `early_data_header_name: "Sec-WebSocket-Protocol"` for Xray server compatibility.
+3. **gRPC:** Map `grpcSettings.serviceName` → `transport.service_name`. Note: `authority` field mapping may differ.
+4. **H2:** Map to `transport: {type: "http"}` + ensure `tls.enabled: true`.
+5. **Test all transport types** against Xray-core servers (which is what users' servers run).
+
+---
+
+### Pitfall 8: DNS Configuration Restructured — Legacy Format Removed in 1.14.0
+
+**Severity:** HIGH | **Likelihood:** HIGH | **Confidence:** HIGH
+
+**What goes wrong:** The current split-DNS pattern in `XrayConfigBuilder._buildDns()` uses a flat array format:
+```json
+{
+  "dns": {
+    "servers": [
+      {"address": "https://1.1.1.1/dns-query", "domains": [], "port": 53},
+      "localhost"
+    ]
+  }
+}
+```
+
+sing-box 1.12+ requires typed DNS server objects:
+```json
+{
+  "dns": {
+    "servers": [
+      {"type": "https", "tag": "remote-dns", "server": "1.1.1.1"},
+      {"type": "local", "tag": "local-dns"}
+    ],
+    "rules": [
+      {"outbound": "direct", "server": "local-dns"},
+      {"action": "route", "server": "remote-dns"}
+    ]
+  }
+}
+```
+
+**Key differences:**
+- DNS servers have `type` field: `local`, `udp`, `tcp`, `tls`, `https`, `quic`, `h3`
+- DNS routing is via `dns.rules`, separate from route rules
+- DoH: `address: "https://1.1.1.1/dns-query"` → `type: "https", server: "1.1.1.1"`
+- DoT: `address: "tls://1.1.1.1"` → `type: "tls", server: "1.1.1.1"`
+- Plain: `address: "1.1.1.1"` → `type: "udp", server: "1.1.1.1"`
+- `localhost` → `type: "local"`
+- Domain-resolver chaining replaces `address_resolver` in 1.12+
+
+**Prevention:**
+1. Parse `VpnSettings.dnsProtocol` and `remoteDns`/`directDns` into sing-box's typed server format.
+2. Create DNS rules to route queries: direct DNS for domestic domains, remote DNS via proxy for everything else.
+3. The `domain_resolver` field in Dial Fields is required when DNS server addresses contain domain names.
+
+---
+
+### Pitfall 9: Mux/Multiplex Implementation Differs — Protocol Selection Required
+
+**Severity:** MEDIUM | **Likelihood:** HIGH | **Confidence:** HIGH
+
+**What goes wrong:** The current `XrayConfigBuilder` adds mux as:
+```json
+{"mux": {"enabled": true, "concurrency": 4}}
+```
+
+sing-box's multiplex requires a `protocol` field and has different semantics:
+```json
+{
+  "multiplex": {
+    "enabled": true,
+    "protocol": "h2mux",
+    "max_connections": 4,
+    "padding": false
+  }
+}
+```
+
+**Key differences:**
+- Field name: `mux` → `multiplex`
+- Protocol selection: sing-box supports `smux`, `yamux`, `h2mux` (default)
+- `concurrency` → `max_connections` (or `min_streams` / `max_streams`)
+- Padding is explicit: `"padding": true/false`
+- **Server must also support sing-box mux** — Xray mux and sing-box mux are NOT interoperable
+
+**Critical implication:** If users' servers run Xray-core, sing-box mux will NOT work with those servers. Mux requires both client AND server to use the same implementation. This means **mux should likely be disabled by default** for the sing-box migration, since most user servers run Xray-core.
+
+**Prevention:**
+1. Default `muxEnabled` to `false` after migration.
+2. Only enable mux when the server is known to run sing-box.
+3. Show a clear warning in Settings that mux requires a sing-box compatible server.
+4. Map `VpnSettings.muxConcurrency` → `max_connections` in the config builder.
+
+---
+
+### Pitfall 10: Per-App Proxy Moves Into Config — No More VpnService.Builder Control
+
+**Severity:** MEDIUM | **Likelihood:** HIGH | **Confidence:** HIGH
+
+**What goes wrong:** The current implementation uses `VpnService.Builder.addAllowedApplication()` / `addDisallowedApplication()` for per-app routing (ArmaVpnService.kt lines 418-449). With sing-box, per-app proxy is configured in the **TUN inbound config**, not via VpnService.Builder.
+
+**Current approach (ArmaVpnService.kt):**
+```kotlin
+// Read from SharedPreferences
+val perAppMode = perAppPrefs.getString("per_app_mode", null)
+val selectedApps = perAppPrefs.getStringSet("selected_apps", emptySet())
+// Apply via VpnService.Builder
+if (perAppMode == "whitelist") {
+    for (pkg in selectedApps) { builder.addAllowedApplication(pkg) }
+} else {
+    builder.addDisallowedApplication(packageName) // self-exclusion
+    for (pkg in selectedApps) { builder.addDisallowedApplication(pkg) }
+}
+```
+
+**sing-box approach (TUN config):**
+```json
+{
+  "type": "tun",
+  "include_package": ["com.android.chrome"],   // whitelist
+  "exclude_package": ["com.android.captiveportallogin"]  // blacklist
+}
+```
+
+**Why this matters:** sing-box's `PlatformInterface.OpenTun(options TunOptions)` receives the package lists from the config and passes them to VpnService.Builder internally. The TUN is created by YOUR code in `OpenTun`, using the options sing-box provides. So per-app config moves from Kotlin SharedPreferences logic → Dart config builder → sing-box TUN config → Kotlin OpenTun callback.
+
+**Prevention:**
+1. Move per-app package lists into the sing-box JSON config under the TUN inbound.
+2. In the Kotlin `OpenTun` implementation, read the package lists from `TunOptions.GetIncludePackage()` / `GetExcludePackage()` and apply them to `VpnService.Builder`.
+3. The self-exclusion of the VPN app's own package should still be done in `OpenTun`.
+
+---
+
+### Pitfall 11: Latency Testing Architecture Change — No More MeasureDelay
+
+**Severity:** MEDIUM | **Likelihood:** CERTAIN | **Confidence:** HIGH
+
+**What goes wrong:** The current latency test uses `Libv2ray.measureDelay(configJson, url)` — a static Go function that creates a temporary Xray instance, connects through the proxy, and measures HTTP response time. sing-box's libbox does not expose an equivalent single-shot function.
+
+**Current implementation (VpnPlatformService.dart):**
+```dart
+Future<int> measureDelay(String configJson, {String testUrl = 'https://www.google.com/generate_204'})
+```
+
+**sing-box alternatives:**
+1. **URL Test outbound:** A built-in outbound type that automatically tests latency:
+   ```json
+   {"type": "urltest", "outbounds": ["proxy-a", "proxy-b"], "url": "https://www.google.com/generate_204", "interval": "3m"}
+   ```
+   But this is for ongoing monitoring, not one-shot tests.
+
+2. **CommandClient + status:** The `StatusMessage` from CommandClient may include latency info.
+
+3. **Manual HTTP through SOCKS:** Start a temporary sing-box instance with a SOCKS inbound, send an HTTP request through it, measure time. This is the most equivalent approach but requires managing temporary instances.
+
+4. **libbox `CheckConfig()` + temporary service:** Similar to approach 3, but more complex.
+
+**Prevention:**
+1. For **bulk latency testing**, start a temporary sing-box instance with a SOCKS/HTTP inbound per server, use Dart's `HttpClient` to measure response time through the local proxy.
+2. For **single-node testing**, the same approach but with a single outbound.
+3. Alternatively, use a URL Test outbound group to get automatic best-server selection.
+4. This is a significant architecture change — budget extra time for the latency test feature.
 
 ---
 
 ## Moderate Pitfalls
 
-Mistakes that cause significant bugs but are recoverable without rewriting.
+Issues that cause bugs but have straightforward fixes.
 
 ---
 
-### Pitfall 9: Network Switch Stalls VPN Connection (Missing `setUnderlyingNetworks`)
+### Pitfall 12: Build Tag Selection Affects Library Size and Features
 
-**What goes wrong:** When the user switches from WiFi to mobile data (or vice versa), the VPN connection silently stops working. Traffic appears to flow (no error UI) but nothing actually reaches the destination. The user must manually disconnect and reconnect.
+**Severity:** MEDIUM | **Likelihood:** MEDIUM | **Confidence:** MEDIUM
 
-**Why it happens:** Android's `VpnService` needs to be told about the underlying physical network. Without `setUnderlyingNetworks()`, the VPN's routing decisions are based on stale network state. On Android P+ (API 28), a `ConnectivityManager.NetworkCallback` must update the underlying network.
+**What goes wrong:** sing-box's feature set depends on build tags. The default build includes gVisor TUN stack, WireGuard, QUIC, uTLS, Clash API, and more. Including everything produces a larger AAR than libv2ray.aar. Missing a required tag means silent feature absence.
+
+**Current libv2ray.aar:** ~20-30MB (contains Xray-core with TUN support)
+
+**sing-box with default tags:** Potentially 30-50MB depending on included features.
+
+**Critical build tags for Arma:**
+- `with_quic` ✅ (needed for Hysteria2)
+- `with_utls` ✅ (needed for TLS fingerprinting — chrome/firefox/safari)
+- `with_gvisor` ✅ (needed for TUN stack)
+- `with_clash_api` — Optional (one way to get stats, but CommandClient is better)
+- `with_v2ray_api` — NOT included by default. Only needed if using V2Ray stats API.
+- `with_grpc` — NOT included by default. Needed only for standard gRPC transport.
+- `with_wireguard` — Not needed for Arma's protocols.
+- `with_embedded_tor` — Not needed.
 
 **Prevention:**
-```kotlin
-// Android P+ network change handling
-@RequiresApi(Build.VERSION_CODES.P)
-private val networkCallback = object : ConnectivityManager.NetworkCallback() {
-    override fun onAvailable(network: Network) {
-        setUnderlyingNetworks(arrayOf(network))
-    }
-    override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
-        setUnderlyingNetworks(arrayOf(network))
-    }
-    override fun onLost(network: Network) {
-        setUnderlyingNetworks(null)
-    }
-}
-
-// Register in setupVpnService(), unregister in stopService()
-connectivity.requestNetwork(networkRequest, networkCallback)
-```
-**Important:** Use `requestNetwork` (not `registerDefaultNetworkCallback`) because the latter returns the VPN interface itself, creating a loop. V2rayNG documents this gotcha explicitly in their source.
-
-**Detection:** Connect to VPN on WiFi, then switch to mobile data. If pages stop loading, this callback is missing.
-
-**Phase:** Phase 3 — implement alongside VpnService setup.
+1. Use a **custom build tag set** to minimize library size: `with_quic,with_utls,with_gvisor`.
+2. Test that all required protocols work with the selected tags.
+3. Compare APK size before/after migration. If it increases by >10MB, review tag selection.
+4. Consider building without `with_wireguard` and `with_clash_api` to save space.
 
 ---
 
-### Pitfall 10: Platform Channel Calls Block Flutter UI Thread
+### Pitfall 13: VLESS Flow Field Mapping — Same Logic, Different Location
 
-**What goes wrong:** Calling Xray-core operations (start, stop, generate config, measure latency) through `MethodChannel` freezes the Flutter UI for 1-5 seconds. The connection button appears unresponsive, animations stutter, and the app feels broken.
+**Severity:** MEDIUM | **Likelihood:** MEDIUM | **Confidence:** HIGH
 
-**Why it happens:** Flutter's `MethodChannel.invokeMethod` executes handler code on the Android main thread by default. Go runtime startup, config parsing, and Xray-core initialization are CPU-intensive operations (100ms-3s). V2rayNG mitigates this by running everything in coroutines, but Flutter's default platform channel doesn't.
+**What goes wrong:** The VLESS `flow` field placement changes between Xray and sing-box. The logic is the same (only set for TCP + TLS/Reality), but it's a top-level field in sing-box, not nested in `users[]`.
 
-**Prevention:**
-```kotlin
-// Kotlin side — offload heavy work to coroutines
-override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-    when (call.method) {
-        "startVpn" -> {
-            CoroutineScope(Dispatchers.IO).launch {
-                try {
-                    val success = startXrayCore(call.argument("config")!!)
-                    withContext(Dispatchers.Main) {
-                        result.success(success)
-                    }
-                } catch (e: Exception) {
-                    withContext(Dispatchers.Main) {
-                        result.error("VPN_ERROR", e.message, null)
-                    }
-                }
-            }
-        }
-    }
-}
-```
-Alternatively, use `EventChannel` for streaming updates (connection state, traffic stats) and `MethodChannel` only for commands.
+**Xray:** `outbound.settings.vnext[0].users[0].flow: "xtls-rprx-vision"`
+**sing-box:** `outbound.flow: "xtls-rprx-vision"` (top-level in outbound)
 
-Consider using `BackgroundIsolateBinaryMessenger` for heavy Dart-side processing of configs.
+The existing `_resolveFlow()` logic (only set flow for VLESS + TCP + TLS/Reality) remains correct and should be reused in the sing-box config builder.
 
-**Detection:** Add a spinning animation to the dashboard. If it freezes during connect/disconnect, the platform channel is blocking.
-
-**Phase:** Phase 3 — but design the channel API in Phase 2 when defining the architecture.
+**Prevention:** Copy the flow-resolution logic but place the result at the outbound root, not nested in users.
 
 ---
 
-### Pitfall 11: GeoIP/GeoSite Data Files Missing or Stale
+### Pitfall 14: Hysteria2 Obfuscation Format Differs
 
-**What goes wrong:** Xray-core's routing rules depend on `geoip.dat` and `geosite.dat` files. Without them, routing rules like `geosite:cn` or `geoip:private` silently fail, causing ALL traffic to either be proxied (slow, wasteful) or direct (defeats purpose).
+**Severity:** LOW | **Likelihood:** MEDIUM | **Confidence:** HIGH
 
-**Why it happens:** These files must be bundled with the app or downloaded on first launch. They're large (geoip.dat ≈ 4-11MB, geosite.dat ≈ 3-8MB) and need periodic updates as IP ranges change. The files must be placed in a specific directory that Xray-core's `initCoreEnv` is configured to read from.
+**What goes wrong:** Xray-core's Hysteria2 obfuscation uses a string field. sing-box uses a nested object:
 
-**Consequences:** Users in China/Iran/Russia report "everything is slow" because domestic traffic is being routed through the proxy unnecessarily, or "nothing works" because critical infrastructure domains are being blocked.
-
-**Prevention:**
-1. Bundle minimal geoip/geosite in APK assets (increases APK size by ~15MB)
-2. Copy to app's internal storage on first launch: `context.filesDir/assets/`
-3. Pass this path to `Libv2ray.initCoreEnv(assetPath, ...)`
-4. Implement background update from GitHub releases (Loyalsoldier/v2ray-rules-dat)
-5. Show last-updated timestamp in Settings so users know when data was refreshed
-
-**Detection:** Enable routing rules "bypass LAN and mainland." If domestic websites become slow or inaccessible, geo data is missing/stale.
-
-**Phase:** Phase 3 (core integration) for bundling, Phase 4 (polish) for update mechanism.
-
----
-
-### Pitfall 12: Per-App Proxy Self-Inclusion Creates Routing Loop
-
-**What goes wrong:** When implementing per-app VPN (allow/disallow specific apps), failing to exclude the VPN app itself from the tunnel creates a routing loop. All of the app's own traffic (including the proxy connection to the server) gets routed back into the VPN tunnel, creating an infinite loop that hangs the connection.
-
-**Why it happens:** The VPN tunnel captures ALL device traffic by default. The proxy app needs to send traffic directly to the proxy server outside the tunnel. Android's `VpnService.protect(socket)` is one solution (protects specific sockets from the tunnel), but `addDisallowedApplication(selfPackageName)` is the standard approach.
-
-**Prevention:**
-```kotlin
-// ALWAYS exclude self when configuring VPN builder
-builder.addDisallowedApplication(BuildConfig.APPLICATION_ID)
-```
-V2rayNG does this in every code path — even when per-app proxy is disabled, even when no apps are selected. There is NO scenario where the VPN app should tunnel its own traffic.
-
-Additionally, Xray-core's `VpnService.protect(socket)` must be implemented through the Go callback interface so the core can protect its own outbound sockets.
-
-**Detection:** Remove the self-exclusion and try to connect. The connection will hang at "Connecting..." forever.
-
-**Phase:** Phase 3 — part of VPN builder configuration, first implementation.
-
----
-
-### Pitfall 13: Xray JSON Config Generation — The Iceberg Problem
-
-**What goes wrong:** The Dart model → Xray JSON config translation has subtle bugs that are invisible until a specific protocol + transport + TLS combination is used. Each protocol (VLESS, VMess, Trojan, Shadowsocks, Hysteria2) has a different JSON structure with different required/optional fields, stream settings, and TLS configurations.
-
-**Why it happens:** Xray-core's JSON config has ~200+ possible fields across all protocol/transport combinations. The documentation is in Chinese and often incomplete. Real-world configs use combinations like "VLESS + WebSocket + TLS + CDN" or "VLESS + gRPC + Reality" that each require specific JSON structures.
-
-**Consequences:** "Works for VLESS but not VMess" or "works with TCP but not WebSocket" reports that are individually easy to fix but collectively represent weeks of whack-a-mole debugging.
-
-**Prevention:**
-1. **Start from V2rayNG's config templates:** Copy their known-working JSON templates as your base config structure
-2. **Test with real subscription providers:** Get test subscriptions that include all protocol types
-3. **Implement a "Show Generated JSON" debug feature** early so power users can compare with V2rayNG's output
-4. **Key fields to watch:**
-   - VLESS: `flow` field must be `"xtls-rprx-vision"` for Reality, empty for others
-   - VMess: `security` field defaults to `"auto"`, `alterId` defaults to `0`
-   - Trojan: password goes in `settings.servers[0].password`, not `settings.vnext`
-   - Hysteria2: completely different config structure, uses `hysteria2` outbound type
-   - Stream settings: `network`, `security`, `tlsSettings`/`realitySettings` must match
-   - SNI: must be correctly populated from hostname or explicit setting
-
-**Detection:** Build a test matrix: 6 protocols × 5 transports × 3 TLS modes = 90 combinations. Automate testing against a local Xray server.
-
-**Phase:** Phase 2 (models) and Phase 3 (config generation). This is ongoing work throughout the project.
-
----
-
-### Pitfall 14: Subscription Base64 Decoding Edge Cases
-
-**What goes wrong:** Subscription URLs return base64-encoded content that fails to decode due to:
-1. URL-safe base64 (`-_` instead of `+/`) vs standard base64
-2. Missing padding (`=` characters)
-3. BOM (byte order mark) at start of content
-4. Mixed line endings (`\r\n` vs `\n`)
-5. Extra whitespace or trailing newlines
-
-**Why it happens:** There's no formal standard for V2ray subscription format. Different providers use different base64 variants, encodings, and line separators. Some providers serve content with HTTP headers that change the encoding.
-
-**Prevention:**
-```dart
-String decodeSubscription(String raw) {
-  // Remove BOM
-  raw = raw.replaceAll('\uFEFF', '');
-  // Normalize line endings
-  raw = raw.trim();
-  // Handle URL-safe base64
-  raw = raw.replaceAll('-', '+').replaceAll('_', '/');
-  // Add padding if missing
-  while (raw.length % 4 != 0) {
-    raw += '=';
+**Xray:** Not directly available (Xray's Hysteria2 support is limited)
+**sing-box:**
+```json
+{
+  "obfs": {
+    "type": "salamander",
+    "password": "cry_me_a_r1ver"
   }
-  return utf8.decode(base64.decode(raw));
-}
-
-List<String> splitShareLinks(String decoded) {
-  return decoded
-      .split(RegExp(r'[\r\n]+'))
-      .map((l) => l.trim())
-      .where((l) => l.isNotEmpty)
-      .toList();
 }
 ```
-Also handle: subscription response being JSON (some providers wrap links in JSON), gzip-compressed responses, and custom User-Agent requirements (some providers block default Dart HTTP client UA).
 
-**Detection:** Collect subscription URLs from 10+ different providers. If any fail to parse, the decoder needs hardening.
+Also, sing-box adds Hysteria2-specific features not in Xray: `server_ports` (port ranges), `hop_interval` (port hopping), `bbr_profile`. These are new capabilities users might want.
 
-**Phase:** Phase 2 (subscription parsing).
+**Prevention:** Map `ServerConfig.obfs` / `ServerConfig.obfsPassword` to the nested object format. Expose new Hysteria2 features (port hopping, BBR profile) in future settings.
 
 ---
 
-### Pitfall 15: StrictMode Violation in VPN Service Process
+### Pitfall 15: Rollback Strategy — Keeping Both Engines Is Expensive But Necessary
 
-**What goes wrong:** The Go runtime performs network operations during initialization that violate Android's `StrictMode` on the main thread. In debug builds, this causes crashes. In release builds, it causes ANR (Application Not Responding) dialogs.
+**Severity:** HIGH | **Likelihood:** N/A (planning risk) | **Confidence:** HIGH
 
-**Why it happens:** Go's runtime initializer may resolve DNS or make network checks. When the VPN service starts on the main thread (via `onStartCommand`), these operations trigger StrictMode violations.
+**What goes wrong:** If sing-box doesn't work in specific censored network environments (fragment behavior, Reality compatibility issues, or unforeseen protocol bugs), you need to fall back to Xray-core. But if you've already deleted libv2ray.aar and `XrayConfigBuilder`, there's no way back.
+
+**Consequences:** Shipping a broken engine to users in censored regions means they lose internet access. This is not a "feature degradation" — it's a total outage for affected users.
+
+**Rollback strategies (in order of preference):**
+
+**Strategy A: Feature flag engine selection (RECOMMENDED)**
+- Keep BOTH libv2ray.aar and libbox.aar in the project during migration.
+- Add a Settings toggle: "Engine: sing-box (default) / Xray-core (legacy)"
+- Config builder selection based on engine flag.
+- APK size increases by ~20-30MB (acceptable for reliability).
+- Remove Xray engine only after 2-3 releases with sing-box proving stable.
+
+**Strategy B: Version-gated rollback**
+- Ship sing-box in v1.1-beta with opt-in.
+- Ship sing-box as default in v1.1-stable only after beta validation.
+- Maintain a v1.0 branch that can be quickly released if v1.1 has issues.
+
+**Strategy C: Clean break (HIGH RISK)**
+- Remove Xray-core entirely, ship sing-box only.
+- Acceptable ONLY if thorough testing in all target regions (Iran, China, Russia) confirms feature parity.
 
 **Prevention:**
-```kotlin
-override fun onCreate() {
-    super.onCreate()
-    // V2rayNG does this explicitly
-    val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
-    StrictMode.setThreadPolicy(policy)
-}
-```
-This is a necessary evil in the VPN service process. Don't apply this to the main Flutter process.
-
-**Detection:** Run in debug mode with StrictMode enabled. ANR dialog or crash during VPN start.
-
-**Phase:** Phase 3 — boilerplate for VPN service.
+1. Use **Strategy A** for the initial migration release.
+2. Keep `XrayConfigBuilder.dart` and `XrayCoreManager.kt` in the codebase (possibly moved to a legacy directory).
+3. Implement an interface/abstraction layer: `ProxyEngine` with `XrayEngine` and `SingboxEngine` implementations.
+4. Test in Iran and China before removing the Xray fallback.
 
 ---
 
-## Minor Pitfalls
-
-Issues that cause inconvenience but have straightforward fixes.
+## Testing Pitfalls
 
 ---
 
-### Pitfall 16: Notification Channel Missing for Android 8+ Foreground Service
+### Pitfall 16: Protocol×Transport×TLS Matrix Requires Real Server Testing
 
-**What goes wrong:** Foreground service fails to start on Android 8+ because no notification channel was created. The exception is `BadNotificationException: invalid channel for service notification`.
+**Severity:** HIGH | **Likelihood:** HIGH | **Confidence:** MEDIUM
 
-**Prevention:** Create the notification channel in `Application.onCreate()` or before the first `startForeground()` call. Use a persistent, non-dismissible notification with connection status.
+**What goes wrong:** Unit tests for config generation only verify JSON structure. They cannot verify that the generated config actually establishes a working connection. The protocol×transport×TLS matrix has ~30+ valid combinations, and each must be tested against a real server.
 
-**Phase:** Phase 3.
+**Minimum test matrix for feature parity:**
 
----
-
-### Pitfall 17: Always-On VPN Meta-Data Missing
-
-**What goes wrong:** Users can't enable "Always-On VPN" in Android system settings for your app because the `SUPPORTS_ALWAYS_ON` meta-data is missing from the manifest.
+| Protocol | Transport | TLS | Priority |
+|----------|-----------|-----|----------|
+| VLESS | TCP | Reality | CRITICAL (most common in Iran) |
+| VLESS | TCP | TLS | HIGH |
+| VLESS | WS | TLS | HIGH (CDN users) |
+| VLESS | gRPC | TLS | MEDIUM |
+| VMess | TCP | TLS | HIGH |
+| VMess | WS | TLS | HIGH (CDN users) |
+| VMess | TCP | none | MEDIUM |
+| Trojan | TCP | TLS | HIGH |
+| Trojan | WS | TLS | MEDIUM |
+| SS | TCP | - | HIGH |
+| Hysteria2 | QUIC | TLS | HIGH |
 
 **Prevention:**
-```xml
-<meta-data
-    android:name="android.net.VpnService.SUPPORTS_ALWAYS_ON"
-    android:value="true" />
-```
-
-**Phase:** Phase 3 — one line in AndroidManifest.
+1. Set up a test server running **Xray-core** (since that's what most user servers run) with all protocol/transport combos.
+2. Automate connection tests: generate sing-box config → start sing-box → curl through proxy → verify response.
+3. Test VLESS Reality first — it's the most popular protocol in censored regions and has the most complex config.
+4. Compare sing-box connection success rate vs Xray-core for the same server configs.
 
 ---
 
-### Pitfall 18: Latency Test URL Blocked in Target Regions
+### Pitfall 17: Messenger IPC Between Processes May Need Restructuring
 
-**What goes wrong:** Using `https://www.gstatic.com/generate_204` for latency testing (the standard approach) fails in China because Google domains are blocked. Users see all nodes showing `-1ms` latency, making the feature useless.
+**Severity:** MEDIUM | **Likelihood:** MEDIUM | **Confidence:** MEDIUM
 
-**Prevention:** Allow configurable test URL. V2rayNG defaults to `gstatic.com/generate_204` but allows users to set custom URLs. For Iran/Russia, `gstatic.com` works; for China, use `http://cp.cloudflare.com/generate_204` or a custom endpoint. The latency test must go THROUGH the proxy, not directly.
+**What goes wrong:** The current Messenger IPC (ServiceConnection.kt) passes Xray-specific messages: `MSG_COMMAND_START` carries config JSON, `MSG_TRAFFIC_STATS` carries raw uplink/downlink bytes from QueryStats. With sing-box, the CommandServer/CommandClient architecture may partially replace this IPC, or the IPC message format may need updating.
 
-**Phase:** Phase 4 (latency testing).
-
----
-
-### Pitfall 19: Hive Schema Migration Not Planned From Start
-
-**What goes wrong:** After v1 release, adding fields to data models (e.g., new protocol options, user preferences) corrupts existing Hive boxes because Hive doesn't support automatic schema migration. Users must reinstall the app, losing all their configurations.
+**sing-box's libbox CommandServer** listens on a Unix socket. If the VPN service runs in a separate process (`:vpn_process`), the CommandClient in the main process connects to this socket. This means the Messenger IPC might be partially redundant — CommandClient already provides stats and status.
 
 **Prevention:**
-- Use `@HiveField(index)` annotations with explicit indices from day one
-- Never reorder or remove field indices in updates
-- Reserve index gaps for future fields (e.g., use 0, 1, 2, 5, 10, 15 instead of 0, 1, 2, 3, 4, 5)
-- Implement a version field in each box for manual migration logic
-- **Alternative:** Consider `drift` (SQLite) instead of Hive — it has proper migration support. Hiddify switched from Hive-like storage to `drift`.
-
-**Phase:** Phase 1 (data modeling) — decisions here lock you in for the entire project lifecycle.
-
----
-
-### Pitfall 20: URI/Share Link Encoding Edge Cases
-
-**What goes wrong:** Share links containing non-ASCII server remarks (Chinese, Farsi, Russian names), IDN hostnames (internationalized domain names), or special characters in passwords fail to parse or produce garbled config names.
-
-**Prevention:**
-```dart
-// Always decode URI components properly
-final remarks = Uri.decodeComponent(fragment);
-// Handle IDN hostnames
-final host = uri.host; // Dart's Uri handles punycode
-// Base64 in VMess may have non-ASCII
-final decoded = utf8.decode(base64.decode(content), allowMalformed: true);
-```
-V2rayNG has a dedicated `Utils.fixIllegalUrl()` function and `idnHost` extension specifically for this.
-
-**Phase:** Phase 2 (config parsing).
-
----
-
-### Pitfall 21: IPv6 Route Leakage
-
-**What goes wrong:** When IPv6 is enabled on the device but not configured in the VPN tunnel, IPv6 traffic bypasses the tunnel entirely. Websites with AAAA records are accessed directly, leaking the user's real IPv6 address.
-
-**Prevention:** Either:
-1. Add IPv6 routes to VPN builder when IPv6 is enabled: `builder.addRoute("::", 0)`
-2. Or explicitly block IPv6 by not adding any IPv6 route (traffic falls through to tunnel and gets dropped)
-
-V2rayNG adds specific IPv6 routes:
-```kotlin
-builder.addAddress(ipv6Client, 126) // VPN IPv6 address
-builder.addRoute("2000::", 3)       // All global unicast IPv6
-builder.addRoute("fc00::", 18)      // Xray FakeIPv6 pool
-```
-
-**Phase:** Phase 3.
-
----
-
-### Pitfall 22: EventChannel for Traffic Stats Creates Memory Pressure
-
-**What goes wrong:** Using Flutter `EventChannel` to stream real-time traffic stats (upload/download speed) at high frequency (10+ times per second) creates excessive GC pressure on both Dart and Kotlin sides, causing UI jank.
-
-**Prevention:** Throttle traffic stat updates to 1-2 times per second maximum. Use a `Timer` on the Kotlin side to batch-read traffic counters from Xray-core and emit a single combined update. Don't stream individual byte counts.
-
-**Phase:** Phase 4 (traffic monitoring).
+1. Evaluate whether CommandClient/CommandServer can replace Messenger for status and stats.
+2. Keep Messenger IPC for start/stop commands (config delivery from Flutter → VPN process).
+3. Or fully migrate to CommandServer: Flutter → MethodChannel → Kotlin → CommandServer.start(configPath) and CommandClient for status/stats.
 
 ---
 
 ## Phase-Specific Warnings
 
-| Phase | Likely Pitfall | Mitigation |
-|-------|---------------|------------|
-| **Phase 1: Project Setup** | Hive schema locking (#19) | Use explicit field indices with gaps, or switch to drift/SQLite |
-| **Phase 1: Project Setup** | Riverpod architecture not fitting VPN state | VPN state lives in the native layer, not Riverpod. Use Riverpod for UI state, platform channels for VPN state |
-| **Phase 2: Config Parsing** | VMess dual format (#7) | Implement both parsers from day one, test with real-world configs |
-| **Phase 2: Config Parsing** | Subscription encoding chaos (#14) | Handle URL-safe base64, missing padding, BOM, mixed line endings |
-| **Phase 2: Config Parsing** | URI edge cases (#20) | Use proper URI decoding, handle non-ASCII remarks |
-| **Phase 3: VpnService** | Shutdown order (#1) | Copy V2rayNG's exact shutdown sequence |
-| **Phase 3: VpnService** | Go-Mobile build (#2) | Validate AAR on real devices before writing any VPN code |
-| **Phase 3: VpnService** | Same-process OOM (#3) | Decide separate process vs same process early; separate is safer |
-| **Phase 3: VpnService** | VPN permission flow (#4) | Implement Activity result bridge for VpnService.prepare() |
-| **Phase 3: VpnService** | Android 14 foreground service (#5) | Include all permissions and meta-data from first commit |
-| **Phase 3: VpnService** | Go context init (#6) | Call Seq.setContext() before any Go function |
-| **Phase 3: VpnService** | DNS leak (#8) | Configure split DNS in Xray config, test with leak detector |
-| **Phase 3: VpnService** | Network switch (#9) | Implement NetworkCallback for setUnderlyingNetworks |
-| **Phase 3: VpnService** | UI freeze (#10) | Run all Go calls on Dispatchers.IO, not main thread |
-| **Phase 3: VpnService** | Geo data missing (#11) | Bundle geoip.dat/geosite.dat in assets |
-| **Phase 3: VpnService** | Self-routing loop (#12) | Always addDisallowedApplication(self) |
-| **Phase 3: VpnService** | Config generation bugs (#13) | Copy V2rayNG's JSON templates, test all protocol combos |
-| **Phase 4: Polish** | Latency test URL blocked (#18) | Make test URL configurable |
-| **Phase 4: Polish** | Traffic stats jank (#22) | Throttle EventChannel to 1-2 Hz |
+| Phase/Task | Likely Pitfall | Severity | Mitigation |
+|------------|---------------|----------|------------|
+| **Config Builder** | Complete JSON incompatibility (#1) | CRITICAL | Build from scratch, don't modify XrayConfigBuilder |
+| **Config Builder** | Transport differences (#7) | HIGH | Map each transport type individually, test with Xray servers |
+| **Config Builder** | DNS format change (#8) | HIGH | Implement typed DNS server objects |
+| **Config Builder** | Mux incompatibility with Xray servers (#9) | MEDIUM | Default mux to disabled |
+| **Config Builder** | Geo data removal (#3) | CRITICAL | Use rule-sets + ip_is_private |
+| **Config Builder** | Per-app moves to config (#10) | MEDIUM | Generate include/exclude_package in TUN inbound |
+| **Core Manager** | libbox API completely different (#2) | CRITICAL | Implement PlatformInterface, use CommandServer |
+| **Core Manager** | Socket protection callback (#6) | HIGH | Implement AutoDetectInterfaceControl in PlatformInterface |
+| **VPN Service** | TUN creation inverted (#2) | CRITICAL | Implement OpenTun callback, don't pass fd to sing-box |
+| **Traffic Monitor** | QueryStats doesn't exist (#5) | CRITICAL | Use CommandClient subscription model |
+| **Latency Test** | MeasureDelay doesn't exist (#11) | MEDIUM | Temporary SOCKS proxy + HTTP measurement |
+| **Anti-Censorship** | Fragment behavior differs (#4) | CRITICAL | Test in target regions, keep Xray fallback |
+| **Build** | Library size increase (#12) | MEDIUM | Custom build tag selection |
+| **Release** | No rollback plan (#15) | HIGH | Ship with dual-engine feature flag |
+| **Testing** | Protocol matrix not validated (#16) | HIGH | Real server testing for all combos |
 
 ---
 
-## Architectural Decision: Communication Pattern for Separate Process VPN
+## Risk Summary Matrix
 
-This is the highest-impact architectural decision. Three proven patterns exist:
-
-### Option A: BroadcastReceiver IPC (V2rayNG approach)
-- **Pros:** Simple, well-understood, no extra dependencies
-- **Cons:** Limited data throughput, no streaming, broadcast ordering issues
-- **Best for:** Simple command/response (start/stop/status)
-
-### Option B: gRPC Local Server (Hiddify approach)
-- **Pros:** Bidirectional streaming, type-safe protobuf, works across processes
-- **Cons:** Complex setup, proto compilation pipeline, larger APK size
-- **Best for:** Rich communication (config management, status streaming, traffic stats)
-
-### Option C: AIDL/Messenger (Android standard)
-- **Pros:** Android-native, efficient, supports callbacks
-- **Cons:** Verbose boilerplate, Kotlin-only (no Dart-side type safety)
-- **Best for:** Moderate communication needs
-
-**Recommendation for Arma:** Start with BroadcastReceiver (Option A) for v1. It's proven by V2rayNG and sufficient for start/stop/status. Migrate to gRPC (Option B) if you need rich streaming features later. The key insight from Hiddify is that gRPC is worth the complexity ONLY when you need real-time bidirectional communication (traffic stats, log streaming, config hot-reload).
+| # | Risk | Severity | Likelihood | Impact | Mitigation Cost |
+|---|------|----------|-----------|--------|-----------------|
+| 1 | Config JSON incompatible | CRITICAL | Certain | Complete rewrite of config builder | HIGH (1-2 weeks) |
+| 2 | libbox API different | CRITICAL | Certain | Rewrite core manager + VPN service | HIGH (1-2 weeks) |
+| 3 | Geo data format changed | CRITICAL | Certain | Routing rules broken | MEDIUM (2-3 days) |
+| 4 | Fragment anti-censorship weaker | CRITICAL | High | Users in censored regions affected | HIGH (testing time) |
+| 5 | Traffic stats mechanism changed | CRITICAL | Certain | Dashboard broken | MEDIUM (3-5 days) |
+| 6 | Socket protection API different | HIGH | Certain | Routing loop if missed | LOW (1 day) |
+| 7 | Transport differences | HIGH | High | Some server configs fail | MEDIUM (3-5 days) |
+| 8 | DNS config restructured | HIGH | High | DNS resolution broken | MEDIUM (2-3 days) |
+| 9 | Mux incompatible with Xray servers | MEDIUM | High | Mux feature broken | LOW (disable by default) |
+| 10 | Per-app proxy moves to config | MEDIUM | High | Per-app routing broken | LOW (1-2 days) |
+| 11 | Latency test architecture change | MEDIUM | Certain | Latency testing broken | MEDIUM (3-5 days) |
+| 12 | Library size increase | MEDIUM | Medium | Larger APK | LOW (build tag tuning) |
+| 13 | VLESS flow field location | MEDIUM | Medium | VLESS connections fail | LOW (1 hour) |
+| 14 | Hysteria2 obfs format | LOW | Medium | Hy2 obfs connections fail | LOW (1 hour) |
+| 15 | No rollback plan | HIGH | N/A | Stuck with broken engine | MEDIUM (dual-engine approach) |
+| 16 | Insufficient testing | HIGH | High | Undetected failures in production | HIGH (test infrastructure) |
+| 17 | IPC restructuring | MEDIUM | Medium | Communication issues | MEDIUM (evaluate scope) |
 
 ---
 
 ## Sources
 
-- V2rayNG source code: `github.com/2dust/v2rayNG` — Kotlin reference implementation, VpnService lifecycle, Go-Mobile integration patterns (reviewed: V2RayVpnService.kt, V2RayServiceManager.kt, V2RayNativeManager.kt, AppConfig.kt, VlessFmt.kt, VmessFmt.kt, TProxyService.kt, AndroidManifest.xml) — **HIGH confidence**
-- Hiddify source code: `github.com/hiddify/hiddify-app` — Flutter reference implementation, gRPC bridge pattern, pubspec dependencies — **HIGH confidence**
-- Hiddify issue #1936: "failed to start background core" — persistent Go build/runtime issue with 48+ comments — **HIGH confidence**
-- V2rayNG issue #268: "io read/write on closed pipe" — file descriptor lifecycle issue — **HIGH confidence**
-- V2rayNG issue #4438: "ColorOS 15 VPN not working" — Android 14+ foreground service issue — **MEDIUM confidence**
-- V2rayNG issue #4520: "badvpn low performance" — tun2socks performance issues — **MEDIUM confidence**
-- Android VpnService documentation: `developer.android.com/reference/android/net/VpnService` — **HIGH confidence**
-- V2rayNG shutdown order comment in source code (V2RayVpnService.kt line ~340) — **HIGH confidence** (direct code evidence)
+- sing-box configuration docs: `sing-box.sagernet.org/configuration/` — verified config schema for all protocols, TUN, DNS, routing, TLS, transport — **HIGH confidence**
+- sing-box `testing` branch source code: `github.com/SagerNet/sing-box/experimental/libbox/` — verified API: service.go (CommandServer), platform.go (PlatformInterface), tun.go (TunOptions), config.go (CheckConfig/FormatConfig), setup.go (Setup), command_client.go (CommandClient) — **HIGH confidence**
+- sing-box `docs/migration.md`: Official breaking changes 1.8→1.14, geoip/geosite removal, DNS server format changes — **HIGH confidence**
+- sing-box `docs/configuration/shared/tls.md`: TLS fragment feature details (since 1.12.0), behavior on different platforms — **HIGH confidence**
+- sing-box `docs/configuration/shared/v2ray-transport.md`: Explicit differences from v2ray-core (no TCP transport, no mKCP) — **HIGH confidence**
+- sing-box `docs/installation/build-from-source.md`: Build tags and their effects — **HIGH confidence**
+- Arma v1.0 codebase: `XrayConfigBuilder.dart` (543 lines), `XrayCoreManager.kt` (99 lines), `ArmaVpnService.kt` (~500 lines), `TrafficMonitor.kt` (55 lines), `VpnServiceConnection.kt` (105 lines), `VpnPlatformService.dart` (128 lines), `VpnSettings.dart` (78 lines), `protocol_constants.dart` (31 lines) — **HIGH confidence** (direct code analysis)
+- Hiddify (Flutter + sing-box reference): Architecture patterns for libbox + Flutter integration — **MEDIUM confidence** (inferred from known patterns, not direct code review this session)

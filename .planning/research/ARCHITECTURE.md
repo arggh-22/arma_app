@@ -1,10 +1,62 @@
-# Architecture Patterns
+# Architecture: sing-box Engine Migration
 
-**Domain:** Flutter-based Proxy/VPN Client with Xray-core Engine
-**Researched:** 2025-07-18
-**Overall Confidence:** HIGH — verified against v2rayNG (Kotlin, 30k+ stars) and Hiddify (Flutter, 18k+ stars) source code
+**Domain:** Flutter VPN Client — Xray-core → sing-box Migration
+**Researched:** 2026-04-07
+**Overall Confidence:** HIGH — verified against sing-box v1.13.6 libbox source (GitHub SagerNet/sing-box) and Hiddify (Flutter+sing-box reference, 57k+ stars)
 
-## Recommended Architecture
+---
+
+## Executive Summary
+
+The sing-box migration is an **engine swap, not an architecture rewrite**. The Flutter Dart layer (UI, state management, navigation, persistence) is entirely unaffected. The platform channel interfaces (MethodChannel, EventChannel) stay identical. What changes is: (1) the Dart config builder — different JSON format, (2) three Kotlin files in the native layer — XrayCoreManager, ArmaVpnService, TrafficMonitor, and (3) the native AAR library — libv2ray.aar → sing-box.aar.
+
+The critical architectural difference is **inverted TUN control**: Xray-core receives a TUN fd from Android (`startLoop(config, tunFd)`), while sing-box *requests* a TUN fd from Android via a `PlatformInterface.openTun()` callback. This inverts the control flow in ArmaVpnService and is the highest-risk change.
+
+---
+
+## Migration Impact Map — What Changes, What Stays
+
+### NO CHANGES (Keep As-Is)
+
+| File/Component | Location | Why Unchanged |
+|---|---|---|
+| **All Flutter UI screens** | `lib/features/*/presentation/` | Pure Dart, no engine dependency |
+| **ConnectionStatus entity** | `lib/features/connection/domain/entities/connection_status.dart` | Sealed class is engine-agnostic |
+| **TrafficStats entity** | `lib/features/connection/domain/entities/traffic_stats.dart` | Just uplinkBps/downlinkBps, engine-agnostic |
+| **VpnPlatformService** | `lib/features/connection/data/datasources/vpn_platform_service.dart` | MethodChannel/EventChannel wrapper — interface unchanged |
+| **ConnectionNotifier** (mostly) | `lib/features/connection/presentation/providers/connection_provider.dart` | State machine unchanged; only the config builder call changes (1 line) |
+| **ServerConfig entity** | `lib/features/server/domain/entities/server_config.dart` | Same fields, just serialized to different JSON |
+| **VpnSettings entity** | `lib/features/settings/domain/entities/vpn_settings.dart` | Same settings, consumed by different builder |
+| **All share link parsers** | `lib/features/server/data/parsers/` | Parse URI → ServerConfig, engine-independent |
+| **Riverpod providers** | All `*_provider.dart` files | Engine-agnostic state management |
+| **VpnNotificationManager** | `android/.../notification/VpnNotificationManager.kt` | Pure Android notification, no engine calls |
+| **VpnServiceConnection (Messenger IPC)** | `android/.../ipc/ServiceConnection.kt` | Cross-process IPC is engine-agnostic |
+| **AndroidManifest.xml** | Service declaration, permissions | Same VpnService pattern |
+| **ProtocolType enum** | `lib/core/constants/protocol_constants.dart` | All 5 protocols supported by both engines |
+
+### REWRITE (New Files)
+
+| Current File | New File | Scope of Change |
+|---|---|---|
+| `lib/xray/xray_config_builder.dart` | `lib/singbox/singbox_config_builder.dart` | **Complete rewrite** — different JSON schema |
+| `android/.../core/XrayCoreManager.kt` | `android/.../core/SingBoxCoreManager.kt` | **Complete rewrite** — different API surface |
+| `android/app/libs/libv2ray.aar` | `android/app/libs/singbox.aar` | **Replace** binary |
+| `android/app/src/main/assets/geoip.dat` | `android/app/src/main/assets/geoip.db` | **Replace** geo data (sing-box uses .db format) |
+| `android/app/src/main/assets/geosite.dat` | `android/app/src/main/assets/geosite.db` | **Replace** geo data |
+
+### SIGNIFICANT MODIFICATION
+
+| File | What Changes | What Stays |
+|---|---|---|
+| `android/.../service/ArmaVpnService.kt` | TUN creation moves into PlatformInterface callback; engine lifecycle; socket protection mechanism | Service declaration, notification, Messenger IPC, per-app proxy logic, network callback |
+| `android/.../monitor/TrafficMonitor.kt` | Stats source: CommandClient subscription replaces QueryStats polling | Callback pattern to ArmaVpnService |
+| `android/.../MainActivity.kt` | measureDelay implementation; import changes | MethodChannel/EventChannel setup, VPN permission, per-app config, getInstalledApps |
+| `lib/features/connection/presentation/providers/connection_provider.dart` | 1 line: `XrayConfigBuilder.build()` → `SingBoxConfigBuilder.build()` | Everything else |
+| `android/app/build.gradle.kts` | AAR filename in `libs/` | Everything else |
+
+---
+
+## Target Architecture (sing-box)
 
 ### High-Level System Diagram
 
@@ -14,690 +66,620 @@
 │                                                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐ │
 │  │Dashboard │  │Node List │  │ Routing  │  │Settings│ │
-│  │  Screen  │  │  Screen  │  │  Screen  │  │ Screen │ │
 │  └────┬─────┘  └────┬─────┘  └────┬─────┘  └───┬────┘ │
 │       │              │              │             │      │
 │  ┌────▼──────────────▼──────────────▼─────────────▼────┐│
-│  │              Riverpod Providers / ViewModels         ││
-│  │  ConnectionNotifier │ ProfileNotifier │ StatsNotifier││
+│  │              Riverpod Providers (UNCHANGED)          ││
 │  └────────────────────┬────────────────────────────────┘│
 │                       │                                  │
 │  ┌────────────────────▼────────────────────────────────┐│
-│  │              Domain Layer (Use Cases)                ││
-│  │  ConnectVpn │ ImportConfig │ TestLatency │ ...      ││
+│  │  SingBoxConfigBuilder.build(server, settings)  [NEW]││
+│  │  → sing-box JSON config string                      ││
 │  └────────────────────┬────────────────────────────────┘│
 │                       │                                  │
 │  ┌────────────────────▼────────────────────────────────┐│
-│  │              Data Layer (Repositories)               ││
-│  │  VpnRepository │ ConfigRepository │ SubscriptionRepo││
-│  └──────┬─────────────────┬────────────────────────────┘│
-│         │                 │                              │
-│  ┌──────▼──────┐  ┌───────▼───────┐                     │
-│  │Platform     │  │ Hive Local    │                     │
-│  │Channel      │  │ Data Source   │                     │
-│  │Service      │  │               │                     │
-│  └──────┬──────┘  └───────────────┘                     │
-│         │                                                │
-└─────────┼────────────────────────────────────────────────┘
-          │  MethodChannel + EventChannel
-          │
-┌─────────▼────────────────────────────────────────────────┐
-│                    KOTLIN (Android Native)                │
+│  │  VpnPlatformService (UNCHANGED)                     ││
+│  │  MethodChannel: startVpn(configJson, serverName)    ││
+│  │  EventChannel: status + stats stream                ││
+│  └──────────────────────┬──────────────────────────────┘│
+│                         │                                │
+└─────────────────────────┼────────────────────────────────┘
+                          │ Platform Channels (UNCHANGED)
+                          │
+┌─────────────────────────▼────────────────────────────────┐
+│                 KOTLIN (Android Native)                   │
 │                                                          │
-│  ┌──────────────────┐     ┌──────────────────────────┐  │
-│  │  MainActivity    │     │  ArmaVpnService          │  │
-│  │  (Channel Host)  │     │  (extends VpnService)    │  │
-│  │                  │     │                          │  │
-│  │  - MethodChannel │     │  - TUN interface setup   │  │
-│  │  - EventChannel  │     │  - Network routing       │  │
-│  └────────┬─────────┘     │  - Per-app proxy         │  │
-│           │               │  - Foreground service    │  │
-│           │               └──────────┬───────────────┘  │
-│           │                          │                   │
-│  ┌────────▼──────────────────────────▼───────────────┐  │
-│  │              XrayCoreManager                       │  │
-│  │  - initCoreEnv()                                   │  │
-│  │  - startLoop(configJson, tunFd)                    │  │
-│  │  - stopLoop()                                      │  │
-│  │  - measureOutboundDelay(config, testUrl)            │  │
-│  │  - queryStats(tag, link)                           │  │
+│  ┌──────────────────────┐  ┌─────────────────────────┐  │
+│  │  MainActivity        │  │  ArmaVpnService         │  │
+│  │  (MOSTLY UNCHANGED)  │  │  (extends VpnService    │  │
+│  │  - MethodChannel     │  │   + PlatformInterface)  │  │
+│  │  - EventChannel      │  │                         │  │
+│  │  - measureDelay [Δ]  │  │  - openTun() callback   │  │
+│  └────────┬─────────────┘  │  - autoDetectInterface  │  │
+│           │                │  - Foreground service    │  │
+│           │                │  - Messenger IPC (same)  │  │
+│           │                └──────────┬──────────────┘  │
+│           │                           │                  │
+│  ┌────────▼───────────────────────────▼──────────────┐  │
+│  │           SingBoxCoreManager [NEW]                 │  │
+│  │  - Libbox.setup(SetupOptions)                      │  │
+│  │  - CommandServer(handler, platformInterface)       │  │
+│  │  - CommandServer.startOrReloadService(config, opts)│  │
+│  │  - CommandServer.closeService()                    │  │
+│  │  - CommandClient(handler, options) [for stats]     │  │
+│  │  - Libbox.version()                                │  │
 │  └────────────────────────┬──────────────────────────┘  │
 │                           │                              │
 └───────────────────────────┼──────────────────────────────┘
                             │  JNI (Go-Mobile bindings)
                             │
 ┌───────────────────────────▼──────────────────────────────┐
-│                 XRAY-CORE AAR (Go-Mobile)                │
+│                  SING-BOX AAR (Go-Mobile)                 │
 │                                                          │
-│  libv2ray.aar                                            │
-│  ├── Libv2ray.initCoreEnv(assetPath, deviceId)           │
-│  ├── Libv2ray.newCoreController(callbackHandler)         │
-│  ├── CoreController.startLoop(configJson, tunFd)         │
-│  ├── CoreController.stopLoop()                           │
-│  ├── CoreController.isRunning                            │
-│  ├── Libv2ray.measureOutboundDelay(config, url)          │
-│  ├── Libv2ray.queryStats(tag, link)                      │
-│  └── Libv2ray.checkVersionX()                            │
-│                                                          │
-│  Internal: xray-core ↔ tun2socks ↔ TUN fd               │
+│  singbox.aar (or libbox.aar)                             │
+│  ├── Libbox.setup(SetupOptions)                          │
+│  ├── Libbox.version() → String                           │
+│  ├── Libbox.checkConfig(configContent) → error           │
+│  ├── Libbox.formatConfig(configContent) → String         │
+│  ├── CommandServer(handler, platformInterface)           │
+│  │   ├── .start()                                        │
+│  │   ├── .startOrReloadService(config, overrideOptions)  │
+│  │   ├── .closeService()                                 │
+│  │   ├── .close()                                        │
+│  │   └── .needWIFIState() / .needFindProcess()           │
+│  ├── CommandClient(handler, options)                     │
+│  │   ├── .connect()                                      │
+│  │   ├── .disconnect()                                   │
+│  │   └── handler → writeStatus(StatusMessage)            │
+│  ├── PlatformInterface (implemented by VpnService)       │
+│  │   ├── .openTun(TunOptions) → Int (fd)                 │
+│  │   ├── .autoDetectInterfaceControl(fd) → VPN protect() │
+│  │   ├── .startDefaultInterfaceMonitor(listener)         │
+│  │   ├── .getInterfaces() → NetworkInterfaceIterator     │
+│  │   ├── .findConnectionOwner(...) → ConnectionOwner     │
+│  │   └── .sendNotification(Notification)                 │
+│  └── StatusMessage                                       │
+│      ├── .uplink / .downlink (bytes/sec)                 │
+│      ├── .uplinkTotal / .downlinkTotal                   │
+│      ├── .connectionsIn / .connectionsOut                │
+│      └── .memory / .goroutines                           │
 └──────────────────────────────────────────────────────────┘
 ```
 
-### Data Flow: User Taps "Connect"
+---
+
+## Critical Architectural Difference: Inverted TUN Control
+
+### Xray-core Flow (Current)
+```
+ArmaVpnService.startVpn(config):
+  1. Android creates TUN: builder.establish() → ParcelFileDescriptor
+  2. Android passes TUN fd TO engine: coreController.startLoop(config, tunFd)
+  3. Engine reads TUN fd from env: os.Setenv("xray.tun.fd", fd)
+  4. Engine starts gVisor TCP/IP stack on that fd
+```
+**Android controls TUN creation. Engine is passive recipient.**
+
+### sing-box Flow (Target)
+```
+ArmaVpnService.startVpn(config):
+  1. Android creates CommandServer with PlatformInterface (this service)
+  2. Android calls commandServer.startOrReloadService(config, options)
+  3. sing-box parses config, sees "tun" inbound, calls back:
+     → PlatformInterface.openTun(TunOptions) → Android creates TUN now
+  4. Android builds TUN from TunOptions (addresses, routes, MTU, per-app)
+     → returns fd to sing-box
+  5. sing-box creates its own TCP/IP stack on the returned fd
+```
+**sing-box controls WHEN TUN is created. Android is callback provider.**
+
+### Why This Matters
+
+The TUN configuration (addresses, routes, DNS, MTU, per-app proxy) currently lives in `ArmaVpnService.configureTunInterface()` with hardcoded values. With sing-box, these values come FROM the engine's parsed config via `TunOptions`. The Android side reads them from `TunOptions` and builds the VPN accordingly.
+
+**Benefit:** TUN configuration is now driven by the sing-box JSON config — no more hardcoded `26.26.26.1/30` in Kotlin. Per-app proxy can be configured in JSON too.
+
+**Risk:** The VPN service must implement the full `PlatformInterface` contract correctly or sing-box crashes.
+
+---
+
+## Data Flow: User Taps "Connect" (sing-box)
 
 ```
 1. User taps Connect button
        │
-2. Dashboard UI → ConnectionNotifier.toggleConnection()
+2. Dashboard UI → ConnectionNotifier.connect(server)  [UNCHANGED]
        │
-3. ConnectionNotifier → ConnectVpnUseCase.execute(activeProfile)
+3. ConnectionNotifier:
+   a) Reads VpnSettings from persistence               [UNCHANGED]
+   b) SingBoxConfigBuilder.build(server, settings)      [NEW BUILDER]
+      → sing-box JSON string
+   c) VpnPlatformService.startVpn(configJson, name)    [UNCHANGED]
        │
-4. ConnectVpnUseCase:
-   a) ConfigRepository.getProfile(id) → ProfileEntity
-   b) XrayConfigBuilder.buildJson(profile, routingRules, dnsSettings) → JSON string
-   c) VpnRepository.connect(configJson)
+4. MethodChannel → MainActivity → Intent → ArmaVpnService  [UNCHANGED]
        │
-5. VpnRepository → VpnPlatformService.startVpn(configJson)
+5. ArmaVpnService.startVpn(config):
+   a) Start foreground service with notification         [UNCHANGED]
+   b) Send "connecting" status via Messenger             [UNCHANGED]
+   c) SingBoxCoreManager.setup(context)                  [NEW — replaces XrayCoreManager.initialize]
+   d) Create CommandServer(this as CommandServerHandler,
+                            this as PlatformInterface)   [NEW]
+   e) commandServer.start()                              [NEW]
+   f) commandServer.startOrReloadService(config, opts)   [NEW — replaces startLoop]
        │
-6. VpnPlatformService calls MethodChannel("com.arma.vpn/method")
-   → invokeMethod("startVpn", {"config": configJson})
+6. sing-box engine processes config, then CALLS BACK:
+   a) PlatformInterface.autoDetectInterfaceControl(fd)
+      → ArmaVpnService.protect(fd)                      [REPLACES CoreCallbackHandler.onEmitStatus]
+   b) PlatformInterface.openTun(tunOptions)
+      → ArmaVpnService builds TUN from options           [MOVED from step 5 to callback]
+      → returns fd
+   c) PlatformInterface.startDefaultInterfaceMonitor(...)
+      → ArmaVpnService registers network monitor        [NEW — replaces registerNetworkCallback]
        │
-7. MainActivity.MethodChannel handler receives call
-   a) Stores config JSON
-   b) Starts ArmaVpnService via Intent
+7. Engine is running → Start traffic monitoring:
+   a) CommandClient subscribes to CommandServer           [NEW — replaces QueryStats polling]
+   b) StatusMessage delivers uplink/downlink/total        [NEW format]
+   c) Forward to EventChannel as stats events            [UNCHANGED sink format]
        │
-8. ArmaVpnService.onStartCommand():
-   a) VpnService.prepare(context) → check permission
-   b) Builder().addAddress().addRoute().addDnsServer()
-      .setMtu(1500).setSession(serverName).establish()
-      → ParcelFileDescriptor (TUN interface)
-   c) XrayCoreManager.startLoop(configJson, tunFd)
-       │
-9. Xray-core starts proxy engine:
-   a) Parses JSON config → creates inbound/outbound/routing
-   b) Binds to TUN fd via tun2socks
-   c) All device traffic → TUN → xray-core → remote proxy server
-       │
-10. CoreCallbackHandler.onEmitStatus() fires
-    → Kotlin updates EventChannel sink
-    → Dart EventChannel stream emits ConnectionStatus.connected
-    → ConnectionNotifier state updates
-    → Dashboard UI rebuilds with "Connected" state
-```
-
-### Data Flow: Traffic Statistics (Real-time)
-
-```
-1. ArmaVpnService starts periodic timer (every 1 second)
-       │
-2. XrayCoreManager.queryStats("proxy", "uplink") → bytes up
-   XrayCoreManager.queryStats("proxy", "downlink") → bytes down
-       │
-3. Calculate delta from previous reading → speed (bytes/sec)
-       │
-4. EventChannel sink.add({"uplink": speed_up, "downlink": speed_down})
-       │
-5. Dart EventChannel stream → StatsNotifier updates
-       │
-6. Dashboard UI rebuilds: "↓ 1.2 MB/s  ↑ 45 KB/s"
-```
-
-### Data Flow: Import Config from Share Link
-
-```
-1. User pastes "vless://uuid@server:port?params#name"
-       │
-2. ImportConfigScreen → ImportConfigUseCase.execute(link)
-       │
-3. ImportConfigUseCase → ConfigParser.parse(link)
-       │
-4. ConfigParser (PURE DART - no platform channel needed):
-   a) Detect protocol from scheme (vless://, vmess://, trojan://, ss://)
-   b) Decode URI components (vmess:// uses base64-encoded JSON)
-   c) Extract: server, port, uuid, security, transport, TLS settings
-   d) Return ServerConfig entity
-       │
-5. ImportConfigUseCase → ConfigRepository.save(serverConfig)
-       │
-6. ConfigRepository → HiveDataSource.putConfig(serverConfig)
-       │
-7. ProfileNotifier refreshes → Node List UI updates
+8. Send "connected" status via Messenger                 [UNCHANGED]
 ```
 
 ---
 
-## Component Boundaries
+## Data Flow: Traffic Statistics (sing-box)
 
-### Flutter Dart Layer
+### Current (Xray-core): Polling
+```
+TrafficMonitor → Timer every 1s →
+  coreController.queryStats("proxy", "uplink")  → cumulative bytes (resets)
+  coreController.queryStats("proxy", "downlink") → cumulative bytes (resets)
+  → callback(up, down)
+```
 
-| Component | Responsibility | Communicates With | Notes |
-|-----------|---------------|-------------------|-------|
-| **Presentation (Screens)** | UI rendering, user input | Riverpod providers only | Never calls repositories directly |
-| **Riverpod Providers/Notifiers** | State management, UI logic | Use cases, other providers | ConnectionNotifier, ProfileListNotifier, StatsNotifier, SettingsNotifier |
-| **Use Cases** | Business logic orchestration | Repositories | One class per action: ConnectVpn, DisconnectVpn, ImportConfig, TestLatency, UpdateSubscription |
-| **Repository Interfaces** | Contract definition | Nothing (interfaces) | Defined in domain layer |
-| **Repository Implementations** | Data orchestration | Platform service, Hive data sources | Implements domain interfaces |
-| **VpnPlatformService** | Flutter ↔ Kotlin bridge | MethodChannel, EventChannel | Single point of native communication |
-| **ConfigParser** | Share link parsing | Nothing (pure Dart) | Protocol-specific parsers: VlessParser, VmessParser, TrojanParser, ShadowsocksParser, Hysteria2Parser |
-| **HiveDataSource** | Local persistence | Hive boxes | Configs, subscriptions, settings, routing rules |
-| **XrayConfigBuilder** | Profile → Xray JSON | Nothing (pure Dart) | Builds full xray-core JSON config from simplified profile + settings |
+### Target (sing-box): Subscription
+```
+CommandClient(handler, options) where:
+  options.addCommand(CommandStatus)
+  options.statusInterval = 1000  // ms
 
-### Kotlin Native Layer
+handler.writeStatus(StatusMessage) callback fires with:
+  statusMessage.uplink    → bytes/sec (instantaneous)
+  statusMessage.downlink  → bytes/sec (instantaneous)
+  statusMessage.uplinkTotal   → cumulative bytes
+  statusMessage.downlinkTotal → cumulative bytes
 
-| Component | Responsibility | Communicates With | Notes |
-|-----------|---------------|-------------------|-------|
-| **MainActivity** | Channel registration, VPN permission | Flutter via channels, VpnService | Entry point for all platform channel calls |
-| **ArmaVpnService** | TUN interface lifecycle | XrayCoreManager, system VPN APIs | Extends Android VpnService; foreground service with notification |
-| **XrayCoreManager** | Xray-core AAR wrapper | libv2ray (Go-Mobile JNI) | Thread-safe singleton; init, start, stop, stats, latency |
-| **TrafficMonitor** | Speed calculation | XrayCoreManager, EventChannel | Periodic polling of stats, delta calculation |
-| **NotificationManager** | Foreground notification | Android system | Required for VpnService; shows connection state |
+→ Forward uplink/downlink to EventChannel as stats events
+```
 
-### Xray-core AAR Layer
-
-| Component | Responsibility | Communicates With | Notes |
-|-----------|---------------|-------------------|-------|
-| **Libv2ray** | Static methods for core operations | Go runtime | initCoreEnv, checkVersionX, measureOutboundDelay |
-| **CoreController** | Running instance management | TUN fd, network | startLoop, stopLoop, isRunning, queryStats |
-| **CoreCallbackHandler** | Callback interface for events | Kotlin handler implementation | onEmitStatus for state changes |
+**Key difference:** sing-box provides both instantaneous AND cumulative stats in `StatusMessage`. No manual delta calculation needed. The existing `TrafficStats` entity (uplinkBytesPerSecond, downlinkBytesPerSecond) maps directly.
 
 ---
 
-## Clean Architecture Layer Breakdown
+## Data Flow: Latency Testing (sing-box)
 
-### Directory Structure
-
+### Current (Xray-core)
 ```
-lib/
-├── main.dart                          # App entry, ProviderScope
-├── app.dart                           # MaterialApp.router setup
-│
-├── core/                              # Shared infrastructure
-│   ├── constants/                     # App-wide constants
-│   │   ├── app_constants.dart         # Channel names, URLs, etc.
-│   │   └── protocol_constants.dart    # Protocol identifiers
-│   ├── error/                         # Error types
-│   │   ├── failures.dart              # Domain failure classes
-│   │   └── exceptions.dart            # Data layer exceptions
-│   ├── router/                        # go_router setup
-│   │   └── app_router.dart
-│   ├── theme/                         # Light/dark theme definitions
-│   │   ├── app_theme.dart
-│   │   └── app_colors.dart
-│   └── utils/                         # Shared utilities
-│       ├── formatters.dart            # Speed, latency formatting
-│       └── validators.dart            # URL, config validation
-│
-├── features/                          # Feature modules
-│   ├── connection/                    # VPN connection feature
-│   │   ├── domain/
-│   │   │   ├── entities/
-│   │   │   │   └── connection_status.dart    # Connected/Disconnected/Connecting
-│   │   │   ├── repositories/
-│   │   │   │   └── vpn_repository.dart       # Interface
-│   │   │   └── usecases/
-│   │   │       ├── connect_vpn.dart
-│   │   │       └── disconnect_vpn.dart
-│   │   ├── data/
-│   │   │   ├── repositories/
-│   │   │   │   └── vpn_repository_impl.dart
-│   │   │   └── datasources/
-│   │   │       └── vpn_platform_service.dart # MethodChannel/EventChannel wrapper
-│   │   └── presentation/
-│   │       ├── providers/
-│   │       │   └── connection_notifier.dart   # Riverpod AsyncNotifier
-│   │       ├── screens/
-│   │       │   └── dashboard_screen.dart
-│   │       └── widgets/
-│   │           ├── connect_button.dart
-│   │           └── traffic_stats_card.dart
-│   │
-│   ├── profile/                       # Server config management
-│   │   ├── domain/
-│   │   │   ├── entities/
-│   │   │   │   ├── server_config.dart        # Protocol-agnostic entity
-│   │   │   │   └── protocol_settings.dart    # VLESS/VMess/Trojan/etc. specifics
-│   │   │   ├── repositories/
-│   │   │   │   └── config_repository.dart
-│   │   │   └── usecases/
-│   │   │       ├── import_config.dart
-│   │   │       ├── delete_configs.dart
-│   │   │       └── test_latency.dart
-│   │   ├── data/
-│   │   │   ├── repositories/
-│   │   │   │   └── config_repository_impl.dart
-│   │   │   ├── datasources/
-│   │   │   │   └── config_local_datasource.dart  # Hive
-│   │   │   ├── models/
-│   │   │   │   └── server_config_model.dart      # Hive adapter
-│   │   │   └── parsers/                           # Share link parsers
-│   │   │       ├── config_parser.dart             # Factory/dispatcher
-│   │   │       ├── vless_parser.dart
-│   │   │       ├── vmess_parser.dart
-│   │   │       ├── trojan_parser.dart
-│   │   │       ├── shadowsocks_parser.dart
-│   │   │       └── hysteria2_parser.dart
-│   │   └── presentation/
-│   │       ├── providers/
-│   │       │   └── profile_list_notifier.dart
-│   │       ├── screens/
-│   │       │   └── node_list_screen.dart
-│   │       └── widgets/
-│   │           ├── node_card.dart
-│   │           └── protocol_badge.dart
-│   │
-│   ├── subscription/                  # Subscription management
-│   │   ├── domain/
-│   │   │   ├── entities/
-│   │   │   │   └── subscription.dart
-│   │   │   ├── repositories/
-│   │   │   │   └── subscription_repository.dart
-│   │   │   └── usecases/
-│   │   │       ├── add_subscription.dart
-│   │   │       └── update_subscription.dart
-│   │   ├── data/
-│   │   │   ├── repositories/
-│   │   │   │   └── subscription_repository_impl.dart
-│   │   │   └── datasources/
-│   │   │       ├── subscription_local_datasource.dart
-│   │   │       └── subscription_remote_datasource.dart  # HTTP fetch + decode
-│   │   └── presentation/
-│   │       └── ...
-│   │
-│   ├── routing/                       # Traffic routing rules
-│   │   ├── domain/
-│   │   │   ├── entities/
-│   │   │   │   └── routing_rule.dart
-│   │   │   └── repositories/
-│   │   │       └── routing_repository.dart
-│   │   ├── data/
-│   │   │   └── ...
-│   │   └── presentation/
-│   │       └── screens/
-│   │           └── routing_screen.dart
-│   │
-│   └── settings/                      # App settings
-│       ├── domain/
-│       │   └── entities/
-│       │       └── app_settings.dart
-│       ├── data/
-│       │   └── datasources/
-│       │       └── settings_local_datasource.dart
-│       └── presentation/
-│           └── screens/
-│               └── settings_screen.dart
-│
-└── xray/                              # Xray-specific logic
-    ├── config_builder.dart            # ProfileEntity → Xray JSON
-    ├── xray_config.dart               # Full Xray JSON structure as Dart class
-    └── geo_assets.dart                # geoip.dat, geosite.dat management
-
-android/
-└── app/src/main/kotlin/com/arma/vpn/
-    ├── MainActivity.kt                # Channel registration
-    ├── service/
-    │   └── ArmaVpnService.kt          # VpnService implementation
-    ├── core/
-    │   └── XrayCoreManager.kt         # libv2ray wrapper
-    ├── monitor/
-    │   └── TrafficMonitor.kt          # Speed calculation
-    └── notification/
-        └── VpnNotificationManager.kt  # Foreground service notification
+MainActivity.measureDelay():
+  Libv2ray.measureOutboundDelay(config, url) → Long (ms)
+  // Creates temp xray instance, sends HTTP through proxy, measures RTT
 ```
+
+### Target (sing-box) — Two Options
+
+**Option A: URLTest outbound group (recommended)**
+sing-box has built-in `urltest` outbound type that periodically checks latency. This can be configured in the sing-box JSON config for latency testing. However, this requires a running instance.
+
+**Option B: HTTP client through SOCKS5 proxy**
+```
+1. Start a temporary sing-box instance with SOCKS5 inbound (port 10808)
+2. Use Libbox.NewHTTPClient() with client.trySocks5(10808)
+3. Execute HTTP request to test URL
+4. Measure RTT
+5. Stop temporary instance
+```
+
+**Option C: Simplest — keep it in Dart**
+Since sing-box doesn't have a direct `measureDelay()` equivalent, the simplest approach is to:
+1. Start a minimal sing-box instance with a SOCKS5 inbound + the proxy outbound
+2. Make HTTP request through the SOCKS5 proxy from Dart (using dio)
+3. Measure response time in Dart
+4. Stop the mini instance
+
+**Recommendation:** Start with Option C for simplicity. The existing `measureDelay` MethodChannel call stays but the native implementation changes. If too slow, optimize later.
 
 ---
 
-## Platform Channel Contract
+## Config Builder: Xray JSON vs sing-box JSON
 
-This is the critical interface between Flutter and Android. Define it precisely and build both sides against it.
+### Structural Comparison
 
-### MethodChannel: `com.arma.vpn/method`
+| Concept | Xray-core JSON | sing-box JSON |
+|---|---|---|
+| Top-level key | `routing` | `route` |
+| Direct outbound | `protocol: "freedom"` | `type: "direct"` |
+| Block outbound | `protocol: "blackhole"` | `type: "block"` |
+| VLESS outbound | `protocol: "vless"` | `type: "vless"` |
+| Server address | `vnext[0].address` | `server` |
+| Server port | `vnext[0].port` | `server_port` |
+| TLS settings | `streamSettings.tlsSettings` | `tls` (nested object) |
+| Transport | `streamSettings.network + ...Settings` | `transport` (nested object with `type`) |
+| Sniffing | `inbounds[0].sniffing.enabled` | `route.auto_detect_interface` + `inbounds[0].sniff` |
+| DNS config | `dns.servers[]` | `dns.servers[]` (different structure) |
+| Stats | `stats: {}` + `policy` section | `experimental.clash_api` or built-in via CommandServer |
+| Geo data | `geoip:private`, `geosite:cn` | `geoip:private`, `geosite:cn` (same names, different file format `.db`) |
+| Fragment | `sockopt.fragment` | `experimental.tls_fragment` (if available) |
+| Mux | `mux.enabled` + `mux.concurrency` | `multiplex` (different field names) |
 
-| Method | Arguments | Returns | Description |
-|--------|-----------|---------|-------------|
-| `startVpn` | `{"config": String}` | `bool` | Start VPN with xray JSON config |
-| `stopVpn` | none | `bool` | Stop VPN and release TUN |
-| `isRunning` | none | `bool` | Check if core is active |
-| `getVersion` | none | `String` | Xray-core version string |
-| `measureDelay` | `{"config": String, "url": String}` | `int` (ms) | Single-node latency test |
-| `requestVpnPermission` | none | `bool` | Trigger VPN permission dialog |
+### Example: VLESS + WS + TLS
 
-### EventChannel: `com.arma.vpn/vpn_status`
-
-Streams `Map<String, dynamic>`:
-
-```dart
-// Connection state changes
-{"type": "status", "state": "connecting" | "connected" | "disconnected" | "error", "message": "..."}
-
-// Traffic stats (emitted every 1 second while connected)
-{"type": "stats", "uplink": int, "downlink": int}  // bytes per second
-```
-
-**Design decision: single EventChannel with typed events** rather than separate channels for status and stats. This simplifies channel management and the Dart side can filter by `type` field. v2rayNG uses broadcast intents (Android-native pattern); Hiddify uses gRPC streaming. For a Flutter app, EventChannel is the idiomatic approach.
-
-### VpnPlatformService (Dart Wrapper)
-
-```dart
-/// Single point of contact for all native VPN operations.
-/// Lives in data layer. Implements no domain interface directly —
-/// it's consumed by VpnRepositoryImpl.
-class VpnPlatformService {
-  static const _methodChannel = MethodChannel('com.arma.vpn/method');
-  static const _eventChannel = EventChannel('com.arma.vpn/vpn_status');
-
-  Future<bool> startVpn(String configJson) async {
-    return await _methodChannel.invokeMethod<bool>('startVpn', {'config': configJson}) ?? false;
-  }
-
-  Future<bool> stopVpn() async {
-    return await _methodChannel.invokeMethod<bool>('stopVpn') ?? false;
-  }
-
-  Future<bool> get isRunning async {
-    return await _methodChannel.invokeMethod<bool>('isRunning') ?? false;
-  }
-
-  Future<int> measureDelay(String configJson, String testUrl) async {
-    return await _methodChannel.invokeMethod<int>('measureDelay', {
-      'config': configJson,
-      'url': testUrl,
-    }) ?? -1;
-  }
-
-  Stream<Map<String, dynamic>> get vpnEvents {
-    return _eventChannel.receiveBroadcastStream().map(
-      (event) => Map<String, dynamic>.from(event as Map),
-    );
-  }
-
-  Stream<ConnectionStatus> get connectionStatus {
-    return vpnEvents
-        .where((e) => e['type'] == 'status')
-        .map((e) => ConnectionStatus.fromMap(e));
-  }
-
-  Stream<TrafficStats> get trafficStats {
-    return vpnEvents
-        .where((e) => e['type'] == 'stats')
-        .map((e) => TrafficStats.fromMap(e));
-  }
-}
-```
-
----
-
-## Patterns to Follow
-
-### Pattern 1: Feature-First Module Organization
-
-**What:** Each feature (connection, profile, subscription, routing, settings) is a self-contained module with its own domain/data/presentation layers.
-
-**Why:** Prevents cross-feature coupling. Features can be developed and tested independently. Natural work parallelization.
-
-**Boundary rule:** Features communicate through shared Riverpod providers, never by importing each other's data or domain layers. If feature A needs data from feature B, it reads feature B's provider.
-
-### Pattern 2: Xray Config Builder as Pure Dart
-
-**What:** Build the full xray-core JSON configuration entirely in Dart, pass the complete JSON string to the native side.
-
-**Why:** Keeps all config logic testable in Dart. The native side is a dumb executor — it receives valid JSON and passes it to `CoreController.startLoop()`. This is exactly how v2rayNG works: `V2rayConfigManager.getV2rayConfig()` builds the JSON, then `startCoreLoop()` passes it to the core.
-
-**Example config structure the builder produces:**
-
+**Xray-core (current):**
 ```json
 {
-  "log": {"loglevel": "warning"},
-  "dns": {"servers": [{"address": "1.1.1.1"}, "localhost"]},
-  "inbounds": [{
-    "tag": "socks-in",
-    "protocol": "socks",
-    "listen": "127.0.0.1",
-    "port": 10808
-  }],
-  "outbounds": [{
-    "tag": "proxy",
-    "protocol": "vless",
-    "settings": {"vnext": [{"address": "...", "port": 443, "users": [...]}]},
-    "streamSettings": {"network": "ws", "security": "tls", ...}
-  }, {
-    "tag": "direct",
-    "protocol": "freedom"
-  }, {
-    "tag": "block",
-    "protocol": "blackhole"
-  }],
-  "routing": {
-    "domainStrategy": "IPIfNonMatch",
-    "rules": [
-      {"type": "field", "outboundTag": "direct", "domain": ["geosite:private"]},
-      {"type": "field", "outboundTag": "direct", "ip": ["geoip:private"]}
-    ]
+  "log": {"loglevel": "debug"},
+  "stats": {},
+  "policy": {"levels": {"0": {"statsUserUplink": true, "statsUserDownlink": true}}, "system": {"statsOutboundUplink": true, "statsOutboundDownlink": true}},
+  "dns": {"servers": [{"address": "https://1.1.1.1/dns-query", "domains": [], "port": 53}, "localhost"]},
+  "inbounds": [{"tag": "tun-in", "protocol": "tun", "settings": {"name": "tun0", "MTU": 9000, "userLevel": 0}, "sniffing": {"enabled": true, "destOverride": ["http", "tls", "quic"]}}],
+  "outbounds": [
+    {"tag": "proxy", "protocol": "vless", "settings": {"vnext": [{"address": "example.com", "port": 443, "users": [{"id": "uuid", "encryption": "none", "flow": ""}]}]}, "streamSettings": {"network": "ws", "security": "tls", "tlsSettings": {"serverName": "example.com", "allowInsecure": false, "alpn": [], "fingerprint": "chrome"}, "wsSettings": {"path": "/ws", "headers": {"Host": "example.com"}}}},
+    {"tag": "direct", "protocol": "freedom", "settings": {}},
+    {"tag": "block", "protocol": "blackhole", "settings": {"response": {"type": "http"}}}
+  ],
+  "routing": {"domainStrategy": "IPIfNonMatch", "rules": [{"type": "field", "outboundTag": "direct", "ip": ["geoip:private"]}, {"type": "field", "outboundTag": "proxy", "port": "0-65535"}]}
+}
+```
+
+**sing-box (target):**
+```json
+{
+  "log": {"level": "debug", "timestamp": true},
+  "dns": {
+    "servers": [
+      {"tag": "remote", "address": "https://1.1.1.1/dns-query", "detour": "proxy"},
+      {"tag": "local", "address": "local"}
+    ],
+    "rules": [{"outbound": "any", "server": "local"}]
   },
-  "stats": {}
+  "inbounds": [
+    {"tag": "tun-in", "type": "tun", "inet4_address": "172.19.0.1/30", "inet6_address": "fdfe:dcba:9876::1/126", "mtu": 9000, "auto_route": true, "strict_route": true, "sniff": true, "sniff_override_destination": false}
+  ],
+  "outbounds": [
+    {"tag": "proxy", "type": "vless", "server": "example.com", "server_port": 443, "uuid": "uuid", "tls": {"enabled": true, "server_name": "example.com", "utls": {"enabled": true, "fingerprint": "chrome"}}, "transport": {"type": "ws", "path": "/ws", "headers": {"Host": "example.com"}}},
+    {"tag": "direct", "type": "direct"},
+    {"tag": "block", "type": "block"}
+  ],
+  "route": {
+    "auto_detect_interface": true,
+    "rules": [
+      {"ip_is_private": true, "outbound": "direct"},
+      {"protocol": "dns", "outbound": "dns-out"}
+    ],
+    "final": "proxy"
+  },
+  "experimental": {
+    "clash_api": {"external_controller": "127.0.0.1:9090"}
+  }
 }
 ```
 
-### Pattern 3: Connection State Machine
+### Key Config Differences to Handle
 
-**What:** Model VPN connection as an explicit state machine with defined transitions.
+1. **TUN inbound**: sing-box TUN has `inet4_address`, `inet6_address`, `auto_route`, `strict_route`, `sniff` as direct fields (not nested `settings`/`sniffing`)
+2. **Outbound protocol mapping**: `freedom` → `direct`, `blackhole` → `block`, others same names
+3. **Server fields**: `vnext[0].address/port` → flat `server`/`server_port`
+4. **Users**: `vnext[0].users[0].id` → flat `uuid`
+5. **TLS**: `streamSettings.tlsSettings` → nested `tls` object with `enabled: true`
+6. **uTLS fingerprint**: `fingerprint` in tlsSettings → `utls.fingerprint` nested
+7. **Transport**: `streamSettings.wsSettings` → `transport: {type: "ws", ...}`
+8. **Reality**: `streamSettings.realitySettings` → `tls.reality` nested object
+9. **Routing**: `routing.rules[].outboundTag` → `route.rules[].outbound`; `type: "field"` not needed; `route.final` replaces catch-all rule
+10. **DNS**: Different structure — servers have `tag` and `detour`, rules reference by tag
+11. **Stats**: No `stats`/`policy` sections — sing-box uses `experimental.clash_api` or CommandServer
+12. **Geo rules**: `geoip:private` → `ip_is_private: true`; `geosite:category-ir` → `geosite: ["category-ir"]`
+13. **Hysteria2**: Built-in support as `type: "hysteria2"` outbound
 
-**Why:** Prevents impossible states (e.g., "connecting while already connected"). Makes UI rendering predictable.
+---
 
+## Component-by-Component Migration Guide
+
+### 1. SingBoxConfigBuilder (Dart) — Complete Rewrite
+
+**Location:** `lib/singbox/singbox_config_builder.dart` (new file, parallel to old)
+
+**Interface:** Same as XrayConfigBuilder:
 ```dart
-sealed class ConnectionStatus {
-  const ConnectionStatus();
-}
-class Disconnected extends ConnectionStatus {
-  final String? lastError;
-  const Disconnected([this.lastError]);
-}
-class Connecting extends ConnectionStatus {
-  const Connecting();
-}
-class Connected extends ConnectionStatus {
-  const Connected();
-}
-class Disconnecting extends ConnectionStatus {
-  const Disconnecting();
+class SingBoxConfigBuilder {
+  static String build(ServerConfig server, {VpnSettings? settings});
+  static String buildForLatencyTest(ServerConfig server);
 }
 ```
 
-**Valid transitions:**
-```
-Disconnected → Connecting → Connected → Disconnecting → Disconnected
-                    ↓                                        ↑
-                    └──── (on error) ────────────────────────┘
-```
+**What changes inside:**
+- JSON structure is completely different (see comparison above)
+- Protocol outbound builders produce flat objects instead of nested vnext/servers
+- TLS/transport are nested objects within the outbound
+- Routing rules use different syntax
+- DNS config has tagged servers with detour
+- `experimental.clash_api` replaces `stats`/`policy` for traffic monitoring
 
-### Pattern 4: Repository Pattern with Hive
+**What stays:** Input (ServerConfig + VpnSettings) and output type (JSON String) are identical. The ConnectionNotifier just calls a different builder.
 
-**What:** Abstract Hive behind repository interfaces. Repository implementations in `data/` layer; interfaces in `domain/` layer.
+### 2. SingBoxCoreManager (Kotlin) — Complete Rewrite
 
-**Why:** Hive API is simple but leaks implementation details. If you ever migrate to Isar or drift, only the `data/` layer changes.
+**Location:** `android/.../core/SingBoxCoreManager.kt` (replaces XrayCoreManager.kt)
 
-```dart
-// domain/repositories/config_repository.dart
-abstract class ConfigRepository {
-  Future<List<ServerConfig>> getAllConfigs();
-  Future<ServerConfig?> getConfig(String id);
-  Future<void> saveConfig(ServerConfig config);
-  Future<void> deleteConfigs(List<String> ids);
-  Future<List<ServerConfig>> getConfigsBySubscription(String subscriptionId);
-}
-
-// data/repositories/config_repository_impl.dart
-class ConfigRepositoryImpl implements ConfigRepository {
-  final Box<ServerConfigModel> _configBox;
-  // ... maps between domain entities and Hive models
+**Current XrayCoreManager API:**
+```kotlin
+object XrayCoreManager {
+    fun initialize(context: Context)           // go.Seq.setContext + copyAssets + initCoreEnv
+    fun createController(callback): CoreController  // creates running instance
+    fun getVersion(): String
 }
 ```
 
-### Pattern 5: Latency Testing Off-Main-Thread
+**New SingBoxCoreManager API:**
+```kotlin
+object SingBoxCoreManager {
+    fun setup(context: Context)  // Libbox.setup(SetupOptions) — called once
+    fun getVersion(): String     // Libbox.version()
+    // No createController — CommandServer is created per-session in ArmaVpnService
+}
+```
 
-**What:** Latency tests must run in Kotlin coroutines (native side), not Dart isolates. Each test creates a temporary xray config and calls `Libv2ray.measureOutboundDelay()`.
+**Key differences:**
+- `Libbox.setup(SetupOptions)` replaces `go.Seq.setContext()` + `Libv2ray.initCoreEnv()`
+- SetupOptions needs: `basePath`, `workingPath`, `tempPath`, `fixAndroidStack`, `commandServerListenPort`, `commandServerSecret`, `debug`
+- No geo asset copying needed if bundled in working dir (sing-box reads `.db` files from working path)
+- No `CoreController` concept — lifecycle managed by `CommandServer`
 
-**Why:** `measureOutboundDelay` is a blocking Go call that creates a temporary xray instance, sends an HTTP request through it, and measures RTT. This runs entirely in the Go runtime. The Dart side just fires a MethodChannel call and awaits the `Future<int>`.
+### 3. ArmaVpnService (Kotlin) — Significant Modification
 
-**For bulk testing:** Queue tests sequentially (one at a time) to avoid port conflicts. Use a Kotlin coroutine dispatcher with single-thread concurrency.
+**Current responsibilities that STAY:**
+- VpnService lifecycle (onCreate, onStartCommand, onBind, onRevoke, onDestroy)
+- Foreground notification management
+- Messenger IPC (IncomingHandler, sendStatusToClient, sendStatsToClient)
+- Per-app proxy logic (whitelist/blacklist via SharedPreferences)
+- isRunning state tracking
+
+**Current responsibilities that CHANGE:**
+
+| Current (Xray) | New (sing-box) |
+|---|---|
+| `configureTunInterface()` called proactively in startVpn | `openTun(TunOptions)` called as callback from engine |
+| `CoreCallbackHandler.onEmitStatus(fd)` for socket protect | `PlatformInterface.autoDetectInterfaceControl(fd)` |
+| `coreController.startLoop(config, tunFd)` | `commandServer.startOrReloadService(config, opts)` |
+| `coreController.stopLoop()` | `commandServer.closeService()` |
+| `registerNetworkCallback()` with ConnectivityManager | `PlatformInterface.startDefaultInterfaceMonitor(listener)` |
+| `TrafficMonitor` polling queryStats | `CommandClient` subscription |
+
+**The service must implement TWO interfaces:**
+1. `CommandServerHandler` — for engine lifecycle callbacks (serviceStop, serviceReload, etc.)
+2. `PlatformInterface` — for platform integration callbacks (openTun, autoDetectInterfaceControl, etc.)
+
+**Recommended approach:** Use Hiddify's pattern — create a `PlatformInterfaceWrapper` interface that provides default implementations for most methods, with the VpnService overriding only `openTun()` and `autoDetectInterfaceControl()`.
+
+### 4. TrafficMonitor (Kotlin) — Rewrite
+
+**Current:** Timer-based polling of `coreController.queryStats()` every 1s.
+
+**New:** `CommandClient` subscription model:
+```kotlin
+class TrafficMonitor(
+    private val onStats: (uplink: Long, downlink: Long) -> Unit
+) : CommandClientHandler {
+    private var client: CommandClient? = null
+
+    fun start() {
+        val options = CommandClientOptions().apply {
+            addCommand(CommandStatus)
+            statusInterval = 1000  // ms
+        }
+        client = CommandClient(this, options)
+        client?.connect()
+    }
+
+    fun stop() {
+        client?.disconnect()
+        client = null
+    }
+
+    // CommandClientHandler callbacks
+    override fun writeStatus(message: StatusMessage) {
+        onStats(message.uplink, message.downlink)
+    }
+    // ... other required handler methods (connected, disconnected, etc.)
+}
+```
+
+### 5. MainActivity (Kotlin) — Minor Changes
+
+**measureDelay change:** `Libv2ray.measureOutboundDelay(config, url)` has no direct sing-box equivalent. Options:
+- Start a temporary mini sing-box with SOCKS5 inbound, HTTP probe, stop
+- Or use `Libbox.NewHTTPClient()` with `trySocks5()` after starting a test instance
+- Simplest: Start temp instance via `CommandServer.startOrReloadService(testConfig)`, use HTTP client, stop
+
+**Import changes:** `libv2ray.Libv2ray` → `libbox.Libbox`, etc.
+
+### 6. Build Configuration
+
+**android/app/build.gradle.kts:**
+```kotlin
+dependencies {
+    // REMOVE: implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar"))))
+    // ADD: implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar"))))
+    // Same line, just different AAR file in libs/
+    // OR use Maven: implementation("io.github.niclas-niclasen:singbox:1.13.6")
+}
+```
+
+The `packaging { jniLibs { useLegacyPackaging = true } }` stays — still needed for Go native libs.
 
 ---
 
-## Anti-Patterns to Avoid
+## sing-box PlatformInterface Contract
 
-### Anti-Pattern 1: Building Xray Config on Native Side
+The VpnService (or a delegate) must implement this interface. These methods are called by the sing-box engine at runtime:
 
-**What:** Passing raw profile parameters to Kotlin and assembling the JSON there.
+| Method | Required | Purpose | Implementation |
+|---|---|---|---|
+| `openTun(TunOptions) → Int` | **CRITICAL** | Create Android TUN, return fd | Build VPN from TunOptions, call `builder.establish()`, return `pfd.fd` |
+| `autoDetectInterfaceControl(fd: Int)` | **CRITICAL** | Protect outbound sockets | Call `vpnService.protect(fd)` |
+| `usePlatformAutoDetectInterfaceControl() → Boolean` | Required | Whether platform handles socket protection | Return `true` |
+| `startDefaultInterfaceMonitor(listener)` | Required | Register for network changes | Wire to ConnectivityManager, call `listener.updateDefaultInterface()` on change |
+| `closeDefaultInterfaceMonitor(listener)` | Required | Unregister network listener | Unregister ConnectivityManager callback |
+| `getInterfaces() → NetworkInterfaceIterator` | Required | List network interfaces | Enumerate via ConnectivityManager + NetworkInterface |
+| `findConnectionOwner(...)` → ConnectionOwner | Needed for process routing | Map connections to apps | Use `ConnectivityManager.getConnectionOwnerUid()` (API 29+) |
+| `useProcFS() → Boolean` | Required | Whether to use /proc/net for conn ownership | Return `Build.VERSION.SDK_INT < Build.VERSION_CODES.Q` |
+| `underNetworkExtension() → Boolean` | Required | iOS only | Return `false` |
+| `includeAllNetworks() → Boolean` | Required | iOS only | Return `false` |
+| `readWIFIState() → WIFIState?` | Optional | WiFi SSID for rules | Read from WifiManager |
+| `clearDNSCache()` | Optional | Clear DNS cache | No-op for Android |
+| `systemCertificates() → StringIterator` | Optional | System CA certs | Read from AndroidCAStore KeyStore |
+| `sendNotification(Notification)` | Optional | Engine notifications | Show Android notification |
+| `localDNSTransport() → LocalDNSTransport?` | Optional | Local DNS resolution | Implement or return null |
 
-**Why bad:** Kotlin code is harder to unit test. Config assembly logic gets split across Dart models and Kotlin builders. Leads to two places that "understand" xray config format.
-
-**Instead:** Build the complete JSON in Dart. The `XrayConfigBuilder` class takes a `ServerConfig` entity + `RoutingRules` + `AppSettings` and produces a full xray JSON string. Native side treats it as opaque.
-
-### Anti-Pattern 2: Multiple MethodChannels
-
-**What:** Creating separate channels per feature (one for VPN, one for latency, one for stats).
-
-**Why bad:** Channel registration in MainActivity becomes sprawling. Harder to reason about native lifecycle. Risk of channel name typos.
-
-**Instead:** Single MethodChannel with method name routing. Single EventChannel with typed events. Clean, predictable, easy to debug.
-
-### Anti-Pattern 3: Holding VPN State in Dart Only
-
-**What:** Tracking connection state solely via Dart variables without native confirmation.
-
-**Why bad:** VPN can be killed by Android OS (memory pressure, battery optimization). User can revoke VPN permission via system settings. Native-side state and Dart-side state drift apart.
-
-**Instead:** Native side is source of truth. Dart receives state via EventChannel. On app resume, query `isRunning` via MethodChannel to re-sync.
-
-### Anti-Pattern 4: Parsing Share Links on Native Side
-
-**What:** Passing raw URI strings to Kotlin for parsing.
-
-**Why bad:** Dart has excellent URI parsing (`Uri.parse()`). Protocol parsing is pure string manipulation with no platform dependencies. Testing on native side requires Android instrumentation tests.
-
-**Instead:** All parsing logic is pure Dart in `features/profile/data/parsers/`. Unit-testable without a device.
-
-### Anti-Pattern 5: Coupling VpnService to UI Lifecycle
-
-**What:** Starting VpnService only while the app is in foreground.
-
-**Why bad:** VPN must continue running when app is backgrounded or killed.
-
-**Instead:** VpnService runs as a foreground service with a persistent notification. It has its own lifecycle independent of the Flutter engine. The Flutter engine reconnects to it via channels when brought back to foreground.
+**Hiddify's pattern:** Create a `PlatformInterfaceWrapper` Kotlin interface with default implementations for all methods. The VPN service class implements this interface and overrides only `openTun()` and `autoDetectInterfaceControl()`. Copy the Hiddify defaults for `getInterfaces()`, `findConnectionOwner()`, etc.
 
 ---
 
-## Key Architecture Decisions
+## Anti-Censorship Feature Mapping
 
-### Where Does Each Piece of Logic Live?
+| Feature | Xray-core | sing-box | Notes |
+|---|---|---|---|
+| **TLS Fragment** | `sockopt.fragment` in streamSettings | Not built-in in stable; may need `tls_fragment` experimental or custom build | ⚠️ VERIFY — may need Hiddify's fork |
+| **Reality/XTLS** | `realitySettings` + `flow: xtls-rprx-vision` | `tls.reality` + `flow: xtls-rprx-vision` | Fully supported |
+| **uTLS Fingerprint** | `fingerprint: "chrome"` | `tls.utls.fingerprint: "chrome"` | Fully supported |
+| **Mux** | `mux.enabled` + `concurrency` | `multiplex.enabled` + `max_connections` | Different field names |
+| **Padding** | Custom implementation | May need experimental features | ⚠️ VERIFY |
+| **Mixed SNI** | Custom implementation | Not native — may need app-level implementation | ⚠️ VERIFY |
 
-| Logic | Layer | Rationale |
-|-------|-------|-----------|
-| Share link parsing (vless://, vmess://, etc.) | Dart — `features/profile/data/parsers/` | Pure string manipulation, highly testable in Dart |
-| Subscription fetching & base64 decoding | Dart — `features/subscription/data/` | HTTP + string ops, no native needed |
-| Xray JSON config building | Dart — `lib/xray/config_builder.dart` | Pure Dart, complex but testable |
-| VPN start/stop commands | Native — Kotlin via MethodChannel | Requires Android VpnService APIs |
-| TUN interface setup | Native — `ArmaVpnService.kt` | Android system API, must be Kotlin |
-| Xray-core process management | Native — `XrayCoreManager.kt` | JNI calls to Go-Mobile AAR |
-| Traffic statistics reading | Native — `TrafficMonitor.kt` via EventChannel | Reads from Go runtime, streams to Dart |
-| Latency testing | Native — via MethodChannel | `Libv2ray.measureOutboundDelay()` is a Go call |
-| Routing rules UI/storage | Dart — `features/routing/` | User-facing CRUD, stored in Hive |
-| Routing rules applied to xray | Dart — `XrayConfigBuilder` | Routing rules become JSON routing section |
-| Settings storage | Dart — `features/settings/data/` | Hive preferences |
-| QR code scanning | Dart — `mobile_scanner` package | Camera access via Flutter plugin, returns string → parsed in Dart |
-
-### VPN Permission Flow
-
-```
-1. User taps Connect for first time
-2. ConnectionNotifier → VpnRepository.connect()
-3. VpnPlatformService.requestVpnPermission()
-4. MethodChannel → MainActivity
-5. MainActivity calls VpnService.prepare(context)
-   → If null: permission already granted
-   → If Intent: launch system VPN consent dialog
-6. onActivityResult receives user consent
-7. Return true/false to Dart
-8. If granted → proceed with startVpn
-9. If denied → ConnectionNotifier emits Disconnected("VPN permission denied")
-```
-
-### Foreground Service Notification
-
-Android requires VpnService to run as a foreground service with a persistent notification. This notification:
-- Shows connection state (Connected/Connecting)
-- Shows active server name
-- Optionally shows live speed
-- Has a "Disconnect" action button
-- Must be created before `startForeground()` call within 5 seconds of service start
+**Critical:** TLS fragment is the most-used anti-censorship feature for Iranian users. If sing-box stable doesn't support it, consider using Hiddify's fork of sing-box which adds fragment support. This must be verified during implementation.
 
 ---
 
-## Build Order (Dependencies Between Components)
+## Geo Data Migration
 
-The architecture has clear dependency chains that dictate build order:
+| Current (Xray) | Target (sing-box) |
+|---|---|
+| `geoip.dat` (V2Ray dat format) | `geoip.db` (sing-box SRS/binary format) |
+| `geosite.dat` (V2Ray dat format) | `geosite.db` (sing-box SRS/binary format) |
+| Location: `android/app/src/main/assets/` | Same location, different files |
+| Source: `v2fly/geoip`, `v2fly/domain-list-community` | Source: `SagerNet/sing-geoip`, `SagerNet/sing-geosite` |
 
-```
-Phase 1: Foundation (no platform dependencies)
-├── Core: theme, routing, constants, error types
-├── Domain entities: ServerConfig, ConnectionStatus, RoutingRule, AppSettings
-├── Hive models & adapters (data layer mirrors of entities)
-├── Static UI shells for all screens (mocked data)
-└── Riverpod provider skeletons
-
-Phase 2: Config & Data (still pure Dart)
-├── Share link parsers (vless, vmess, trojan, ss, hysteria2)
-├── XrayConfigBuilder (profile + settings → JSON)
-├── ConfigRepository + HiveDataSource
-├── SubscriptionRepository + remote datasource
-├── Profile management CRUD in UI
-└── QR scanner integration (Flutter plugin, pure Dart result)
-
-Phase 3: Platform Bridge (requires Android)
-├── Platform channel contract (method + event)
-├── VpnPlatformService (Dart wrapper)
-├── MainActivity channel registration (Kotlin)
-├── ArmaVpnService (TUN setup, foreground service)
-├── XrayCoreManager (libv2ray AAR integration)
-├── VPN permission flow
-├── ConnectionNotifier wired to real native bridge
-└── Integrate xray-core AAR build into gradle
-
-Phase 4: Polish & Monitoring (depends on Phase 3)
-├── TrafficMonitor (Kotlin periodic stats → EventChannel)
-├── StatsNotifier (Dart) wired to EventChannel
-├── Dashboard live speed display
-├── Latency testing (single + bulk)
-├── Routing rules applied to XrayConfigBuilder
-├── App lifecycle handling (pause/resume reconnection)
-└── Error handling & edge cases
-```
-
-**Why this order:**
-1. Phases 1–2 are pure Dart — testable without a device, fast iteration
-2. Phase 3 is the critical integration point — the most risky phase
-3. Phase 4 is enhancement — the VPN already works, now make it informative
-4. Config parsing (Phase 2) must precede VPN connection (Phase 3) because you need configs to connect
-5. XrayConfigBuilder (Phase 2) must exist before native bridge (Phase 3) because native side needs the JSON
+sing-box also supports rule-set based routing (downloading rules on demand) as an alternative to bundled geo databases. For v1.1, bundle the .db files for simplicity.
 
 ---
 
-## Scalability Considerations
+## Suggested Migration Order
 
-| Concern | At 10 configs | At 100 configs | At 1000+ configs |
-|---------|---------------|----------------|-------------------|
-| Config list rendering | Simple ListView | ListView.builder (already lazy) | Add search/filter, group by subscription |
-| Hive storage | No concern | No concern | Consider box partitioning by subscription |
-| Bulk latency testing | Sequential, few seconds | Sequential, 30-60 seconds | Show progress bar, allow cancellation |
-| Subscription updates | Single HTTP call | Multiple sequential calls | Parallel with concurrency limit |
-| Config parsing | Instant | ~100ms | Still fast, string parsing is cheap |
+### Phase 1: Library Swap + Core Manager (Foundation)
+**Goal:** Get sing-box AAR loading and initializing without crashing.
+
+1. Obtain/build sing-box AAR (from Hiddify releases or build from source)
+2. Replace `android/app/libs/libv2ray.aar` with `singbox.aar`
+3. Replace geo assets (`.dat` → `.db`)
+4. Create `SingBoxCoreManager.kt` — just `Libbox.setup()` + `version()`
+5. Update `ArmaVpnService.onCreate()` to call `SingBoxCoreManager.setup()` instead of `XrayCoreManager.initialize()`
+6. **Verification:** App builds, service initializes, `Libbox.version()` returns valid string
+
+### Phase 2: Config Builder (Dart — parallel work)
+**Goal:** Generate valid sing-box JSON from existing ServerConfig.
+
+1. Create `lib/singbox/singbox_config_builder.dart`
+2. Implement protocol builders: VLESS, VMess, Trojan, Shadowsocks, Hysteria2
+3. Implement transport builders: TCP, WS, gRPC, H2
+4. Implement TLS/Reality/uTLS builders
+5. Implement DNS config builder
+6. Implement routing rules builder (with geo rules)
+7. Implement TUN inbound builder
+8. **Verification:** Unit tests — compare generated JSON against known-good sing-box configs
+
+### Phase 3: VPN Service Integration (Highest Risk)
+**Goal:** Achieve basic connect/disconnect with sing-box engine.
+
+1. Implement `PlatformInterfaceWrapper` (copy pattern from Hiddify, adapt)
+2. Modify `ArmaVpnService` to implement `PlatformInterface`
+3. Implement `openTun(TunOptions)` — build VPN from options, return fd
+4. Implement `autoDetectInterfaceControl(fd)` — call `protect(fd)`
+5. Replace startLoop with `CommandServer.startOrReloadService()`
+6. Replace stopLoop with `CommandServer.closeService()`
+7. Update shutdown order for sing-box lifecycle
+8. **Verification:** Manual test — connect to a server, browse internet
+
+### Phase 4: Traffic Monitoring + Latency
+**Goal:** Restore dashboard speed display and latency testing.
+
+1. Rewrite `TrafficMonitor` as `CommandClient` subscriber
+2. Wire StatusMessage → EventChannel stats events
+3. Implement latency testing (new approach for measureDelay)
+4. Update `ConnectionNotifier` to use `SingBoxConfigBuilder`
+5. **Verification:** Speed display works, latency test returns valid ms values
+
+### Phase 5: Anti-Censorship + Edge Cases
+**Goal:** Verify all v1.0 features work under sing-box.
+
+1. Verify TLS fragment (may need Hiddify fork)
+2. Verify mux (multiplex) configuration
+3. Verify Reality/XTLS flow
+4. Verify per-app proxy via TunOptions
+5. Verify region presets (geo rules in sing-box format)
+6. Verify custom domain rules
+7. Clean up: remove old `lib/xray/` directory and `XrayCoreManager.kt`
+8. **Verification:** Full regression test of all v1.0 features
+
+### Phase Ordering Rationale
+
+- **Phase 1 before Phase 3** because VPN service depends on the AAR being present and initializing
+- **Phase 2 can parallel Phase 1** because config builder is pure Dart, no native dependency
+- **Phase 3 depends on Phase 1 + 2** because it needs both the AAR and valid configs
+- **Phase 4 depends on Phase 3** because CommandClient needs a running CommandServer
+- **Phase 5 last** because anti-censorship features are verification on top of working engine
+
+### Dependency Graph
+
+```
+Phase 1 (AAR + CoreManager) ──┐
+                               ├──→ Phase 3 (VPN Integration) ──→ Phase 4 (Stats + Latency) ──→ Phase 5 (Verify)
+Phase 2 (Config Builder) ─────┘
+```
+
+---
+
+## Risk Assessment
+
+| Risk | Severity | Mitigation |
+|---|---|---|
+| TLS Fragment not in sing-box stable | HIGH | Use Hiddify's sing-box fork which adds fragment support |
+| PlatformInterface implementation bugs | HIGH | Copy Hiddify's PlatformInterfaceWrapper as baseline, test incrementally |
+| Config format differences causing silent failures | MEDIUM | Unit test every protocol × transport × TLS combination |
+| sing-box AAR build complexity | MEDIUM | Use pre-built AAR from Hiddify releases instead of building from source |
+| StatusMessage stats format different from current TrafficStats | LOW | Both provide bytes/sec — just different field names |
+| Latency testing without measureOutboundDelay | LOW | Multiple viable alternatives (SOCKS5 proxy + HTTP, URLTest group) |
+| Shutdown order bugs | MEDIUM | sing-box CommandServer.closeService() is cleaner than xray's stopLoop, but still test rapid toggle |
+
+---
+
+## AAR Source Options
+
+1. **Build from source** (github.com/SagerNet/sing-box) using `gomobile bind`
+   - Pro: Latest version, full control
+   - Con: Complex Go + gomobile toolchain setup
+
+2. **Use Hiddify's pre-built AAR** (from their releases/CI artifacts)
+   - Pro: Battle-tested with Flutter, includes TLS fragment patches
+   - Con: May include Hiddify-specific modifications
+
+3. **Use community Maven artifact** (if available)
+   - Pro: Standard Gradle dependency
+   - Con: May not include all needed features (fragment, etc.)
+
+**Recommendation:** Start with Hiddify's pre-built AAR for fastest iteration. If their modifications cause issues, build from source. The AAR API is the same regardless of source — it's the standard `libbox` Go-Mobile binding.
 
 ---
 
 ## Sources
 
-- **v2rayNG** (Kotlin, native Android, 30k+ stars): [github.com/2dust/v2rayNG](https://github.com/2dust/v2rayNG) — PRIMARY reference for Kotlin/VpnService/libv2ray patterns. Confidence: HIGH (verified by reading source code directly)
-- **Hiddify** (Flutter, 18k+ stars): [github.com/hiddify/hiddify-app](https://github.com/hiddify/hiddify-app) — PRIMARY reference for Flutter architecture, Riverpod usage, feature module structure. Confidence: HIGH (verified by reading source code directly)
-- **Android VpnService API**: [developer.android.com](https://developer.android.com/reference/android/net/VpnService) — Official Android docs. Confidence: HIGH
-- **Flutter Platform Channels**: [docs.flutter.dev](https://docs.flutter.dev/platform-integration/platform-channels) — Official Flutter docs. Confidence: HIGH
-- **Xray-core**: [github.com/XTLS/Xray-core](https://github.com/XTLS/Xray-core) — Protocol engine. Config format reference. Confidence: HIGH
-- **libv2ray Go-Mobile bindings**: [github.com/niclas-niclas/libv2ray](https://github.com/niclas-niclas/libv2ray) / [github.com/niclas-niclas/xray-core](https://github.com/niclas-niclas/xray-core) — AAR build patterns. Confidence: MEDIUM (multiple forks exist, API may vary)
+- sing-box v1.13.6 libbox source code: `github.com/SagerNet/sing-box/experimental/libbox/` (service.go, setup.go, platform.go, config.go, command_server.go, command_client.go, command_types.go, tun.go, monitor.go, http.go) — **HIGH confidence**
+- Hiddify Android source: `github.com/hiddify/hiddify-app/android/` (BoxService.kt, VPNService.kt, PlatformInterfaceWrapper.kt, MethodHandler.kt, ServiceConnection.kt, StatsChannel.kt) — **HIGH confidence**
+- sing-box official docs: `sing-box.sagernet.org/configuration/` — **HIGH confidence** (config format reference)
+- Existing Arma codebase analysis: All 6 Kotlin files, XrayConfigBuilder, ConnectionNotifier, VpnPlatformService — **HIGH confidence** (direct source reading)

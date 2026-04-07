@@ -1,257 +1,267 @@
-# Feature Landscape
+# Feature Landscape: Xray-core → sing-box Migration
 
-**Domain:** Xray-based proxy/VPN client for Android (censorship circumvention)
-**Researched:** 2025-07-13
-**Reference Apps Analyzed:** V2rayNG (53K★), Hiddify (28K★, Flutter), ClashMeta (36K★), Nekobox (19K★), Shadowrocket (iOS), Happ (target clone)
-**Confidence:** HIGH — based on direct source code analysis of Hiddify (Flutter) and V2rayNG/Nekobox READMEs
-
----
-
-## Table Stakes
-
-Features users expect from any Xray/V2ray client. Missing any of these = users go back to V2rayNG immediately. These are non-negotiable because the target audience already uses competing apps daily.
-
-| # | Feature | Why Expected | Complexity | Notes |
-|---|---------|--------------|------------|-------|
-| T1 | **One-tap connect/disconnect** | Every competitor has this. Users open app, tap button, they're connected. Period. | Medium | Requires full VpnService + Xray-core pipeline working. The button is simple; the plumbing is the hard part. |
-| T2 | **VLESS protocol (incl. Reality + XTLS)** | The dominant anti-censorship protocol in 2024-2025. Reality is the gold standard for defeating DPI in Iran/China/Russia. Without it, the app is useless to 60%+ of the target audience. | High | Reality requires proper TLS fingerprint handling. XTLS-Vision flow must work. This is the most critical protocol. |
-| T3 | **VMess protocol** | Legacy V2ray protocol still widely used. Many existing configs are VMess. | Medium | Simpler than VLESS but still needs proper AES-128-GCM/ChaCha20 support. |
-| T4 | **Trojan protocol** | Third most popular protocol after VLESS and VMess. Many providers offer Trojan configs. | Medium | TLS-based, relatively straightforward via Xray-core. |
-| T5 | **Shadowsocks protocol** | Original censorship circumvention protocol. Still used, especially as fallback. | Low | Well-supported in Xray-core. Basic parsing needed. |
-| T6 | **Hysteria2 protocol** | UDP-based QUIC protocol for high-speed connections. Increasingly popular because it's faster than TCP-based protocols and harder to throttle. | Medium | Requires Xray-core version with Hysteria2 support or separate binary. |
-| T7 | **Share link parsing (vless://, vmess://, trojan://, ss://)** | Users receive configs as share links via Telegram/Signal. If you can't parse `vless://xxx@server:443?...`, the app is useless. This is THE primary config import method. | Medium | Each protocol has its own URI format. VMess uses base64-encoded JSON. VLESS/Trojan use standard URI format with query params. Must handle edge cases (missing fields, non-standard encodings). |
-| T8 | **Subscription URL import + parsing** | Users subscribe to VPN providers who deliver configs via base64-encoded URLs. Subscription URLs contain multiple server configs. Auto-update is expected. | Medium | Parse base64 response → split by newline → parse each share link. Must handle HTTP headers (User-Agent, subscription-userinfo). |
-| T9 | **QR code scanning** | Second most common config import method. Users share QR codes in person or via screenshots. | Low | Use `mobile_scanner` package. Parse QR content as share link. |
-| T10 | **Clipboard import** | Users copy share links from Telegram/browsers. Tap "import from clipboard" is expected. | Low | Read clipboard → detect share link format → parse. |
-| T11 | **Server list with latency display** | Users need to see all their servers, which protocol each uses, and how fast each is. | Medium | List UI with protocol badges (VLESS/VMess/Trojan), latency in ms, country flags optional. |
-| T12 | **Latency testing (ping/TCPing)** | Users test servers to find which ones work and which are fastest. "Test all" is expected. | Medium | HTTP ping to `gstatic.com/generate_204` or TCPing to server:port. Must run concurrently for bulk testing. Display results inline. |
-| T13 | **Real-time traffic stats (upload/download speed)** | Users need to verify the proxy is working and monitor speeds. All competitors show this on the dashboard. | Medium | Read bytes sent/received from Xray-core via platform channel. Calculate speed (bytes/sec). Update UI every 1-2 seconds. |
-| T14 | **Light/Dark theme** | Standard UX expectation. Most users in target regions prefer dark mode (AMOLED screens, night usage). | Low | Flutter ThemeData with light/dark variants. Follow Material 3 guidelines. |
-| T15 | **Connection state feedback** | Users must see: Disconnected → Connecting... → Connected (with duration timer). Visual clarity on connection status prevents panic-disconnects. | Low | State machine: idle → connecting → connected → disconnecting. Show in UI with colors (red/yellow/green). |
-| T16 | **VpnService integration (TUN mode)** | Android requires VpnService to capture all device traffic. Without this, only apps that support SOCKS/HTTP proxy work — which is almost none. | High | Kotlin-side VpnService implementation. tun2socks to route TUN traffic to Xray-core SOCKS inbound. This is the core of the Android integration. |
-| T17 | **Xray-core JSON config generation** | Must translate user-facing config (protocol, server, port, UUID, etc.) into valid Xray JSON config with inbounds, outbounds, routing, dns sections. | High | The bridge between UI and engine. Must handle all protocol variants, transport types (ws, grpc, tcp, h2), TLS settings, Reality settings. |
-| T18 | **Basic routing: Bypass LAN** | Traffic to local network (192.168.x.x, 10.x.x.x) must NOT go through proxy. Every competitor does this by default. | Low | Add geoip:private to direct outbound in Xray routing config. |
-| T19 | **DNS configuration** | Custom DNS (e.g., 8.8.8.8, 1.1.1.1) because local ISP DNS is poisoned in censored regions. Users can't resolve blocked domains without clean DNS. | Medium | Configure Xray DNS module with remote DNS (DoH/DoT) for proxied domains and direct DNS for local domains. |
-| T20 | **Config persistence (local storage)** | Configs must survive app restarts. Users add servers once and expect them to be there forever. | Low | Hive/Isar local storage. Store parsed config objects. |
+**Domain:** sing-box engine migration for Flutter VPN client (censorship circumvention)
+**Researched:** 2025-07-15
+**sing-box version analyzed:** v1.13.6 (released 2026-04-06)
+**Reference:** Hiddify sing-box fork v1.13.0.h5, standard sing-box docs
+**Confidence:** HIGH — based on official sing-box v1.13.6 source code, Hiddify fork analysis, and current codebase `XrayConfigBuilder` review
 
 ---
 
-## Differentiators
+## Migration Context
 
-Features that set Arma apart from V2rayNG (ugly but functional) and compete with Hiddify (polished but complex). Not all users expect these, but they create loyalty and word-of-mouth.
+This document maps every feature in Arma's current `XrayConfigBuilder` (542 lines, `/lib/xray/xray_config_builder.dart`) and `VpnSettings` entity to sing-box equivalents. The current config builder handles 5 protocols × 4 transports × 3 TLS modes, plus anti-censorship features, routing, DNS, mux, sniffing, and per-app proxy.
 
-| # | Feature | Value Proposition | Complexity | Notes |
-|---|---------|-------------------|------------|-------|
-| D1 | **Clean, modern UI (Happ-quality design)** | V2rayNG looks like a developer tool from 2018. Hiddify is clean but busy. Arma should look like a premium app that non-technical users feel comfortable using. This is the #1 differentiator in the spec. | Medium | Custom design system, animations on connect/disconnect, thoughtful spacing, satisfying button interactions. Not just Material defaults. |
-| D2 | **Subscription info display (data remaining, days left, expiry)** | Hiddify shows this; V2rayNG does not. Users with paid subscriptions need to know how much data they've used and when it expires. This prevents surprise disconnections. | Low | Parse `subscription-userinfo` header from subscription response: `upload=X; download=Y; total=Z; expire=T`. Display as progress bar. |
-| D3 | **Per-app proxy (split tunneling)** | Choose which apps go through proxy and which don't. Banking apps should be direct (they flag VPN users). Games may need direct for latency. Telegram needs proxy. | High | Android VpnService `Builder.addAllowedApplication()` or `addDisallowedApplication()`. Need to list all installed apps with icons. |
-| D4 | **TLS tricks: Fragment, Padding, Mixed SNI case** | Critical anti-DPI technique for Iran specifically. Fragment splits TLS ClientHello into small packets to bypass DPI. Padding adds noise. Mixed SNI case (e.g., `GoOgLe.CoM`) defeats simple string matching. These can make the difference between "works" and "blocked". | Medium | Xray-core fragment settings in outbound. Hiddify implements this extensively (seen in their `SingboxTlsTricks` model). Config: fragment size range, sleep range, padding size, mixed case toggle. |
-| D5 | **Auto-select best server (URL test)** | Automatically pick the fastest/working server from subscription. User doesn't need to manually test and select. Just connect and the app picks the best one. Hiddify and Clash both have this. | Medium | Periodically test all servers, select one with lowest delay. Strategies: round-robin, lowest-latency, consistent-hash. |
-| D6 | **Encrypted/hidden subscription format** | Some subscription providers encrypt configs to prevent detection. Support for non-standard formats beyond plain base64. | Medium | Need to handle various encoding schemes. Provider-specific but becoming more common. |
-| D7 | **Custom User-Agent for subscription fetch** | Subscription providers sometimes check User-Agent to serve different configs or block non-app requests. Users need to customize this. | Low | Simple text field in subscription settings. Default to app-specific UA. |
-| D8 | **Bulk operations (multi-select, bulk delete, bulk test)** | Power users have 50+ servers. Managing them one-by-one is painful. Long-press to multi-select, then delete/test selected. | Low | Standard list multi-select pattern. Already in spec. |
-| D9 | **Mux (Multiplexing) support** | Multiplex multiple connections over a single proxy connection. Can improve performance and reduce detection. | Low | Xray-core mux config toggle. Configurable max streams. |
-| D10 | **Sniffing toggle** | Traffic sniffing to detect actual destination (override DNS-based routing). Prevents DNS leaks and enables protocol-based routing. | Low | Xray-core sniffing config. Toggle in settings. |
-| D11 | **Config sharing/export** | Share a config with friends via share link or QR code. Critical for word-of-mouth growth — users share working configs via Telegram. | Low | Generate share link from stored config → share intent or render QR code. |
-| D12 | **Log viewer + export** | When things don't work, users need to see why. Technical users check logs. Support channels ask for logs. | Medium | Capture Xray-core logs via platform channel. Display in scrollable view. Export as text file. |
-| D13 | **Connection timer** | Show how long the current session has been active. Simple but gives confidence the connection is alive. | Low | Start timer on connect, show in dashboard. |
-| D14 | **Notification with traffic stats** | Persistent Android notification showing connection status and current speed. Users can see proxy status without opening the app. | Low | Required by VpnService anyway (foreground service notification). Enhance with speed stats. |
-| D15 | **Server sorting and grouping** | Sort by latency, name, protocol. Group by subscription source. Filter by working/failed. | Low | UI-only feature. Sort/filter functions on server list. |
-| D16 | **App language selection** | Target users span Persian, Russian, Chinese, English. Multi-language support is expected in this specific market. | Medium | Flutter intl/l10n. Need at minimum: English, Persian (RTL!), Russian, Chinese simplified. RTL support for Persian is extra complexity. |
-| D17 | **Auto-reconnect on network change** | When switching from WiFi to cellular or vice versa, the VPN drops. Auto-reconnect without user intervention. | Medium | Listen for connectivity changes. Re-establish VpnService connection. Handle Android Doze mode. |
-| D18 | **Region-specific bypass rules (e.g., bypass Iran/China domestic)** | Don't proxy traffic to local sites. Iranian users don't need to proxy Iranian sites. Chinese users don't need to proxy Chinese sites. Saves bandwidth and improves speed. | Medium | Use geoip/geosite DAT files for country-specific routing. Presets for common regions. Hiddify calls this "region" config. |
+**Key structural difference:** Xray-core uses a flat JSON with `inbounds[].protocol`, `outbounds[].protocol`, `outbounds[].streamSettings.network/security`. sing-box uses `inbounds[].type`, `outbounds[].type` with nested `tls`, `transport`, `multiplex` objects. The entire config builder must be rewritten — there is no field-level translation.
 
 ---
 
-## Stretch / Future Differentiators
+## Feature Parity Matrix: Xray-core → sing-box
 
-Features that would be exceptional but can wait for v2+.
+### Protocols
 
-| # | Feature | Value Proposition | Complexity | Notes |
-|---|---------|-------------------|------------|-------|
-| S1 | **WARP integration (Cloudflare Warp)** | Free fallback connection method. Hiddify integrates WARP as a WireGuard tunnel that chains with the main proxy. Useful when all other protocols are blocked. | High | Requires WARP account registration API, WireGuard config generation. Hiddify has this (seen in source: `warp_account.dart`, `SingboxWarpOption`). |
-| S2 | **Clash/Sing-box config import** | Some users have Clash YAML configs or sing-box JSON configs. Supporting these formats expands the user base. | High | Need YAML parser and config translator. Different config schema from Xray. |
-| S3 | **Proxy chain (double proxy)** | Route through two proxies for extra anonymity or to bypass double-layer censorship. | High | Xray-core supports chained outbounds. UI complexity to configure. |
-| S4 | **Widget (Android home screen)** | Quick connect/disconnect from home screen without opening app. | Medium | Android AppWidget with connection toggle. |
-| S5 | **Speed test (dedicated)** | Test actual download speed through the proxy, not just latency. | Medium | Download a test file through proxy and measure throughput. |
-| S6 | **Deep link support** | Handle `arma://import/...` or `vless://...` links from other apps to auto-import configs. | Medium | Android intent-filter for custom URI schemes. Already present in Hiddify (`deep_link` feature module). |
-| S7 | **Auto-start on boot** | Start VPN connection automatically when device boots. Critical for always-on privacy users. | Medium | Android BroadcastReceiver for BOOT_COMPLETED. Re-establish last connection. Hiddify has this (`auto_start` feature module). |
-| S8 | **iCloud/backup-style config sync** | Sync configs across devices or backup to cloud. | High | Requires backend or cloud storage integration. Goes against "no backend" constraint for v1. |
-| S9 | **Geo-aware rule sets (downloadable)** | Download community-maintained rule sets (like Loyalsoldier/v2ray-rules-dat) for smarter routing. | Medium | Download geoip.dat and geosite.dat files. V2rayNG documents this prominently. |
+| # | Feature | Xray-core Config | sing-box Config | Parity | Migration Notes |
+|---|---------|-----------------|-----------------|--------|-----------------|
+| P1 | **VLESS** | `protocol: "vless"`, `vnext[].users[].id` | `type: "vless"`, `uuid` | ✅ FULL | Direct mapping. `uuid` replaces `vnext[0].users[0].id`. |
+| P2 | **VLESS + Reality** | `streamSettings.realitySettings: {publicKey, shortId, spiderX}` | `tls: {reality: {enabled: true, public_key, short_id}}` | ✅ FULL | Nested under `tls.reality` instead of top-level `realitySettings`. `spiderX` is NOT in sing-box outbound Reality config — it's a server-side crawling feature, not needed client-side. |
+| P3 | **VLESS + XTLS-Vision** | `vnext[].users[].flow: "xtls-rprx-vision"` | `flow: "xtls-rprx-vision"` | ✅ FULL | Same flow value. Same constraint: only valid for VLESS + TCP + TLS/Reality. |
+| P4 | **VMess** | `protocol: "vmess"`, `vnext[].users[].{id, alterId, security}` | `type: "vmess"`, `{uuid, alter_id, security}` | ✅ FULL | Field rename: `alterId` → `alter_id`. Added: `global_padding`, `authenticated_length` (both VMess AEAD features). `packet_encoding: "xudp"` default. |
+| P5 | **Trojan** | `protocol: "trojan"`, `servers[].password` | `type: "trojan"`, `password` | ✅ FULL | Direct mapping. |
+| P6 | **Shadowsocks** | `protocol: "shadowsocks"`, `servers[].{method, password}` | `type: "shadowsocks"`, `{method, password}` | ✅ ENHANCED | Same fields + bonus: 2022-blake3-\* ciphers, SIP003 plugins (obfs-local, v2ray-plugin), `udp_over_tcp`. |
+| P7 | **Hysteria2** | `protocol: "hysteria2"`, custom streamSettings | `type: "hysteria2"`, `{password, up_mbps, down_mbps, obfs}` | ✅ ENHANCED | **New capabilities:** `server_ports` (port ranges for port hopping, since 1.11.0), `hop_interval`/`hop_interval_max` (randomized hopping), `bbr_profile` (conservative/standard/aggressive, since 1.14.0). |
+
+### Transports
+
+| # | Feature | Xray-core Config | sing-box Config | Parity | Migration Notes |
+|---|---------|-----------------|-----------------|--------|-----------------|
+| T1 | **TCP** | `streamSettings.network: "tcp"`, `tcpSettings: {header: {type: "none"}}` | No `transport` section (TCP is default) | ✅ FULL | Simpler — just omit the `transport` field entirely. No `header.type` equivalent; TCP header obfuscation is not supported (rarely used). |
+| T2 | **WebSocket** | `wsSettings: {path, headers.Host}` | `transport: {type: "ws", path, headers: {Host: "..."}}` | ✅ FULL | Direct mapping. Bonus: `max_early_data` and `early_data_header_name: "Sec-WebSocket-Protocol"` for Xray compatibility. |
+| T3 | **gRPC** | `grpcSettings: {serviceName, authority, multiMode}` | `transport: {type: "grpc", service_name}` | ✅ FULL | Field rename: `serviceName` → `service_name`. No `multiMode` equivalent — sing-box gRPC handles multiplexing differently. `authority` not directly available — use TLS `server_name`. |
+| T4 | **HTTP/2** | `httpSettings: {host, path}` | `transport: {type: "http", host, path}` | ✅ FULL | Same semantics. sing-box does NOT enforce TLS for HTTP transport (Xray does for H2). If TLS needed, configure `tls` object explicitly. |
+| T5 | **HTTPUpgrade** | ❌ Not available | `transport: {type: "httpupgrade", host, path}` | 🆕 NEW | New transport for CDN-based proxies. Not in Xray-core. Useful addition for future. |
+| T6 | **QUIC transport** | ❌ Not available (separate from Hysteria2) | `transport: {type: "quic"}` | 🆕 NEW | V2Ray QUIC transport without additional encryption. |
+
+### TLS / Security
+
+| # | Feature | Xray-core Config | sing-box Config | Parity | Migration Notes |
+|---|---------|-----------------|-----------------|--------|-----------------|
+| S1 | **Standard TLS** | `streamSettings.security: "tls"`, `tlsSettings: {serverName, alpn, fingerprint, allowInsecure}` | `tls: {enabled: true, server_name, alpn, insecure}` | ✅ FULL | Field renames: `serverName` → `server_name`, `allowInsecure` → `insecure`. |
+| S2 | **Reality** | `streamSettings.security: "reality"`, `realitySettings: {publicKey, shortId, fingerprint, spiderX}` | `tls: {enabled: true, reality: {enabled: true, public_key, short_id}}` | ✅ FULL | `fingerprint` for Reality goes in `tls.utls.fingerprint`. `spiderX` is server-side only — omit. |
+| S3 | **uTLS Fingerprinting** | `fingerprint: "chrome"` in tlsSettings | `tls: {utls: {enabled: true, fingerprint: "chrome"}}` | ⚠️ AVAILABLE BUT DISCOURAGED | sing-box docs explicitly say uTLS is "Not Recommended" — fingerprinting vulnerabilities, poor code quality, lacks active maintenance. Values: chrome, firefox, edge, safari, 360, qq, ios, android, random, randomized. Still works; just less trusted. |
+| S4 | **ECH (Encrypted Client Hello)** | ❌ Not in Xray-core | `tls: {ech: {enabled: true, config: [...]}}` | 🆕 NEW | Major anti-censorship feature. Encrypts the ClientHello entirely (including SNI). Much stronger than uTLS fingerprinting or fragment tricks. Requires server support + DNS HTTPS records. |
+| S5 | **ALPN** | `tlsSettings.alpn: ["h2", "http/1.1"]` | `tls: {alpn: ["h2", "http/1.1"]}` | ✅ FULL | Direct mapping. |
+| S6 | **Certificate pinning** | Not available | `tls: {certificate_public_key_sha256: [...]}` | 🆕 NEW | Pin server certificates by public key hash. Security improvement. |
+
+### Anti-Censorship Features (CRITICAL SECTION)
+
+| # | Feature | Xray-core Config | sing-box Config | Parity | Migration Notes |
+|---|---------|-----------------|-----------------|--------|-----------------|
+| AC1 | **TLS Fragment (basic)** | `sockopt.fragment: {packets: "tlshello", length: "10-100", interval: "0-10"}` | `tls: {fragment: true, fragment_fallback_delay: "500ms"}` | ⚠️ REDUCED CONTROL | Standard sing-box 1.12+ has fragment as **boolean only** — no size/sleep range parameters. It auto-detects timing on Linux/Apple/Windows. Falls back to `fragment_fallback_delay`. Less granular but potentially smarter. |
+| AC2 | **TLS Record Fragment** | Not available | `tls: {record_fragment: true}` | 🆕 NEW | Fragments TLS handshake into multiple TLS records (vs TCP segments). Different technique, same goal. Can be more effective for some firewalls. |
+| AC3 | **Fragment with size/sleep ranges** | `sockopt.fragment.length: "10-100"`, `sockopt.fragment.interval: "0-10"` | ❌ NOT IN STANDARD sing-box | ❌ GAP | **Hiddify fork** adds `TLSFragmentOptions{Enabled, Size, Sleep}` on dialer level. Standard sing-box has no equivalent. Options: (a) accept boolean-only fragment, (b) use Hiddify fork, (c) implement custom Go patch. |
+| AC4 | **Mixed SNI Case** | Custom implementation (e.g., `GoOgLe.CoM`) | ❌ NOT IN STANDARD sing-box | ❌ GAP | **Hiddify fork** adds `TLSTricksOptions.MixedCaseSNI`. Standard sing-box has no equivalent. This is specifically important for Iran's DPI. |
+| AC5 | **TLS Padding** | Custom implementation (add noise to TLS records) | ❌ NOT IN STANDARD sing-box | ❌ GAP | **Hiddify fork** adds `TLSTricksOptions.PaddingMode/PaddingSize` + forces uTLS with custom fingerprint. Standard sing-box's `multiplex.padding` is different (mux-level padding, not TLS-level). |
+
+**Anti-censorship gap analysis:**
+
+The current `AntiCensorshipSettings` has 4 levels: none, light, moderate, aggressive. These map to combinations of fragment (size/sleep ranges), padding, and mixed SNI. Standard sing-box only supports fragment as a boolean. **Three of four anti-censorship features have no standard sing-box equivalent.**
+
+**Recommended approach:** Use standard sing-box `tls.fragment: true` + `tls.record_fragment: true` as the initial migration. This provides automatic TLS fragmentation that is likely sufficient for most censorship scenarios. The boolean fragment in sing-box auto-detects optimal fragmentation timing, which may actually be MORE effective than manually specified ranges for most users. Reserve the granular controls (size/sleep ranges, mixed SNI, padding) for a future phase if testing reveals standard fragment is insufficient. Hiddify's fork is available as a fallback option.
+
+### Routing
+
+| # | Feature | Xray-core Config | sing-box Config | Parity | Migration Notes |
+|---|---------|-----------------|-----------------|--------|-----------------|
+| R1 | **LAN Bypass** | `geoip:private` + `geosite:private` rules | `ip_is_private: true` rule OR `rule_set: "geosite-private"` | ✅ FULL | sing-box 1.8+ has built-in `ip_is_private` matcher — simpler than geoip:private. No DAT file needed for private IPs. |
+| R2 | **Region: Iran** | `geosite:category-ir` + `geoip:ir` | `rule_set: ["geosite-category-ir", "geoip-ir"]` | ✅ FULL | Rule-sets available at `https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-category-ir.srs` and `https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-ir.srs`. Must declare in `route.rule_set[]` and enable `experimental.cache_file`. |
+| R3 | **Region: China** | `geosite:cn` + `geoip:cn` | `rule_set: ["geosite-cn", "geoip-cn"]` | ✅ FULL | Available as `.srs` binary rule-sets. Same URLs pattern as Iran. |
+| R4 | **Region: Russia** | `geosite:category-ru` + `geoip:ru` | `rule_set: ["geosite-category-ru", "geoip-ru"]` | ✅ FULL | Available as `.srs` binary rule-sets. |
+| R5 | **Custom domain rules (proxy/direct/block)** | `routing.rules[].domain: ["domain:example.com"]` with `outboundTag` | `route.rules[].domain: ["example.com"]` with `action: "route"` + `outbound` | ✅ FULL | Syntax change: no `domain:` prefix needed. Use `domain`, `domain_suffix`, `domain_keyword`, `domain_regex` fields. `outboundTag` → `outbound`. |
+| R6 | **Server address bypass** | IP rule or domain rule for server address | Same approach: `ip_cidr` or `domain` rule for server | ✅ FULL | Must still be first rule. sing-box also has `auto_detect_interface: true` which handles routing loop prevention automatically on Linux/Windows/macOS — but on Android, manual server bypass is still needed. |
+| R7 | **Domain strategy** | `routing.domainStrategy: "IPIfNonMatch"` | `route.default_domain_resolver` + DNS rules | ⚠️ DIFFERENT | sing-box 1.12+ moved domain resolution to `domain_resolver` in dial fields. The `domainStrategy` concept is replaced by explicit DNS rule routing. Must configure DNS rules to resolve domains before routing. |
+| R8 | **geoip/geosite (legacy)** | DAT files loaded at startup | `geoip`/`geosite` fields in rules (deprecated since 1.8) | ⚠️ DEPRECATED | Still works in 1.13.x but will be removed. **Must use `rule_set` approach** for future-proofing. Rule-sets are remote (auto-downloaded + cached) or local (bundled `.srs` files). |
+| R9 | **Per-app proxy** | VpnService level (addAllowedApplication) | TUN `include_package`/`exclude_package` + route `package_name` rules | ✅ ENHANCED | sing-box handles per-app at TUN level AND route rule level. Can do `include_package: ["com.android.chrome"]` in TUN config. This is cleaner than VpnService-only approach. |
+| R10 | **Catch-all rule** | `{type: "field", outboundTag: "proxy", port: "0-65535"}` | `route.final: "proxy"` | ✅ SIMPLER | No need for catch-all rule. `route.final` specifies default outbound. |
+
+### DNS
+
+| # | Feature | Xray-core Config | sing-box Config | Parity | Migration Notes |
+|---|---------|-----------------|-----------------|--------|-----------------|
+| D1 | **Split DNS (remote + direct)** | `dns.servers: [{address: "https://1.1.1.1/dns-query"}, "localhost"]` | `dns.servers: [{type: "https", tag: "remote", server: "1.1.1.1"}, {type: "local", tag: "local"}]` | ✅ FULL | More explicit. New typed DNS servers (since 1.12.0). Must add DNS rules to route queries to correct server. |
+| D2 | **DoH (DNS over HTTPS)** | `dns.servers[].address: "https://1.1.1.1/dns-query"` | `dns.servers[]: {type: "https", server: "1.1.1.1", path: "/dns-query"}` | ✅ FULL | Split into `server` + `path` fields. |
+| D3 | **DoT (DNS over TLS)** | `dns.servers[].address: "tls://1.1.1.1"` | `dns.servers[]: {type: "tls", server: "1.1.1.1"}` | ✅ FULL | Explicit type. Default port 853. |
+| D4 | **Plain DNS** | `dns.servers[].address: "1.1.1.1"` | `dns.servers[]: {type: "udp", server: "1.1.1.1"}` | ✅ FULL | Explicit `udp` type. |
+| D5 | **FakeIP** | ❌ Not in Xray-core | `dns.servers[]: {type: "fakeip"}` + `dns.fakeip` config | 🆕 NEW | Eliminates DNS query latency by returning fake IPs and resolving at proxy. Hiddify uses this. Major performance improvement. |
+| D6 | **DNS over QUIC** | ❌ Not in Xray-core | `dns.servers[]: {type: "quic", server: "dns.adguard.com"}` | 🆕 NEW | Fastest encrypted DNS option. |
+| D7 | **DNS over HTTP/3** | ❌ Not in Xray-core | `dns.servers[]: {type: "h3", server: "8.8.8.8"}` | 🆕 NEW | |
+
+### Engine Features
+
+| # | Feature | Xray-core Config | sing-box Config | Parity | Migration Notes |
+|---|---------|-----------------|-----------------|--------|-----------------|
+| E1 | **Sniffing** | `inbound.sniffing: {enabled, destOverride: ["http","tls","quic"]}` | Route rules with `protocol: ["tls","http","quic"]` matcher | ⚠️ ARCHITECTURE CHANGE | Sniffing in sing-box 1.11+ is NOT an inbound toggle. Protocol detection happens automatically; routing decisions use `protocol` field in route rules. Legacy `sniff: true` still works in 1.13 but deprecated. For the user-facing "sniffing toggle", the migration must change approach: when sniffing is "enabled", add protocol-based route rules; when "disabled", omit them. Alternatively, use `sniff_override_destination: true` (deprecated but functional in 1.13). |
+| E2 | **Mux (Multiplexing)** | `outbound.mux: {enabled: true, concurrency: 4}` | `outbound.multiplex: {enabled: true, protocol: "h2mux", max_streams: 4, padding: false}` | ✅ ENHANCED | Protocol choices: `smux`, `yamux`, `h2mux` (default). `padding` adds padding to mux frames (anti-detection). `brutal` for TCP Brutal bandwidth optimization. `concurrency` → `max_connections` or `max_streams`. |
+| E3 | **TUN Inbound** | `protocol: "tun"`, `settings: {name: "tun0", MTU: 9000}` | `type: "tun"`, `interface_name: "tun0"`, `mtu: 9000`, `auto_route: true`, `stack: "mixed"` | ✅ ENHANCED | sing-box TUN has `stack` option: `system` (OS network stack), `gVisor` (user-space), `mixed` (TCP=system, UDP=gVisor). `auto_route: true` handles routing table automatically. `strict_route: true` for leak prevention. |
+| E4 | **Traffic Stats** | `stats: {}` + `policy.system.statsOutbound*` → gRPC QueryStats | V2Ray API: `experimental.v2ray_api.stats: {enabled, outbounds: ["proxy","direct"]}` | ✅ FULL | V2Ray API must be built with v2ray tag. Alternative: Clash API (`experimental.clash_api`) provides traffic info + mode switching. |
+| E5 | **Log level** | `log.loglevel: "debug"` | `log: {level: "debug", output: "box.log"}` | ✅ FULL | Same levels: trace, debug, info, warn, error, fatal, panic. |
+| E6 | **Direct outbound** | `protocol: "freedom"` | `type: "direct"` | ✅ FULL | Rename only. |
+| E7 | **Block outbound** | `protocol: "blackhole"`, `settings.response.type: "http"` | `type: "block"` | ✅ SIMPLER | No response type needed. Just blocks. |
 
 ---
 
-## Anti-Features
+## Features That GAIN Capabilities in sing-box
 
-Features to explicitly NOT build. Each would waste time, add risk, or actively harm the product.
+| # | Feature | What's New | Impact |
+|---|---------|-----------|--------|
+| G1 | **Hysteria2 port hopping** | `server_ports: ["2080:3000"]` + `hop_interval` | Better anti-blocking: hop across port ranges to evade port-based blocking. |
+| G2 | **ECH (Encrypted Client Hello)** | Full ClientHello encryption | Strongest anti-censorship TLS feature. Hides SNI entirely. Much better than mixed case SNI tricks. |
+| G3 | **FakeIP DNS** | Fake IP responses + proxy-side resolution | Eliminates DNS latency for proxied domains. Significant speed improvement. |
+| G4 | **TLS record_fragment** | Fragment at TLS record level | Additional fragmentation technique alongside TCP-level fragment. |
+| G5 | **Mux protocol choice** | h2mux/yamux/smux + padding + TCP Brutal | More sophisticated multiplexing with anti-detection padding. |
+| G6 | **Per-app proxy at TUN level** | `include_package`/`exclude_package` in TUN config | Cleaner per-app proxy than VpnService-only approach. Can also use route rules with `package_name`. |
+| G7 | **Rule-set with auto-update** | Remote `.srs` files with `update_interval` + caching | No need to bundle large DAT files. Auto-updates geo rules from GitHub. |
+| G8 | **Network strategy** | `network_strategy`, `network_type`, `fallback_network_type` | Automatic WiFi/cellular fallback behavior in dialer. |
+| G9 | **TUN stack options** | `system`, `gVisor`, `mixed` | Performance tuning: `mixed` uses OS TCP stack (faster) + gVisor UDP (reliable). |
+| G10 | **HTTPUpgrade transport** | New transport type for CDN proxies | Can pass through CDNs more reliably than WebSocket in some scenarios. |
+
+---
+
+## Features That Work DIFFERENTLY
+
+| # | Feature | Current (Xray) Behavior | sing-box Behavior | Action Required |
+|---|---------|------------------------|-------------------|-----------------|
+| W1 | **Config JSON structure** | Flat: `{inbounds, outbounds, routing, dns, stats, policy}` | Structured: `{inbounds, outbounds, route, dns, experimental, log}` | Complete `SingboxConfigBuilder` rewrite. Every JSON key is different. |
+| W2 | **Transport config** | `streamSettings.network` + `wsSettings/grpcSettings/httpSettings` | `transport: {type: "ws"/"grpc"/"http", ...}` | Unified transport object replaces per-transport top-level fields. |
+| W3 | **TLS/Reality config** | `streamSettings.security` + `tlsSettings/realitySettings` | `tls: {enabled, server_name, utls, reality, fragment, ech, ...}` | Single `tls` object with nested sub-configs. No separate `realitySettings` top level. |
+| W4 | **Sniffing** | Per-inbound toggle: `sniffing.enabled` | Route rules with `protocol` matcher (1.11+) | Architecture change. The "sniffing enabled" toggle must translate to adding/removing protocol-based route rules, not an inbound field. |
+| W5 | **Geo routing** | Inline `geoip:cn` / `geosite:cn` in rules | `rule_set` references + `route.rule_set[]` declarations | Must declare rule-sets (remote or local) and reference by tag in rules. Requires `experimental.cache_file.enabled: true` for caching. |
+| W6 | **DNS config** | `dns.servers: [{address: "https://...", domains: [...]}]` | `dns.servers: [{type: "https", tag: "...", server: "..."}]` + `dns.rules` | Split: server definitions are separate from routing. DNS rules route queries to servers by domain/geosite. |
+| W7 | **Catch-all routing** | `{type: "field", outboundTag: "proxy", port: "0-65535"}` | `route.final: "proxy"` | Simpler. Single field instead of a catch-all rule. |
+| W8 | **Latency testing** | Custom config for `MeasureDelay()` | sing-box `URLTest` group outbound OR custom URL fetch | May need to change latency testing approach. sing-box's `urltest` outbound type handles this natively. |
+| W9 | **Outbound user stats** | `policy.levels.0.statsUser*` + user `email` field | `experimental.v2ray_api.stats.outbounds: ["proxy"]` | Stats are tracked per-outbound tag, not per-user email. Simpler to configure. |
+
+---
+
+## Anti-Features (Do NOT Build)
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| **Bundled free/trial servers** | Legal liability. Server maintenance burden. Free servers get abused and blocked quickly, making app look broken. Every free VPN app is suspected of data harvesting. | Strictly a client. Link to documentation on how to get configs from providers or self-host. |
-| **Built-in server provisioning** | Scope creep. Turns a client app into a SaaS platform. Competing with Hiddify Manager, Outline, etc. | Stay in the client lane. Let server panels be server panels. |
-| **User accounts / authentication** | Requires backend infrastructure. No backend = no data breach risk. Users in censored regions are (rightfully) suspicious of apps that want their identity. | All data local. No sign-up. No tracking. |
-| **Analytics / telemetry** | Privacy-first positioning. Any analytics in a circumvention tool destroys trust instantly. One leak = reputational death. | Zero analytics. Not even crash reporting to third parties. Local crash logs only. |
-| **In-app ads** | Users are literally trying to bypass censorship. Showing them ads is tone-deaf and insulting. Competitors are all ad-free. | Donations page (crypto + card). Open-source goodwill. |
-| **Complex manual config editor (full JSON)** | 95% of users will never edit raw JSON. Building a full JSON editor is huge effort for tiny audience. V2rayNG has this and nobody uses it except developers. | Parse share links and subscription URLs. For edge cases, accept raw JSON paste (not a visual editor). |
-| **iOS/Desktop builds in v1** | Android is the overwhelming platform in target regions (Iran ~85% Android, Russia ~75%). Flutter enables cross-platform later, but shipping Android first means faster time-to-users. | Architecture for cross-platform (Clean Arch + platform channels abstraction), but build/test Android only in v1. |
-| **TV platform** | Tiny user base. Different UI paradigm (D-pad navigation). Not worth the effort for v1. | Defer to v2+. Android TV uses same APK base if architecture is right. |
-| **Protocol implementation from scratch** | Reimplementing VLESS/VMess/Trojan in Dart would be insane. Xray-core exists, is battle-tested, and handles everything. | Compile Xray-core via Go-Mobile. Use it as a black box via platform channels. |
-| **VPN kill switch (v1)** | Technically complex to implement correctly on Android. If done wrong, it either leaks traffic or bricks internet access. Better to ship without it than ship it broken. | Add in v2 after core stability is proven. Document the limitation. |
-| **Traffic interception / MITM** | Shadowrocket does this for debugging. It's a security and legal minefield. Not appropriate for a privacy-first app. | Proxy traffic, don't inspect it. |
+| Use Hiddify's fork directly as a dependency | Creates coupling to Hiddify's release cycle. Fork may diverge from upstream. Hiddify's fork has features Arma doesn't need (WARP, ad blocking). | Use standard sing-box library. If granular fragment/padding/mixed-SNI needed later, apply minimal Go patches or evaluate if standard fragment is sufficient. |
+| Bundle geoip.dat / geosite.dat files | Large files (10-30MB) increase APK size. sing-box deprecated DAT format. | Use remote `rule_set` with `.srs` binary format. Auto-download + cache with `experimental.cache_file`. |
+| Implement sniffing as inbound toggle | Deprecated in sing-box 1.11+, will be removed in 1.13+. | Use route rules with `protocol` matcher. The UI toggle controls whether protocol-based rules exist in config. |
+| Support mKCP or DomainSocket transports | Not available in sing-box. Very rarely used. | Don't add to transport options. TCP, WS, gRPC, HTTP cover 99.9% of use cases. |
 
 ---
 
-## Feature Dependencies
+## Feature Dependencies for Migration
 
 ```
-T16 (VpnService) ──────────────────┐
-T17 (Xray JSON config gen) ────────┤
-T2-T6 (Protocol support) ─────────┤
-                                   ├──► T1 (One-tap connect) ──► T13 (Connection timer)
-T18 (Bypass LAN) ─────────────────┤                          ──► T15 (Connection state)
-T19 (DNS config) ─────────────────┘                          ──► D14 (Notification)
-                                                              ──► D17 (Auto-reconnect)
+Config Builder Rewrite (W1)
+├── Protocol mapping (P1-P7) — depends on config structure
+├── Transport mapping (T1-T4) — depends on config structure
+├── TLS mapping (S1-S3) — depends on config structure
+├── Anti-censorship (AC1-AC2) — depends on TLS mapping
+├── DNS rewrite (D1-D4) — depends on config structure
+├── Routing rewrite (R1-R10) — depends on route + rule_set structure
+├── Sniffing migration (E1) — depends on routing rewrite
+├── Mux migration (E2) — depends on protocol mapping
+└── Stats/API migration (E4) — depends on experimental config
 
-T7 (Share link parsing) ──────────► T10 (Clipboard import)
-                                  ──► T9 (QR code scan)
-                                  ──► T8 (Subscription import) ──► D2 (Sub info display)
-                                                                ──► D6 (Encrypted subs)
-                                                                ──► D7 (Custom UA)
+Rule-set Infrastructure (R8)
+├── Region presets (R2-R4) — need rule_set declarations
+├── LAN bypass (R1) — can use ip_is_private (no rule-set needed)
+└── Cache file config — required for remote rule-sets
 
-T20 (Config persistence) ─────────► T11 (Server list) ──► T12 (Latency testing)
-                                                        ──► D8 (Bulk operations)
-                                                        ──► D15 (Sort/group)
-                                                        ──► D5 (Auto-select best)
-                                                        ──► D11 (Config sharing)
-
-T14 (Theme) ──────────────────────► D1 (Clean UI)
-                                  ──► D16 (Language selection)
-
-T1 (One-tap connect) ─────────────► T13 (Traffic stats)
-                                  ──► D12 (Log viewer)
-
-D3 (Per-app proxy) requires T16 (VpnService)
-D4 (TLS tricks) requires T17 (Xray JSON config gen)
-D18 (Region bypass) requires T18 (Bypass LAN) + geoip/geosite
+Native Integration (E3)
+├── TUN inbound config — new fields (stack, auto_route, strict_route)
+├── Per-app proxy (R9) — TUN include_package/exclude_package
+└── Traffic stats (E4) — V2Ray API or Clash API setup
 ```
 
 ---
 
-## MVP Recommendation
+## MVP Migration Recommendation
 
-### Phase 1: Core (must ship first — the app is useless without these)
+**Phase 1: Core Config Builder** — Prioritize protocols (P1-P7) + transports (T1-T4) + TLS (S1-S3) + basic routing (R1, R5, R6, R10). This gets connections working.
 
-1. **T16** VpnService integration — the foundation
-2. **T17** Xray-core JSON config generation — the bridge
-3. **T2** VLESS (incl. Reality/XTLS) — the #1 protocol
-4. **T3** VMess — legacy support
-5. **T4** Trojan — third pillar
-6. **T5** Shadowsocks — basic coverage
-7. **T7** Share link parsing — primary import method
-8. **T1** One-tap connect/disconnect — the UX
-9. **T15** Connection state feedback — basic UX
-10. **T20** Config persistence — data survives restart
-11. **T18** Bypass LAN — basic routing
-12. **T19** DNS configuration — essential for censored regions
+**Phase 2: Advanced Features** — Anti-censorship (AC1-AC2), mux (E2), sniffing (E1), DNS rewrite (D1-D4).
 
-### Phase 2: Usable (users can live with the app daily)
+**Phase 3: Routing & Rule-sets** — Region presets (R2-R4) via rule_set infrastructure (R8), per-app proxy (R9).
 
-1. **T8** Subscription URL import
-2. **T9** QR code scanning
-3. **T10** Clipboard import
-4. **T11** Server list with latency display
-5. **T12** Latency testing
-6. **T13** Real-time traffic stats
-7. **T14** Light/Dark theme
-8. **D14** Notification with status
+**Defer:** Fragment size/sleep ranges (AC3), mixed SNI (AC4), padding (AC5) — evaluate if standard `tls.fragment: true` is sufficient first. These can be added later if testing reveals they're needed.
 
-### Phase 3: Competitive (catches up to V2rayNG feature parity)
-
-1. **T6** Hysteria2 protocol
-2. **D1** Clean, polished UI (Happ-quality)
-3. **D4** TLS tricks (fragment, padding, mixed SNI)
-4. **D8** Bulk operations
-5. **D11** Config sharing/export
-6. **D12** Log viewer + export
-7. **D2** Subscription info display
-8. **D15** Server sorting/grouping
-
-### Phase 4: Differentiation (surpasses V2rayNG, competes with Hiddify)
-
-1. **D3** Per-app proxy
-2. **D5** Auto-select best server
-3. **D16** Multi-language (EN, FA, RU, ZH)
-4. **D17** Auto-reconnect on network change
-5. **D18** Region-specific bypass rules
-6. **D13** Connection timer
-
-### Defer to v2+
-
-- **S1** WARP integration
-- **S2** Clash/Sing-box config import
-- **S6** Deep link support
-- **S7** Auto-start on boot
-- **S9** Downloadable geo rule sets
-
-**Rationale for ordering:**
-- Phase 1 is pure engine + minimal config import. Without this, nothing works.
-- Phase 2 adds the daily-use features that make it practical (subscriptions, QR, testing).
-- Phase 3 adds the polish and advanced anti-censorship features that make it competitive.
-- Phase 4 adds the power features that make users switch from V2rayNG permanently.
-- TLS tricks (D4) are in Phase 3, not Phase 4, because in Iran specifically they're nearly table-stakes — without fragment/padding, many connections fail.
+**Add opportunistically:** FakeIP (D5), ECH (S4), Hysteria2 port hopping (G1) — new capabilities that come free with sing-box.
 
 ---
 
-## Competitive Feature Matrix
+## Config Example: Xray → sing-box Translation
 
-| Feature | V2rayNG | Hiddify | Nekobox | Arma (planned) |
-|---------|---------|---------|---------|----------------|
-| VLESS+Reality | ✅ | ✅ | ✅ | ✅ Phase 1 |
-| VMess | ✅ | ✅ | ✅ | ✅ Phase 1 |
-| Trojan | ✅ | ✅ | ✅ | ✅ Phase 1 |
-| Shadowsocks | ✅ | ✅ | ✅ | ✅ Phase 1 |
-| Hysteria2 | ✅ | ✅ | ✅ | ✅ Phase 3 |
-| TUIC | ❌ | ✅ | ✅ | ❌ (v2+) |
-| WireGuard | ❌ | ✅ | ✅ | ❌ (v2+) |
-| SSH | ❌ | ✅ | ✅ | ❌ (v2+) |
-| Subscription import | ✅ | ✅ | ✅ | ✅ Phase 2 |
-| QR scan | ✅ | ✅ | ✅ | ✅ Phase 2 |
-| Per-app proxy | ✅ | ✅ | ✅ | ✅ Phase 4 |
-| TLS fragment/tricks | ✅ | ✅ | ❌ | ✅ Phase 3 |
-| Auto best server | ❌ | ✅ | ✅ | ✅ Phase 4 |
-| WARP integration | ❌ | ✅ | ❌ | ❌ (v2+) |
-| Clash config import | ❌ | ✅ | ✅ | ❌ (v2+) |
-| Clean modern UI | ❌ | ✅ | ❌ | ✅ Phase 3 |
-| Multi-platform | Android | All | Android | Android (v1) |
-| Open source | ✅ | ✅ | ✅ | TBD |
-| Sub info (data/expiry) | ❌ | ✅ | ❌ | ✅ Phase 3 |
-| Ad blocking | ❌ | ✅ | ❌ | ❌ (v2+) |
-| Region presets | ✅ (geoip) | ✅ | ✅ | ✅ Phase 4 |
+### Xray-core (current)
+```json
+{
+  "log": {"loglevel": "debug"},
+  "stats": {},
+  "policy": {"levels": {"0": {"statsUserUplink": true, "statsUserDownlink": true}}, "system": {"statsOutboundUplink": true, "statsOutboundDownlink": true}},
+  "dns": {"servers": [{"address": "https://1.1.1.1/dns-query", "domains": [], "port": 53}, "localhost"]},
+  "inbounds": [{"tag": "tun-in", "protocol": "tun", "settings": {"name": "tun0", "MTU": 9000, "userLevel": 0}, "sniffing": {"enabled": true, "destOverride": ["http", "tls", "quic"]}}],
+  "outbounds": [
+    {"tag": "proxy", "protocol": "vless", "settings": {"vnext": [{"address": "server.com", "port": 443, "users": [{"id": "uuid", "encryption": "none", "flow": "xtls-rprx-vision"}]}]}, "streamSettings": {"network": "tcp", "security": "reality", "realitySettings": {"serverName": "www.google.com", "fingerprint": "chrome", "publicKey": "key", "shortId": "id"}}, "mux": {"enabled": true, "concurrency": 4}},
+    {"tag": "direct", "protocol": "freedom"},
+    {"tag": "block", "protocol": "blackhole"}
+  ],
+  "routing": {"domainStrategy": "IPIfNonMatch", "rules": [{"type": "field", "outboundTag": "direct", "ip": ["geoip:private"]}, {"type": "field", "outboundTag": "proxy", "port": "0-65535"}]}
+}
+```
 
----
-
-## Key Insight: What Users in Censored Regions Actually Need
-
-Based on the ecosystem analysis, users in Iran/China/Russia have specific needs that differ from generic VPN users:
-
-1. **Connection reliability over speed.** They don't care if it's 50 Mbps or 100 Mbps. They care that it *connects at all* when the government is actively blocking protocols. This means TLS tricks, Reality support, and protocol diversity matter more than raw performance.
-
-2. **Easy config distribution.** Configs are shared via Telegram groups, not app stores. Share link parsing and QR codes are the lifeline. Subscription URLs from providers are how most users get their servers.
-
-3. **Minimal digital footprint.** No accounts, no analytics, no cloud sync. The app should leave minimal traces. Users in these regions face real consequences if their circumvention tools are discovered.
-
-4. **Domestic traffic bypass.** Users don't want to route local banking, government services, or domestic e-commerce through a proxy. It's slower, triggers security flags, and wastes bandwidth. Region-aware routing is not optional — it's expected.
-
-5. **Resilience to DPI (Deep Packet Inspection).** The cat-and-mouse game between censors and tools is constant. Features like TLS fragment, padding, and Reality exist specifically to defeat DPI. An app without these is blocked within weeks in Iran.
+### sing-box (target)
+```json
+{
+  "log": {"level": "debug"},
+  "experimental": {
+    "v2ray_api": {"listen": "127.0.0.1:10085", "stats": {"enabled": true, "outbounds": ["proxy", "direct"]}},
+    "cache_file": {"enabled": true}
+  },
+  "dns": {
+    "servers": [
+      {"type": "https", "tag": "remote-dns", "server": "1.1.1.1", "path": "/dns-query", "domain_resolver": "local-dns"},
+      {"type": "local", "tag": "local-dns"}
+    ],
+    "rules": [
+      {"rule_set": "geosite-private", "server": "local-dns"}
+    ]
+  },
+  "inbounds": [
+    {"type": "tun", "tag": "tun-in", "interface_name": "tun0", "mtu": 9000, "auto_route": true, "strict_route": true, "stack": "mixed", "address": ["172.18.0.1/30", "fdfe:dcba:9876::1/126"], "include_package": [], "exclude_package": []}
+  ],
+  "outbounds": [
+    {"type": "vless", "tag": "proxy", "server": "server.com", "server_port": 443, "uuid": "uuid", "flow": "xtls-rprx-vision", "tls": {"enabled": true, "utls": {"enabled": true, "fingerprint": "chrome"}, "reality": {"enabled": true, "public_key": "key", "short_id": "id"}, "server_name": "www.google.com"}, "multiplex": {"enabled": true, "protocol": "h2mux", "max_streams": 4}},
+    {"type": "direct", "tag": "direct"},
+    {"type": "block", "tag": "block"}
+  ],
+  "route": {
+    "rules": [
+      {"ip_is_private": true, "outbound": "direct"},
+      {"protocol": ["dns"], "outbound": "dns-out"}
+    ],
+    "rule_set": [],
+    "final": "proxy",
+    "auto_detect_interface": true
+  }
+}
+```
 
 ---
 
 ## Sources
 
-- Hiddify source code analysis (GitHub: `hiddify/hiddify-app`) — Flutter app, direct code review of models, features, and config options [HIGH confidence]
-- V2rayNG repository (GitHub: `2dust/v2rayNG`, 53K★) — README, project structure, geoip/geosite documentation [HIGH confidence]
-- Nekobox repository (GitHub: `MatsuriDayo/NekoBoxForAndroid`, 19K★) — README, supported protocols, plugin system [HIGH confidence]
-- ClashMeta for Android (GitHub: `MetaCubeX/ClashMetaForAndroid`, 36K★) — project description [MEDIUM confidence]
-- Shadowrocket — iOS App Store listing and community knowledge [MEDIUM confidence, no source code access]
-- Happ (target clone) — spec document `happ_clone_specs.md` in repository [HIGH confidence]
-- Project constraints from `.planning/PROJECT.md` [HIGH confidence]
+| Source | Confidence | What it verified |
+|--------|-----------|-----------------|
+| sing-box v1.13.6 official docs (sing-box.sagernet.org) | HIGH | All protocol/transport/TLS/route/DNS configurations |
+| sing-box v1.13.6 Go source (github.com/SagerNet/sing-box/option/tls.go) | HIGH | `OutboundTLSOptions` struct — confirms `Fragment: bool`, `RecordFragment: bool`, no size/sleep ranges |
+| Hiddify sing-box fork v1.13.0.h5 source (github.com/hiddify/hiddify-sing-box) | HIGH | `TLSTricksOptions`, `TLSFragmentOptions` — confirms fork-only features |
+| Hiddify app source (github.com/hiddify/hiddify-app) | HIGH | `SingboxTlsTricks` Dart model, `SingboxConfigOption`, Go-side config builder |
+| Hiddify-core source (github.com/hiddify/hiddify-core/v2/config/) | HIGH | `outbound.go` — `patchOutboundTLSTricks()`, `patchOutboundFragment()` implementation |
+| SagerNet/sing-geoip rule-set branch | HIGH | Available `.srs` files for IR, CN, RU, private |
+| SagerNet/sing-geosite rule-set branch | HIGH | Available `.srs` files for category-ir, cn, category-ru, private |
+| Current codebase `xray_config_builder.dart` | HIGH | All current Xray features mapped |
+| Current codebase `vpn_settings.dart` + `anti_censorship_provider.dart` | HIGH | All current UI settings mapped |
