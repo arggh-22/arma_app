@@ -1,36 +1,34 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: executing
-stopped_at: Phase 4 context gathered
-last_updated: "2026-04-05T20:42:23.288Z"
-last_activity: 2026-04-05
+milestone: v1.1
+milestone_name: sing-box-engine-migration
+status: defining-requirements
+stopped_at: Milestone v1.1 started
+last_updated: "2026-04-07T19:55:00.000Z"
+last_activity: 2026-04-07
 progress:
-  total_phases: 4
-  completed_phases: 2
-  total_plans: 21
-  completed_plans: 19
-  percent: 90
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-04)
+See: .planning/PROJECT.md (updated 2026-04-07)
 
 **Core value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
-**Current focus:** Phase 04 — Routing, DNS & Advanced Settings
+**Current focus:** Defining requirements for v1.1 — sing-box engine migration
 
 ## Current Position
 
-Phase: 04
-Plan: Not started
-Status: Executing Phase 04
-Last activity: 2026-04-05
-
-Progress: [░░░░░░░░░░] 0%
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-07 — Milestone v1.1 started
 
 ## Performance Metrics
 

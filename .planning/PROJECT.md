@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A privacy-first proxy and VPN client app for Android that lets users connect to their own proxy servers with a single tap. Built on Xray-core, it supports VLESS (including Reality/XTLS), VMess, Trojan, Shadowsocks, Socks/HTTP, and Hysteria2 protocols. Designed for users in censored regions who need reliable, easy access to the open internet.
+A privacy-first proxy and VPN client app for Android that lets users connect to their own proxy servers with a single tap. Built on sing-box, it supports VLESS (including Reality/XTLS), VMess, Trojan, Shadowsocks, Socks/HTTP, and Hysteria2 protocols. Designed for users in censored regions who need reliable, easy access to the open internet.
 
 ## Core Value
 
@@ -12,25 +12,30 @@ Users can import a server configuration and connect in one tap — it just works
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] One-tap VPN/proxy connection via Android VpnService (Phase 2)
+- [x] Support for VLESS, VMess, Trojan, Shadowsocks, Socks/HTTP protocols (Phase 1-2)
+- [x] Parse and import server configs via share links (Phase 1)
+- [x] Import configs from QR code scan, clipboard, manual JSON entry, and subscription URLs (Phase 1, 3)
+- [x] Subscription management with base64-encoded config support (Phase 3)
+- [x] Server list with protocol badges, latency display, and active node selection (Phase 1, 3)
+- [x] Bulk selection and deletion of configurations (Phase 3)
+- [x] Real-time latency testing for individual nodes and bulk testing (Phase 3)
+- [x] Live traffic monitoring (upload/download speeds) on dashboard (Phase 2)
+- [x] Flexible traffic routing rules (bypass LAN, proxy/direct/block per domain) (Phase 4)
+- [x] Custom DNS configuration (DoH/DoT/Plain) (Phase 4)
+- [x] Light and dark theme with clean, minimalist design (Phase 1)
+- [x] Settings for engine features (sniffing, mux, fragment) (Phase 4)
+- [x] Anti-censorship profiles (fragment, padding, mixed SNI) (Phase 4)
+- [x] Per-app proxy / split tunneling (Phase 4)
+- [x] Region presets for routing (Iran, China, Russia) (Phase 4)
+- [x] Export app logs for debugging (Phase 3)
 
 ### Active
 
-- [ ] One-tap VPN/proxy connection using Xray-core engine via Android VpnService
-- [ ] Support for VLESS, VMess, Trojan, Shadowsocks, Socks/HTTP, and Hysteria2 protocols
-- [ ] Parse and import server configs via share links (vless://, vmess://, trojan://, ss://)
-- [ ] Import configs from QR code scan, clipboard, manual JSON entry, and subscription URLs
-- [ ] Subscription management with base64-encoded and encrypted config support
-- [ ] Server list with protocol badges, latency display, and active node selection
-- [ ] Bulk selection and deletion of configurations (long-press multi-select)
-- [ ] Real-time latency testing (ping/TCPing) for individual nodes and bulk testing
-- [ ] Live traffic monitoring (upload/download speeds) on dashboard
-- [ ] Flexible traffic routing rules (bypass LAN, proxy/direct/block per domain/IP)
-- [ ] Custom DNS configuration and DNS blocking
-- [ ] Light and dark theme with clean, minimalist design
-- [ ] Settings for Xray features (sniffing, mux, fragment handling)
-- [ ] Auto-update subscriptions on app launch (configurable)
-- [ ] Export app logs for debugging
+- [ ] Replace Xray-core engine with sing-box for cross-platform support
+- [ ] Maintain all v1.0 protocol support under sing-box (VLESS, VMess, Trojan, SS, Hysteria2)
+- [ ] sing-box config generation replacing Xray JSON format
+- [ ] Verify anti-censorship features work under sing-box (fragment, Reality, etc.)
 
 ### Out of Scope
 
@@ -41,19 +46,31 @@ Users can import a server configuration and connect in one tap — it just works
 - In-app purchases / monetization — not in v1 scope
 - TV platform support — deferred
 
+## Current Milestone: v1.1 sing-box Engine Migration
+
+**Goal:** Replace Xray-core with sing-box as the proxy engine, enabling future cross-platform support (iOS, macOS, Windows, Linux) while maintaining all v1.0 functionality.
+
+**Target features:**
+- Replace libv2ray.aar with sing-box library
+- Rewrite config builder for sing-box JSON format
+- Rewrite core manager for sing-box lifecycle
+- Update native VPN service integration
+- Maintain all existing protocol support
+- Verify anti-censorship features under sing-box
+
 ## Context
 
-- **Existing codebase:** Freshly scaffolded Flutter project (default counter app). No architecture or features implemented yet. A comprehensive spec document (`happ_clone_specs.md`) defines the full target vision.
+- **Existing codebase:** Fully functional v1.0 Android VPN client with 4 phases complete. Architecture: Flutter + Clean Architecture + MVVM, Riverpod state management, Hive local storage. Currently uses Xray-core via libv2ray.aar (Go-Mobile compiled AAR from 2dust/AndroidLibXrayLite).
 - **Target users:** People in censored regions (e.g., Iran, China, Russia) who use proxy tools like V2rayNG, Nekobox, Hiddify, and Happ to access the internet. They already have server configs from providers or self-hosted servers.
-- **Competitive landscape:** V2rayNG (Android-native, functional but ugly), Hiddify (Flutter, feature-rich), Happ (clean UI, closed source), Nekobox (power-user focused). Arma aims for clean UX + reliability.
-- **Xray-core:** The Go-based proxy engine that handles all protocol connections. Must be compiled via Go-Mobile into an AAR and integrated through Kotlin platform channels with Android's VpnService API.
-- **Reference spec:** `happ_clone_specs.md` in the repo root contains the full UI/UX spec and phased development plan that this project follows.
+- **Competitive landscape:** V2rayNG (Android-native, Xray-core), Hiddify (Flutter, sing-box), Happ (clean UI, closed source), Nekobox (power-user, sing-box). Arma aims for clean UX + reliability.
+- **Engine migration:** Moving from Xray-core to sing-box for broader protocol support, better mobile performance, unified config format, and native cross-platform libraries (iOS, macOS, Windows, Linux).
+- **Reference spec:** `happ_clone_specs.md` in the repo root contains the full UI/UX spec.
 
 ## Constraints
 
 - **Tech stack**: Flutter (Dart) with Clean Architecture + MVVM, Riverpod for state management, Hive for local storage, go_router for navigation
 - **Platform**: Android-only for v1 (API 21+ / Android 5.0+)
-- **Engine**: Xray-core compiled via Go-Mobile, integrated through Kotlin platform channels and Android VpnService
+- **Engine**: sing-box (migrating from Xray-core), integrated through Kotlin platform channels and Android VpnService. Future: native libraries for iOS/macOS/Windows/Linux.
 - **No backend**: All data stored locally on device; no server-side components
 - **Privacy**: No analytics, no tracking, no data collection — privacy-first by design
 
@@ -62,7 +79,8 @@ Users can import a server configuration and connect in one tap — it just works
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
 | Flutter over native Android | Cross-platform future (iOS/desktop) with single codebase | — Pending |
-| Xray-core via Go-Mobile AAR | Direct control over engine, supports all required protocols | — Pending |
+| Xray-core via Go-Mobile AAR | Direct control over engine, supports all required protocols | Validated in v1.0, migrating to sing-box in v1.1 |
+| sing-box over Xray-core | Cross-platform libraries, better mobile perf, unified config, broader protocols | v1.1 migration |
 | Clean Architecture + MVVM | Spec requirement, good separation for testability and scaling | — Pending |
 | Riverpod over BLoC | Spec preference, better testability and simpler boilerplate | — Pending |
 | Hive over SQLite | Lightweight NoSQL, good for config/subscription storage, spec recommendation | — Pending |
@@ -87,4 +105,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-04 after initialization*
+*Last updated: 2026-04-07 — v1.1 milestone started*
