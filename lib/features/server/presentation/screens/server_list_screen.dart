@@ -260,6 +260,10 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
           onRefresh: subscription != null
               ? () => _onRefreshSubscription(subscription!.id)
               : null,
+          onDeleteAll: subscription != null
+              ? () => _onDeleteAllInSubscription(
+                    context, subscription!.id, groupServers)
+              : null,
         ),
       );
 
@@ -275,32 +279,66 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
         items.add(
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: ServerCard(
-              server: server,
-              isSelected: server.id == activeServer?.id,
-              latency: latencyMap[server.id],
-              isMultiSelect: isMultiSelectActive,
-              isChecked: multiSelect.contains(server.id),
-              onTap: () {
-                HapticFeedback.selectionClick();
-                ref
-                    .read(activeServerProvider.notifier)
-                    .selectServer(server);
-              },
-              onLongPress: () {
-                if (!isMultiSelectActive) {
-                  HapticFeedback.mediumImpact();
-                  ref
-                      .read(multiSelectProvider.notifier)
-                      .enterSelectionMode(server.id);
-                }
-              },
-              onLatencyTap: () => ref
-                  .read(latencyProvider.notifier)
-                  .testServer(server),
-              onToggleSelect: () =>
-                  ref.read(multiSelectProvider.notifier).toggle(server.id),
-            ),
+            child: isMultiSelectActive
+                ? ServerCard(
+                    server: server,
+                    isSelected: server.id == activeServer?.id,
+                    latency: latencyMap[server.id],
+                    isMultiSelect: true,
+                    isChecked: multiSelect.contains(server.id),
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      ref
+                          .read(activeServerProvider.notifier)
+                          .selectServer(server);
+                    },
+                    onLongPress: () {},
+                    onLatencyTap: () => ref
+                        .read(latencyProvider.notifier)
+                        .testServer(server),
+                    onToggleSelect: () =>
+                        ref.read(multiSelectProvider.notifier).toggle(server.id),
+                  )
+                : Dismissible(
+                    key: ValueKey('dismiss-${server.id}'),
+                    direction: DismissDirection.endToStart,
+                    background: Container(
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.only(right: 24),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.error,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.delete,
+                        color: Colors.white,
+                      ),
+                    ),
+                    confirmDismiss: (_) async => true,
+                    onDismissed: (_) {
+                      _onSwipeDelete(context, ref, server);
+                    },
+                    child: ServerCard(
+                      server: server,
+                      isSelected: server.id == activeServer?.id,
+                      latency: latencyMap[server.id],
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        ref
+                            .read(activeServerProvider.notifier)
+                            .selectServer(server);
+                      },
+                      onLongPress: () {
+                        HapticFeedback.mediumImpact();
+                        ref
+                            .read(multiSelectProvider.notifier)
+                            .enterSelectionMode(server.id);
+                      },
+                      onLatencyTap: () => ref
+                          .read(latencyProvider.notifier)
+                          .testServer(server),
+                    ),
+                  ),
           ),
         );
       }
@@ -405,6 +443,82 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
         setState(() => _refreshingSubscriptions.remove(subscriptionId));
       }
     }
+  }
+
+  /// Swipe-to-delete a single server with undo snackbar.
+  void _onSwipeDelete(
+    BuildContext context,
+    WidgetRef ref,
+    ServerConfig server,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+
+    // Clear active server if this was the active one
+    final activeServer = ref.read(activeServerProvider);
+    if (activeServer?.id == server.id) {
+      ref.read(activeServerProvider.notifier).selectServer(null);
+    }
+
+    // Delete the server
+    ref.read(serverListProvider.notifier).deleteServer(server.id);
+
+    // Show undo snackbar
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${server.name} deleted'),
+        duration: AppConstants.snackBarDurationLong,
+        action: SnackBarAction(
+          label: l10n.undo,
+          onPressed: () {
+            // Re-add the server to restore it
+            ref.read(serverListProvider.notifier).addServer(server);
+          },
+        ),
+      ),
+    );
+  }
+
+  /// Delete all servers in a subscription group with confirmation.
+  void _onDeleteAllInSubscription(
+    BuildContext context,
+    String subscriptionId,
+    List<ServerConfig> servers,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.deleteServersTitle(servers.length)),
+        content: Text(l10n.deleteServersBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(l10n.keepServers),
+          ),
+          TextButton(
+            onPressed: () {
+              for (final server in servers) {
+                ref.read(serverListProvider.notifier).deleteServer(server.id);
+                final activeServer = ref.read(activeServerProvider);
+                if (activeServer?.id == server.id) {
+                  ref.read(activeServerProvider.notifier).selectServer(null);
+                }
+              }
+              // Also delete the subscription itself
+              ref
+                  .read(subscriptionProvider.notifier)
+                  .deleteSubscription(subscriptionId);
+              Navigator.pop(dialogContext);
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: Text(l10n.deleteServersConfirm(servers.length)),
+          ),
+        ],
+      ),
+    );
   }
 
   /// Bulk delete confirmation dialog.

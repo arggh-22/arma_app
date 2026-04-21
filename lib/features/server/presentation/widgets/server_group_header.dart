@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/subscription.dart';
@@ -8,10 +9,11 @@ import 'package:arma_proxy_vpn_client/features/server/domain/entities/subscripti
 /// For subscription groups (subscription != null), shows:
 /// - Collapse toggle icon
 /// - Subscription name in primary color
-/// - Refresh button (with loading spinner)
-/// - Info line: server count, data usage (GB), expiry (days)
+/// - 3-dot PopupMenu (Refresh / Delete All / Copy URL)
+/// - Data usage progress bar with text
+/// - Expiry countdown (red when <3 days)
 ///
-/// For manual groups, shows the simple group name.
+/// For manual groups, shows the simple group name with count.
 class ServerGroupHeader extends StatelessWidget {
   const ServerGroupHeader({
     super.key,
@@ -21,6 +23,7 @@ class ServerGroupHeader extends StatelessWidget {
     this.isCollapsed = false,
     this.onToggleCollapse,
     this.onRefresh,
+    this.onDeleteAll,
     this.isRefreshing = false,
   });
 
@@ -39,8 +42,11 @@ class ServerGroupHeader extends StatelessWidget {
   /// Called when the collapse toggle is tapped.
   final VoidCallback? onToggleCollapse;
 
-  /// Called when the refresh button is tapped.
+  /// Called when the refresh action is selected.
   final VoidCallback? onRefresh;
+
+  /// Called when "Delete All" is selected from the menu.
+  final VoidCallback? onDeleteAll;
 
   /// Whether the subscription is currently being refreshed.
   final bool isRefreshing;
@@ -56,11 +62,27 @@ class ServerGroupHeader extends StatelessWidget {
   Widget _buildManualHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Text(
-        groupName,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
+      child: Row(
+        children: [
+          InkWell(
+            onTap: onToggleCollapse,
+            borderRadius: BorderRadius.circular(12),
+            child: Icon(
+              isCollapsed ? Icons.expand_more : Icons.expand_less,
+              size: 24,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '$groupName ($serverCount)',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -69,13 +91,14 @@ class ServerGroupHeader extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final sub = subscription!;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top row: collapse toggle, name, refresh button
+          // Top row: collapse toggle, name, 3-dot menu
           Row(
             children: [
               // Collapse toggle
@@ -102,7 +125,7 @@ class ServerGroupHeader extends StatelessWidget {
                 ),
               ),
 
-              // Refresh button
+              // Loading spinner or 3-dot menu
               if (isRefreshing)
                 const SizedBox(
                   width: 20,
@@ -110,58 +133,153 @@ class ServerGroupHeader extends StatelessWidget {
                   child: CircularProgressIndicator.adaptive(strokeWidth: 2),
                 )
               else
-                IconButton(
-                  icon: const Icon(Icons.refresh, size: 20),
-                  onPressed: onRefresh,
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, size: 20),
                   constraints: const BoxConstraints(
                     minWidth: 32,
                     minHeight: 32,
                   ),
                   padding: EdgeInsets.zero,
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'refresh':
+                        onRefresh?.call();
+                      case 'deleteAll':
+                        onDeleteAll?.call();
+                      case 'copyUrl':
+                        Clipboard.setData(ClipboardData(text: sub.url));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(l10n.linkCopied),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'refresh',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.refresh, size: 20),
+                          const SizedBox(width: 8),
+                          Text(l10n.retryAction),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'copyUrl',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.copy, size: 20),
+                          const SizedBox(width: 8),
+                          Text(l10n.linkCopied),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'deleteAll',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete_outline, size: 20,
+                              color: colorScheme.error),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.deleteConfirm,
+                            style: TextStyle(color: colorScheme.error),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
             ],
           ),
 
-          // Info line: server count + data usage + expiry
-          Padding(
-            padding: const EdgeInsets.only(left: 32),
-            child: Text(
-              _buildInfoLine(l10n),
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
+          // Data usage progress bar
+          if (sub.totalBytes != null && sub.totalBytes! > 0) ...[
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.only(left: 32),
+              child: _buildDataUsageBar(context, sub),
             ),
+          ],
+
+          // Info line: server count + expiry
+          Padding(
+            padding: const EdgeInsets.only(left: 32, top: 4),
+            child: _buildInfoRow(context, l10n, sub),
           ),
         ],
       ),
     );
   }
 
-  /// Builds the info line: "3 servers · 2.1/10.0 GB · expires 30d"
-  String _buildInfoLine(AppLocalizations l10n) {
-    final parts = <String>[l10n.subscriptionInfoFormat(serverCount)];
+  Widget _buildDataUsageBar(BuildContext context, Subscription sub) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final usedBytes = (sub.uploadBytes ?? 0) + (sub.downloadBytes ?? 0);
+    final totalBytes = sub.totalBytes ?? 1;
+    final fraction = (usedBytes / totalBytes).clamp(0.0, 1.0);
+    final usedGb = usedBytes / (1024 * 1024 * 1024);
+    final totalGb = totalBytes / (1024 * 1024 * 1024);
 
-    final sub = subscription;
-    if (sub != null) {
-      // Data usage
-      if (sub.totalBytes != null && sub.totalBytes! > 0) {
-        final usedBytes = (sub.uploadBytes ?? 0) + (sub.downloadBytes ?? 0);
-        final usedGb = usedBytes / (1024 * 1024 * 1024);
-        final totalGb = sub.totalBytes! / (1024 * 1024 * 1024);
-        parts.add('${usedGb.toStringAsFixed(1)}/${totalGb.toStringAsFixed(1)} GB');
-      }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: fraction,
+            minHeight: 6,
+            backgroundColor: colorScheme.surfaceContainerHighest,
+            color: fraction > 0.9 ? colorScheme.error : colorScheme.primary,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '${usedGb.toStringAsFixed(1)} / ${totalGb.toStringAsFixed(1)} GB',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
 
-      // Expiry
-      if (sub.expireDate != null) {
-        final daysLeft = sub.expireDate!.difference(DateTime.now()).inDays;
-        if (daysLeft >= 0) {
-          parts.add('expires ${daysLeft}d');
-        } else {
-          parts.add('expired');
-        }
-      }
+  Widget _buildInfoRow(
+      BuildContext context, AppLocalizations l10n, Subscription sub) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final parts = <InlineSpan>[];
+
+    // Server count
+    parts.add(TextSpan(
+      text: l10n.subscriptionInfoFormat(serverCount),
+      style: theme.textTheme.bodySmall?.copyWith(
+        color: colorScheme.onSurfaceVariant,
+      ),
+    ));
+
+    // Expiry with conditional red color
+    if (sub.expireDate != null) {
+      final daysLeft = sub.expireDate!.difference(DateTime.now()).inDays;
+      final isUrgent = daysLeft >= 0 && daysLeft <= 3;
+      final expiryText = daysLeft >= 0 ? '  ·  expires ${daysLeft}d' : '  ·  expired';
+
+      parts.add(TextSpan(
+        text: expiryText,
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: isUrgent || daysLeft < 0
+              ? colorScheme.error
+              : colorScheme.onSurfaceVariant,
+          fontWeight: isUrgent ? FontWeight.bold : null,
+        ),
+      ));
     }
 
-    return parts.join(' · ');
+    return RichText(
+      text: TextSpan(children: parts),
+    );
   }
 }

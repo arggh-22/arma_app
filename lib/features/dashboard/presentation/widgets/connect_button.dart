@@ -45,12 +45,15 @@ class ConnectButton extends ConsumerWidget {
         'Disconnect',
       ),
       Disconnecting() => (
-        Colors.grey.shade600,
+        colorScheme.primary,
         null as Color?,
         false,
         'Disconnecting',
       ),
     };
+
+    // Fade opacity for disconnecting state
+    final targetOpacity = status is Disconnecting ? 0.4 : 1.0;
 
     void handleTap() {
       switch (status) {
@@ -70,27 +73,32 @@ class ConnectButton extends ConsumerWidget {
       label: semanticLabel,
       child: GestureDetector(
         onTap: status is Disconnecting ? null : handleTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: buttonColor,
-            boxShadow: glowColor != null
-                ? [
-                    BoxShadow(
-                      color: glowColor,
-                      blurRadius: 20,
-                      spreadRadius: 5,
-                    ),
-                  ]
-                : null,
-          ),
-          child: const Icon(
-            Icons.power_settings_new,
-            color: Colors.white,
-            size: 48,
+        child: AnimatedOpacity(
+          opacity: targetOpacity,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeOut,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: buttonColor,
+              boxShadow: glowColor != null
+                  ? [
+                      BoxShadow(
+                        color: glowColor,
+                        blurRadius: 20,
+                        spreadRadius: 5,
+                      ),
+                    ]
+                  : null,
+            ),
+            child: const Icon(
+              Icons.power_settings_new,
+              color: Colors.white,
+              size: 48,
+            ),
           ),
         )
             .animate(target: isAnimating ? 1 : 0)

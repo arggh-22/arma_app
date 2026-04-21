@@ -25,6 +25,8 @@ class VpnSettings {
   final bool perAppEnabled;
   final String perAppMode;
   final List<String> selectedApps;
+  final bool fakeIpEnabled;
+  final String fakeIpCidr;
 
   const VpnSettings({
     this.dnsProtocol = 'doh',
@@ -46,6 +48,8 @@ class VpnSettings {
     this.perAppEnabled = false,
     this.perAppMode = 'blacklist',
     this.selectedApps = const [],
+    this.fakeIpEnabled = false,
+    this.fakeIpCidr = '198.18.0.0/15',
   });
 
   /// Build from datasource (reads current persisted state).
@@ -73,6 +77,8 @@ class VpnSettings {
       perAppEnabled: ds.getPerAppEnabled(),
       perAppMode: ds.getPerAppMode(),
       selectedApps: ds.getSelectedApps(),
+      fakeIpEnabled: ds.getFakeIpEnabled(),
+      fakeIpCidr: ds.getFakeIpCidr(),
     );
   }
 }

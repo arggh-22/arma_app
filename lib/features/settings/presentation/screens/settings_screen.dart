@@ -181,6 +181,43 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
 
+          // FakeIP DNS toggle
+          SwitchListTile(
+            secondary: const Icon(Icons.dns),
+            title: Text('FakeIP DNS', style: theme.textTheme.titleMedium),
+            subtitle: const Text('Use fake IP addresses for DNS resolution'),
+            value: dnsSettings.fakeIpEnabled,
+            onChanged: (value) {
+              ref.read(dnsSettingsProvider.notifier).setFakeIpEnabled(value);
+            },
+          ),
+
+          // FakeIP CIDR field (visible when FakeIP enabled)
+          AnimatedCrossFade(
+            duration: const Duration(milliseconds: 200),
+            crossFadeState: dnsSettings.fakeIpEnabled
+                ? CrossFadeState.showFirst
+                : CrossFadeState.showSecond,
+            secondChild: const SizedBox.shrink(),
+            firstChild: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextField(
+                controller: TextEditingController(text: dnsSettings.fakeIpCidr),
+                decoration: const InputDecoration(
+                  labelText: 'CIDR',
+                  hintText: '198.18.0.0/15',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+                onSubmitted: (value) {
+                  if (value.isNotEmpty) {
+                    ref.read(dnsSettingsProvider.notifier).setFakeIpCidr(value);
+                  }
+                },
+              ),
+            ),
+          ),
+
           const Divider(),
 
           // Engine Settings section header

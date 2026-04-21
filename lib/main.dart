@@ -9,6 +9,18 @@ import 'package:arma_proxy_vpn_client/features/server/data/models/server_config_
 import 'package:arma_proxy_vpn_client/features/server/data/models/subscription_model.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/theme_provider.dart';
 
+/// Opens a Hive box, clearing it if the on-disk data is incompatible
+/// with the current schema (e.g. after a field type change).
+Future<Box<T>> _openBoxSafe<T>(String name) async {
+  try {
+    return await Hive.openBox<T>(name);
+  } catch (_) {
+    final box = await Hive.openBox(name);
+    await box.deleteFromDisk();
+    return await Hive.openBox<T>(name);
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -17,9 +29,9 @@ void main() async {
   Hive.registerAdapter(ServerConfigModelAdapter());
   Hive.registerAdapter(SubscriptionModelAdapter());
   Hive.registerAdapter(DomainRuleModelAdapter());
-  await Hive.openBox<ServerConfigModel>('configs');
-  await Hive.openBox<SubscriptionModel>('subscriptions');
-  await Hive.openBox<DomainRuleModel>('domain_rules');
+  await _openBoxSafe<ServerConfigModel>('configs');
+  await _openBoxSafe<SubscriptionModel>('subscriptions');
+  await _openBoxSafe<DomainRuleModel>('domain_rules');
 
   // Load SharedPreferences for settings persistence
   final prefs = await SharedPreferences.getInstance();

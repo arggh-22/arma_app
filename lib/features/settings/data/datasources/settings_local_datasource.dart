@@ -93,6 +93,24 @@ class SettingsLocalDatasource {
   Future<void> setDirectDns(String dns) =>
       _prefs.setString(_directDnsKey, dns);
 
+  // ── FakeIP DNS ────────────────────────────────────────────────────
+
+  static const _fakeIpEnabledKey = 'fakeip_enabled';
+  static const _fakeIpCidrKey = 'fakeip_cidr';
+
+  /// FakeIP DNS mode. Default OFF.
+  bool getFakeIpEnabled() => _prefs.getBool(_fakeIpEnabledKey) ?? false;
+
+  Future<void> setFakeIpEnabled(bool enabled) =>
+      _prefs.setBool(_fakeIpEnabledKey, enabled);
+
+  /// FakeIP CIDR range. Default 198.18.0.0/15.
+  String getFakeIpCidr() =>
+      _prefs.getString(_fakeIpCidrKey) ?? '198.18.0.0/15';
+
+  Future<void> setFakeIpCidr(String cidr) =>
+      _prefs.setString(_fakeIpCidrKey, cidr);
+
   // ── Engine Settings (D-08, D-09) ──────────────────────────────────
 
   /// Traffic sniffing — detect protocol type from content. Default ON.
