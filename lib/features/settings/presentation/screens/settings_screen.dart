@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:arma_proxy_vpn_client/core/constants/app_constants.dart';
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
+import 'package:arma_proxy_vpn_client/features/log/presentation/providers/log_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/anti_censorship_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/dns_settings_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/engine_settings_provider.dart';
@@ -603,7 +604,7 @@ class SettingsScreen extends ConsumerWidget {
               style: theme.textTheme.bodyMedium,
             ),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => _showClearCacheDialog(context),
+            onTap: () => _showClearCacheDialog(context, ref),
           ),
 
           const Divider(),
@@ -726,7 +727,7 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _showClearCacheDialog(BuildContext context) {
+  void _showClearCacheDialog(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -743,14 +744,30 @@ class SettingsScreen extends ConsumerWidget {
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await _clearCachedData();
+              final messenger = ScaffoldMessenger.of(context);
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.cachedDataCleared),
-                    duration: const Duration(seconds: 3),
-                  ),
-                );
+                try {
+                  final deletedCount = await _clearCachedData(ref);
+                  if (!context.mounted) return;
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        deletedCount > 0
+                            ? '${l10n.cachedDataCleared} ($deletedCount files)'
+                            : l10n.cachedDataCleared,
+                      ),
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
+                } catch (e) {
+                  if (!context.mounted) return;
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to clear cache: $e'),
+                      duration: const Duration(seconds: 4),
+                    ),
+                  );
+                }
               }
             },
             style: TextButton.styleFrom(
@@ -763,34 +780,47 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _clearCachedData() async {
-    try {
-      // Clear geo rule cache files
-      final appDir = await getApplicationDocumentsDirectory();
-      final cacheDir = await getTemporaryDirectory();
+  Future<int> _clearCachedData(WidgetRef ref) async {
+    var deletedCount = 0;
 
-      // Delete .dat files in app directory (downloaded geo rules)
-      final appFiles = appDir.listSync();
-      for (final f in appFiles) {
-        if (f is File &&
-            (f.path.endsWith('.dat') ||
-                f.path.endsWith('.dat.new'))) {
-          await f.delete();
-        }
-      }
+    // Clear in-memory log buffer.
+    ref.read(logServiceProvider).clear();
 
-      // Clear temporary cache directory
-      if (cacheDir.existsSync()) {
-        final cacheFiles = cacheDir.listSync();
-        for (final f in cacheFiles) {
-          if (f is File) await f.delete();
-        }
-      }
+    final documentsDir = await getApplicationDocumentsDirectory();
+    final supportDir = await getApplicationSupportDirectory();
+    final tempDir = await getTemporaryDirectory();
 
-      // Note: subscription cache and logs cleared via temp dir.
-      // Server configs and preferences are NOT touched (per D-15).
-    } catch (e) {
-      debugPrint('Clear cache error: $e');
+    Future<void> deleteIfExists(FileSystemEntity entity) async {
+      if (!await entity.exists()) return;
+      await entity.delete(recursive: true);
+      deletedCount++;
     }
+
+    // Clear exported log files from documents directory.
+    await for (final entity in documentsDir.list(followLinks: false)) {
+      if (entity is File &&
+          entity.path.contains('/arma_vpn_log_') &&
+          entity.path.endsWith('.txt')) {
+        await deleteIfExists(entity);
+      }
+    }
+
+    // Clear geo assets cache copied by native XrayCoreManager.
+    await deleteIfExists(Directory('${supportDir.path}/xray-assets'));
+
+    // Clear temporary cache recursively.
+    await for (final entity in tempDir.list(followLinks: false)) {
+      await deleteIfExists(entity);
+    }
+
+    // Clear stale temporary geo files if present in docs dir.
+    await for (final entity in documentsDir.list(followLinks: false)) {
+      if (entity is File &&
+          (entity.path.endsWith('.dat') || entity.path.endsWith('.dat.new'))) {
+        await deleteIfExists(entity);
+      }
+    }
+
+    return deletedCount;
   }
 }
