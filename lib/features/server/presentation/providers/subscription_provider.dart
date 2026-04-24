@@ -63,13 +63,21 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
 
     // Fetch and parse
     final result = await _service.fetch(subscription);
+    final resolvedName = (result.profileTitle ?? '').trim().isNotEmpty
+        ? result.profileTitle!.trim()
+        : subscription.name;
+    final resolvedAutoUpdate = result.profileUpdateIntervalHours != null
+        ? result.profileUpdateIntervalHours! > 0
+        : autoUpdate;
 
     // Update subscription with userinfo data
     final updated = subscription.copyWith(
+      name: resolvedName,
       uploadBytes: result.userinfo?.uploadBytes,
       downloadBytes: result.userinfo?.downloadBytes,
       totalBytes: result.userinfo?.totalBytes,
       expireDate: result.userinfo?.expireDate,
+      autoUpdate: resolvedAutoUpdate,
     );
 
     // Persist subscription metadata
@@ -98,6 +106,12 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
     if (subscription == null) return 0;
 
     final result = await _service.fetch(subscription);
+    final resolvedName = (result.profileTitle ?? '').trim().isNotEmpty
+        ? result.profileTitle!.trim()
+        : subscription.name;
+    final resolvedAutoUpdate = result.profileUpdateIntervalHours != null
+        ? result.profileUpdateIntervalHours! > 0
+        : subscription.autoUpdate;
 
     // D-14: Check if active server belongs to this subscription
     final activeServer = ref.read(activeServerProvider);
@@ -126,11 +140,13 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
 
     // Update subscription metadata
     final updated = subscription.copyWith(
+      name: resolvedName,
       uploadBytes: result.userinfo?.uploadBytes,
       downloadBytes: result.userinfo?.downloadBytes,
       totalBytes: result.userinfo?.totalBytes,
       expireDate: result.userinfo?.expireDate,
       lastUpdated: DateTime.now(),
+      autoUpdate: resolvedAutoUpdate,
     );
     await repo.saveSubscription(updated);
 
