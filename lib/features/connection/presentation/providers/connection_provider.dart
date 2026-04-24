@@ -5,6 +5,7 @@ import 'package:hive_ce/hive_ce.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:arma_proxy_vpn_client/features/connection/domain/entities/connection_status.dart';
+import 'package:arma_proxy_vpn_client/features/connection/presentation/providers/traffic_stats_provider.dart';
 import 'package:arma_proxy_vpn_client/features/connection/data/datasources/vpn_platform_service.dart';
 import 'package:arma_proxy_vpn_client/features/routing/data/datasources/routing_local_datasource.dart';
 import 'package:arma_proxy_vpn_client/features/routing/data/models/domain_rule_model.dart';
@@ -230,9 +231,11 @@ class ConnectionNotifier extends _$ConnectionNotifier
         _fallbackAttempts = 0;
         state = Connected(serverName: serverName, connectedAt: DateTime.now());
       case 'disconnected':
+        ref.read(trafficStatsProvider.notifier).reset();
         _durationTimer?.cancel();
         state = Disconnected(event['message'] as String?);
       case 'error':
+        ref.read(trafficStatsProvider.notifier).reset();
         _durationTimer?.cancel();
         state =
             Disconnected(event['message'] as String? ?? 'Connection error');
