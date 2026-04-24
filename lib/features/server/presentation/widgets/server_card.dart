@@ -102,10 +102,6 @@ class ServerCard extends StatelessWidget {
                     const Gap(4),
                   ],
 
-                  // Protocol badge is always before server name for consistency.
-                  ProtocolBadge(protocol: server.protocol),
-                  const Gap(8),
-
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,13 +112,22 @@ class ServerCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        Text(
-                          '${server.address}:${server.port}',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        const Gap(4),
+                        Row(
+                          children: [
+                            ProtocolBadge(protocol: server.protocol),
+                            const Gap(8),
+                            Expanded(
+                              child: Text(
+                                '${server.address}:${server.port}',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
