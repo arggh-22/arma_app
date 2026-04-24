@@ -74,7 +74,7 @@
   "notNow": "Не сейчас",
   "dismissDialog": "Отмена",
   "sortBy": "Сортировка",
-  "sortByDefault": "По умолчанию (порядок подписки)",
+  "sortByDefault": "По умолчанию",
   "sortByName": "По имени",
   "sortByLatency": "По задержке",
   "sortByProtocol": "По протоколу",

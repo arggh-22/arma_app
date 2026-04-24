@@ -74,7 +74,7 @@
   "notNow": "暂不",
   "dismissDialog": "取消",
   "sortBy": "排序",
-  "sortByDefault": "默认（订阅顺序）",
+  "sortByDefault": "默认",
   "sortByName": "名称",
   "sortByLatency": "延迟",
   "sortByProtocol": "协议",

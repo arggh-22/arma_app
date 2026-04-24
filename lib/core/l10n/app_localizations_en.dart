@@ -233,7 +233,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sortBy => 'Sort';
 
   @override
-  String get sortByDefault => 'Default (Subscription order)';
+  String get sortByDefault => 'Default';
 
   @override
   String get sortByName => 'Name';

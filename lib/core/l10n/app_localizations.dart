@@ -503,7 +503,7 @@ abstract class AppLocalizations {
   /// No description provided for @sortByDefault.
   ///
   /// In en, this message translates to:
-  /// **'Default (Subscription order)'**
+  /// **'Default'**
   String get sortByDefault;
 
   /// No description provided for @sortByName.
