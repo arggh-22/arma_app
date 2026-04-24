@@ -27,9 +27,24 @@ class _RegionPresetsSectionState extends ConsumerState<RegionPresetsSection> {
     final settings = ref.watch(routingSettingsProvider);
 
     final regions = [
-      {'id': 'iran', 'label': l10n.regionIran},
-      {'id': 'china', 'label': l10n.regionChina},
-      {'id': 'russia', 'label': l10n.regionRussia},
+      {
+        'id': 'iran',
+        'label': l10n.regionIran,
+        'domainRule': 'geosite:category-ir',
+        'ipRule': 'geoip:ir',
+      },
+      {
+        'id': 'china',
+        'label': l10n.regionChina,
+        'domainRule': 'geosite:cn',
+        'ipRule': 'geoip:cn',
+      },
+      {
+        'id': 'russia',
+        'label': l10n.regionRussia,
+        'domainRule': 'geosite:category-ru',
+        'ipRule': 'geoip:ru',
+      },
     ];
 
     return Column(
@@ -59,6 +74,51 @@ class _RegionPresetsSectionState extends ConsumerState<RegionPresetsSection> {
                 ),
               );
             }).toList(),
+          ),
+        ),
+        // Regional preset configurations
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+          child: Text(
+            'Regional preset configurations',
+            style: theme.textTheme.titleSmall?.copyWith(
+              color: colorScheme.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Card(
+            margin: EdgeInsets.zero,
+            child: Column(
+              children: regions.map((r) {
+                final selected = settings.enabledRegions.contains(r['id']);
+                final statusColor = selected
+                    ? colorScheme.primary
+                    : colorScheme.onSurfaceVariant;
+                return ListTile(
+                  dense: true,
+                  leading: Icon(
+                    selected ? Icons.check_circle : Icons.radio_button_unchecked,
+                    size: 18,
+                    color: statusColor,
+                  ),
+                  title: Text(
+                    r['label']!,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Domain: ${r['domainRule']}  •  IP: ${r['ipRule']}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
           ),
         ),
         // Bundled rules note
