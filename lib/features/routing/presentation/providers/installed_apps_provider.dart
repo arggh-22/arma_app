@@ -8,6 +8,7 @@ part 'installed_apps_provider.g.dart';
 class InstalledApp {
   final String packageName;
   final String appName;
+  final bool isSystem;
 
   /// Base64-encoded PNG icon, may be empty.
   final String iconBase64;
@@ -15,6 +16,7 @@ class InstalledApp {
   const InstalledApp({
     required this.packageName,
     required this.appName,
+    this.isSystem = false,
     this.iconBase64 = '',
   });
 }
@@ -32,6 +34,7 @@ Future<List<InstalledApp>> installedApps(Ref ref) async {
         (m) => InstalledApp(
           packageName: m['packageName'] as String? ?? '',
           appName: m['appName'] as String? ?? '',
+          isSystem: m['isSystem'] as bool? ?? false,
           iconBase64: m['icon'] as String? ?? '',
         ),
       )

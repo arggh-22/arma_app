@@ -129,32 +129,55 @@ class MainActivity : FlutterActivity() {
                     CoroutineScope(Dispatchers.IO).launch {
                         try {
                             val pm = applicationContext.packageManager
-                            val apps = pm.getInstalledApplications(0)
-                                .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 }
-                                .map { appInfo ->
-                                    val iconBase64 = try {
-                                        val drawable = pm.getApplicationIcon(appInfo)
-                                        val bitmap = if (drawable is BitmapDrawable) {
-                                            drawable.bitmap
-                                        } else {
-                                            val bmp = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888)
-                                            val canvas = Canvas(bmp)
-                                            drawable.setBounds(0, 0, 48, 48)
-                                            drawable.draw(canvas)
-                                            bmp
-                                        }
-                                        val stream = ByteArrayOutputStream()
-                                        bitmap.compress(Bitmap.CompressFormat.PNG, 80, stream)
-                                        Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
-                                    } catch (e: Exception) {
-                                        ""
+                            val appMap = linkedMapOf<String, Map<String, Any>>()
+
+                            fun toDto(appInfo: ApplicationInfo): Map<String, Any> {
+                                val iconBase64 = try {
+                                    val drawable = pm.getApplicationIcon(appInfo)
+                                    val bitmap = if (drawable is BitmapDrawable) {
+                                        drawable.bitmap
+                                    } else {
+                                        val bmp = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888)
+                                        val canvas = Canvas(bmp)
+                                        drawable.setBounds(0, 0, 48, 48)
+                                        drawable.draw(canvas)
+                                        bmp
                                     }
-                                    mapOf(
-                                        "packageName" to appInfo.packageName,
-                                        "appName" to (pm.getApplicationLabel(appInfo)?.toString() ?: appInfo.packageName),
-                                        "icon" to iconBase64
-                                    )
+                                    val stream = ByteArrayOutputStream()
+                                    bitmap.compress(Bitmap.CompressFormat.PNG, 80, stream)
+                                    Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
+                                } catch (e: Exception) {
+                                    ""
                                 }
+                                val isSystem =
+                                    (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0 ||
+                                    (appInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+                                return mapOf(
+                                    "packageName" to appInfo.packageName,
+                                    "appName" to (pm.getApplicationLabel(appInfo)?.toString()
+                                        ?: appInfo.packageName),
+                                    "icon" to iconBase64,
+                                    "isSystem" to isSystem
+                                )
+                            }
+
+                            // Base source: all installed applications visible to this app.
+                            pm.getInstalledApplications(0).forEach { appInfo ->
+                                appMap[appInfo.packageName] = toDto(appInfo)
+                            }
+
+                            // Merge launcher apps too (helps on newer Android visibility edge-cases).
+                            val launcherIntent = Intent(Intent.ACTION_MAIN).apply {
+                                addCategory(Intent.CATEGORY_LAUNCHER)
+                            }
+                            pm.queryIntentActivities(launcherIntent, 0).forEach { resolveInfo ->
+                                val appInfo = resolveInfo.activityInfo?.applicationInfo ?: return@forEach
+                                if (!appMap.containsKey(appInfo.packageName)) {
+                                    appMap[appInfo.packageName] = toDto(appInfo)
+                                }
+                            }
+
+                            val apps = appMap.values
                                 .sortedBy { (it["appName"] as String).lowercase() }
                             withContext(Dispatchers.Main) {
                                 result.success(apps)

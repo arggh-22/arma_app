@@ -141,4 +141,11 @@ class RoutingSettingsNotifier extends _$RoutingSettingsNotifier {
     await _settingsDatasource.setSelectedApps(apps);
     state = state.copyWith(selectedApps: apps);
   }
+
+  /// Replace selected app package names in one write.
+  Future<void> setSelectedApps(List<String> packageNames) async {
+    final unique = packageNames.toSet().toList();
+    await _settingsDatasource.setSelectedApps(unique);
+    state = state.copyWith(selectedApps: unique);
+  }
 }
