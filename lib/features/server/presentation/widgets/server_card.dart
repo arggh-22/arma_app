@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 
-import 'package:arma_proxy_vpn_client/features/server/data/utils/flag_emoji_extractor.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/latency_indicator.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/protocol_badge.dart';
 
 /// Displays a single server configuration as a compact Happ-style card.
 ///
-/// Shows flag emoji (extracted from name), server name, address:port subtitle,
-/// protocol badge pill, and latency indicator. Active server has a 4px teal
-/// left border. Supports tap-to-select, long-press for multi-select, and
-/// inline latency retesting.
+/// Shows protocol badge, server name, address:port subtitle, and latency.
+/// Active server has a 4px teal left border. Supports tap-to-select,
+/// long-press for multi-select, and inline latency retesting.
 class ServerCard extends StatelessWidget {
   const ServerCard({
     super.key,
@@ -57,7 +55,6 @@ class ServerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final flagEmoji = FlagEmojiExtractor.extract(server.name);
 
     final Color bg = isMultiSelect && isChecked
         ? colorScheme.primaryContainer
@@ -105,14 +102,9 @@ class ServerCard extends StatelessWidget {
                     const Gap(4),
                   ],
 
-                  // Flag emoji or protocol badge as leading icon
-                  if (flagEmoji != null) ...[
-                    Text(flagEmoji, style: const TextStyle(fontSize: 22)),
-                    const Gap(10),
-                  ] else ...[
-                    ProtocolBadge(protocol: server.protocol),
-                    const Gap(8),
-                  ],
+                  // Protocol badge is always before server name for consistency.
+                  ProtocolBadge(protocol: server.protocol),
+                  const Gap(8),
 
                   Expanded(
                     child: Column(
@@ -135,12 +127,6 @@ class ServerCard extends StatelessWidget {
                       ],
                     ),
                   ),
-
-                  // Protocol badge (trailing when flag is present)
-                  if (flagEmoji != null) ...[
-                    const Gap(8),
-                    ProtocolBadge(protocol: server.protocol),
-                  ],
 
                   const Gap(8),
 
