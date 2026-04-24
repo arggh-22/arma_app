@@ -34,6 +34,7 @@ const supportedLocales = [
   Locale('fa'),
   Locale('ru'),
   Locale('zh'),
+  Locale('hy'),
 ];
 
 /// Display names for the language selector UI.
@@ -42,4 +43,5 @@ const localeDisplayNames = <String, String>{
   'fa': 'فارسی',
   'ru': 'Русский',
   'zh': '中文',
+  'hy': 'Հայերեն',
 };

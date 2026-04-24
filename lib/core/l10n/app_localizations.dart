@@ -7,6 +7,7 @@ import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
 import 'app_localizations_fa.dart';
+import 'app_localizations_hy.dart';
 import 'app_localizations_ru.dart';
 import 'app_localizations_zh.dart';
 
@@ -98,6 +99,7 @@ abstract class AppLocalizations {
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
     Locale('fa'),
+    Locale('hy'),
     Locale('ru'),
     Locale('zh'),
   ];
@@ -1116,7 +1118,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en', 'fa', 'ru', 'zh'].contains(locale.languageCode);
+      <String>['en', 'fa', 'hy', 'ru', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -1129,6 +1131,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsEn();
     case 'fa':
       return AppLocalizationsFa();
+    case 'hy':
+      return AppLocalizationsHy();
     case 'ru':
       return AppLocalizationsRu();
     case 'zh':
