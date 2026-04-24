@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:arma_proxy_vpn_client/features/connection/domain/entities/connection_status.dart';
 import 'package:arma_proxy_vpn_client/features/connection/presentation/providers/connection_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/active_server_provider.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/providers/server_list_provider.dart';
 
 /// Animated circular connect button for the Dashboard.
 ///
@@ -55,15 +56,30 @@ class ConnectButton extends ConsumerWidget {
     // Fade opacity for disconnecting state
     final targetOpacity = status is Disconnecting ? 0.4 : 1.0;
 
-    void handleTap() {
+    Future<void> handleTap() async {
       switch (status) {
         case Disconnected():
-          if (activeServer != null) {
-            ref.read(connectionProvider.notifier).connect(activeServer);
+          var selectedServer = activeServer;
+          if (selectedServer == null) {
+            try {
+              final servers = await ref.read(serverListProvider.future);
+              if (servers.isNotEmpty) {
+                selectedServer = servers.first;
+                await ref
+                    .read(activeServerProvider.notifier)
+                    .selectServer(selectedServer);
+              }
+            } catch (e) {
+              debugPrint('[ConnectButton] Failed to auto-select server: $e');
+            }
+          }
+
+          if (selectedServer != null) {
+            await ref.read(connectionProvider.notifier).connect(selectedServer);
           }
         case Connecting():
         case Connected():
-          ref.read(connectionProvider.notifier).disconnect();
+          await ref.read(connectionProvider.notifier).disconnect();
         case Disconnecting():
           break; // Ignore taps during shutdown
       }
@@ -72,7 +88,7 @@ class ConnectButton extends ConsumerWidget {
     return Semantics(
       label: semanticLabel,
       child: GestureDetector(
-        onTap: status is Disconnecting ? null : handleTap,
+        onTap: status is Disconnecting ? null : () => handleTap(),
         child: AnimatedOpacity(
           opacity: targetOpacity,
           duration: const Duration(milliseconds: 600),
