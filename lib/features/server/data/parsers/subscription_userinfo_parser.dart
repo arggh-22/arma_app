@@ -54,7 +54,8 @@ SubscriptionUserinfo? parseSubscriptionUserinfo(String? header) {
         total = int.tryParse(value);
       case 'expire':
         final ts = int.tryParse(value);
-        if (ts != null) {
+        // expire=0 means unlimited/no-expiration in many subscription providers.
+        if (ts != null && ts > 0) {
           expire = DateTime.fromMillisecondsSinceEpoch(ts * 1000);
         }
     }

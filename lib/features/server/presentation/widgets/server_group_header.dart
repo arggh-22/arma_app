@@ -292,9 +292,25 @@ class ServerGroupHeader extends StatelessWidget {
       ),
     ));
 
-    // Expiry with conditional red color
-    if (sub.expireDate != null) {
-      final daysLeft = sub.expireDate!.difference(DateTime.now()).inDays;
+    // Expiry / unlimited marker.
+    final expireDate = sub.expireDate;
+    final isUnlimited = expireDate == null || expireDate.millisecondsSinceEpoch <= 0;
+    if (isUnlimited) {
+      parts.add(
+        WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Icon(
+              Icons.all_inclusive,
+              size: 14,
+              color: colorScheme.primary,
+            ),
+          ),
+        ),
+      );
+    } else {
+      final daysLeft = expireDate.difference(DateTime.now()).inDays;
       final isUrgent = daysLeft >= 0 && daysLeft <= 3;
       final expiryText = daysLeft >= 0 ? '  ·  expires ${daysLeft}d' : '  ·  expired';
 
