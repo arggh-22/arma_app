@@ -2,17 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
+import 'package:arma_proxy_vpn_client/features/routing/data/services/rules_update_service.dart';
 import 'package:arma_proxy_vpn_client/features/routing/presentation/providers/routing_settings_provider.dart';
 
 /// Filter chips for region bypass presets (Iran, China, Russia).
 ///
 /// When a region is enabled, its geosite/geoip rules are applied
 /// to route domestic traffic directly (bypassing the proxy).
-class RegionPresetsSection extends ConsumerWidget {
+class RegionPresetsSection extends ConsumerStatefulWidget {
   const RegionPresetsSection({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RegionPresetsSection> createState() => _RegionPresetsSectionState();
+}
+
+class _RegionPresetsSectionState extends ConsumerState<RegionPresetsSection> {
+  bool _isUpdatingRules = false;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -66,16 +74,43 @@ class RegionPresetsSection extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: TextButton.icon(
-            onPressed: () {
-              // TODO: Download community rules from GitHub
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.rulesUpdated),
-                  duration: const Duration(seconds: 3),
-                ),
-              );
-            },
-            icon: const Icon(Icons.download),
+            onPressed: _isUpdatingRules
+                ? null
+                : () async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    setState(() => _isUpdatingRules = true);
+                    try {
+                      final updatedCount = await RulesUpdateService().updateRules();
+                      if (!mounted) return;
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            '$updatedCount files updated. ${l10n.rulesUpdated}',
+                          ),
+                          duration: const Duration(seconds: 3),
+                        ),
+                      );
+                    } catch (e) {
+                      if (!mounted) return;
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text('Rules update failed: $e'),
+                          duration: const Duration(seconds: 4),
+                        ),
+                      );
+                    } finally {
+                      if (mounted) {
+                        setState(() => _isUpdatingRules = false);
+                      }
+                    }
+                  },
+            icon: _isUpdatingRules
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.download),
             label: Text(l10n.updateRules),
           ),
         ),

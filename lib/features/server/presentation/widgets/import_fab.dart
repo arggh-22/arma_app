@@ -6,10 +6,9 @@ import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/core/utils/clipboard_helper.dart';
 import 'package:arma_proxy_vpn_client/features/server/data/parsers/share_link_parser.dart';
 import 'package:arma_proxy_vpn_client/features/server/data/parsers/subscription_parser.dart';
-import 'package:arma_proxy_vpn_client/features/server/data/services/subscription_service.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
-import 'package:arma_proxy_vpn_client/features/server/domain/entities/subscription.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/server_list_provider.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/providers/subscription_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/screens/qr_scanner_screen.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/add_subscription_dialog.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/paste_config_dialog.dart';
@@ -17,7 +16,7 @@ import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/paste
 /// Expandable floating action button for server import options.
 ///
 /// Displays three sub-options when expanded:
-/// 1. **Scan QR** — placeholder showing "coming soon" snackbar
+/// 1. **Scan QR** — scans share links and subscription URLs
 /// 2. **Paste Config** — opens full-screen dialog for manual input
 /// 3. **Clipboard** — reads clipboard and parses share link
 ///
@@ -147,20 +146,15 @@ class _ImportFabState extends ConsumerState<ImportFab>
     );
 
     try {
-      final subscription = Subscription(
-        id: 'clipboard-import',
-        name: 'Clipboard',
-        url: url,
-        lastUpdated: DateTime.now(),
-        addedAt: DateTime.now(),
-      );
-
-      final result = await SubscriptionService().fetch(subscription);
+      final importedCount = await ref.read(subscriptionProvider.notifier).addSubscription(
+            url: url,
+            name: '',
+          );
 
       if (!context.mounted) return;
       messenger.clearSnackBars();
 
-      if (result.servers.isEmpty) {
+      if (importedCount <= 0) {
         messenger.showSnackBar(
           SnackBar(
             content: Text(l10n.parseErrorInvalidLink),
@@ -170,7 +164,13 @@ class _ImportFabState extends ConsumerState<ImportFab>
         return;
       }
 
-      await _addMultipleServers(context, ref, result.servers);
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.importedServersCount(importedCount)),
+          duration: AppConstants.snackBarDurationDefault,
+          backgroundColor: Colors.green.shade700,
+        ),
+      );
     } catch (_) {
       if (!context.mounted) return;
       messenger.clearSnackBars();
@@ -303,13 +303,25 @@ class _ImportFabState extends ConsumerState<ImportFab>
                 _MiniFabOption(
                   icon: Icons.qr_code_scanner,
                   label: l10n.scanQr,
-                  onTap: () {
+                  onTap: () async {
                     _toggle();
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
+                    final scannedResult = await Navigator.of(context).push<String>(
+                      MaterialPageRoute<String>(
                         builder: (_) => const QrScannerScreen(),
                       ),
                     );
+                    if (!context.mounted || scannedResult == null) return;
+
+                    final value = scannedResult.trim();
+                    if (value.startsWith('http://') || value.startsWith('https://')) {
+                      await _importSubscriptionUrl(context, ref, value);
+                      return;
+                    }
+
+                    final config = ShareLinkParser.parse(value);
+                    if (config != null) {
+                      await _addSingleServer(context, ref, config);
+                    }
                   },
                 ),
                 const SizedBox(height: 8),
