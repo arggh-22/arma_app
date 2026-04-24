@@ -130,7 +130,7 @@ class XrayConfigBuilder {
       'protocol': 'tun',
       'settings': {
         'name': 'tun0',
-        'MTU': 9000,
+        'mtu': 9000,
         'userLevel': 0,
       },
       'sniffing': {
