@@ -46,6 +46,7 @@
   "perAppProxy": "Per-app proxy",
   "enablePerAppProxy": "Միացնել per-app proxy",
   "searchApps": "Որոնել հավելվածներ…",
+  "sortByDefault": "Լռելյայն (բաժանորդագրության հերթականություն)",
   "blacklistMode": "Սև ցուցակ",
   "whitelistMode": "Սպիտակ ցուցակ",
   "addRule": "Ավելացնել կանոն",

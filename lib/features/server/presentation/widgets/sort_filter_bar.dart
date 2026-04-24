@@ -34,6 +34,10 @@ class SortFilterBar extends ConsumerWidget {
                 style: theme.textTheme.bodyMedium,
                 items: [
                   DropdownMenuItem(
+                    value: SortCriteria.defaultOrder,
+                    child: Text(l10n.sortByDefault),
+                  ),
+                  DropdownMenuItem(
                     value: SortCriteria.name,
                     child: Text(l10n.sortByName),
                   ),

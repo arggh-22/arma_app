@@ -500,6 +500,12 @@ abstract class AppLocalizations {
   /// **'Sort'**
   String get sortBy;
 
+  /// No description provided for @sortByDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Default (Subscription order)'**
+  String get sortByDefault;
+
   /// No description provided for @sortByName.
   ///
   /// In en, this message translates to:

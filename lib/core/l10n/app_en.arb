@@ -74,6 +74,7 @@
   "notNow": "Not Now",
   "dismissDialog": "Dismiss",
   "sortBy": "Sort",
+  "sortByDefault": "Default (Subscription order)",
   "sortByName": "Name",
   "sortByLatency": "Latency",
   "sortByProtocol": "Protocol",

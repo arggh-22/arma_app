@@ -3,7 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'sort_filter_provider.g.dart';
 
 /// Criteria for sorting the server list.
-enum SortCriteria { name, latency, protocol }
+enum SortCriteria { defaultOrder, name, latency, protocol }
 
 /// Criteria for filtering the server list by latency status.
 enum FilterCriteria { all, working, failed }
@@ -13,7 +13,7 @@ enum FilterCriteria { all, working, failed }
 class SortFilterNotifier extends _$SortFilterNotifier {
   @override
   ({SortCriteria sort, FilterCriteria filter}) build() =>
-      (sort: SortCriteria.name, filter: FilterCriteria.all);
+      (sort: SortCriteria.defaultOrder, filter: FilterCriteria.all);
 
   /// Update the sort criteria, preserving the current filter.
   void setSort(SortCriteria criteria) =>

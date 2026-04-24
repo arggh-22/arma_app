@@ -232,6 +232,9 @@ class AppLocalizationsHy extends AppLocalizations {
   String get sortBy => 'Sort';
 
   @override
+  String get sortByDefault => 'Լռելյայն (բաժանորդագրության հերթականություն)';
+
+  @override
   String get sortByName => 'Name';
 
   @override

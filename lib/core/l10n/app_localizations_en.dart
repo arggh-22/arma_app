@@ -233,6 +233,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sortBy => 'Sort';
 
   @override
+  String get sortByDefault => 'Default (Subscription order)';
+
+  @override
   String get sortByName => 'Name';
 
   @override

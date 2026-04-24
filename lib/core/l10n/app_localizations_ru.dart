@@ -234,6 +234,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get sortBy => 'Сортировка';
 
   @override
+  String get sortByDefault => 'По умолчанию (порядок подписки)';
+
+  @override
   String get sortByName => 'По имени';
 
   @override

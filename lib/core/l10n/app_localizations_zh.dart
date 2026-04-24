@@ -224,6 +224,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sortBy => '排序';
 
   @override
+  String get sortByDefault => '默认（订阅顺序）';
+
+  @override
   String get sortByName => '名称';
 
   @override

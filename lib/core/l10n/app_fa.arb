@@ -74,6 +74,7 @@
   "notNow": "الان نه",
   "dismissDialog": "بستن",
   "sortBy": "مرتب‌سازی",
+  "sortByDefault": "پیش‌فرض (ترتیب اشتراک)",
   "sortByName": "نام",
   "sortByLatency": "تأخیر",
   "sortByProtocol": "پروتکل",

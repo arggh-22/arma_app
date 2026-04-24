@@ -233,6 +233,9 @@ class AppLocalizationsFa extends AppLocalizations {
   String get sortBy => 'مرتب‌سازی';
 
   @override
+  String get sortByDefault => 'پیش‌فرض (ترتیب اشتراک)';
+
+  @override
   String get sortByName => 'نام';
 
   @override
