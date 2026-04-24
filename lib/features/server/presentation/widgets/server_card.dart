@@ -57,27 +57,23 @@ class ServerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
     final flagEmoji = FlagEmojiExtractor.extract(server.name);
 
+    final Color bg = isMultiSelect && isChecked
+        ? colorScheme.primaryContainer
+        : (isSelected && !isMultiSelect
+            ? colorScheme.primary.withValues(alpha: 0.06)
+            : Colors.transparent);
+
     return Semantics(
-      label:
-          '${server.name}, ${server.protocol.label}, tap to select',
-      child: Card(
-        elevation: isDark ? 0 : 1,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: isDark
-              ? BorderSide(color: colorScheme.outlineVariant, width: 1)
-              : BorderSide.none,
-        ),
-        clipBehavior: Clip.antiAlias,
-        color: isMultiSelect && isChecked
-            ? colorScheme.primaryContainer
-            : colorScheme.surfaceContainerLow,
+      label: '${server.name}, ${server.protocol.label}, tap to select',
+      child: Material(
+        color: bg,
+        borderRadius: BorderRadius.circular(8),
         child: Container(
           decoration: isSelected && !isMultiSelect
               ? BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
                   border: Border(
                     left: BorderSide(
                       color: colorScheme.primary,
@@ -89,13 +85,13 @@ class ServerCard extends StatelessWidget {
           child: InkWell(
             onTap: isMultiSelect ? onToggleSelect : onTap,
             onLongPress: onLongPress,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(8),
             child: Padding(
               padding: EdgeInsets.only(
-                left: isSelected && !isMultiSelect ? 12 : 16,
-                right: 16,
-                top: 12,
-                bottom: 12,
+                left: isSelected && !isMultiSelect ? 8 : 12,
+                right: 12,
+                top: 8,
+                bottom: 8,
               ),
               child: Row(
                 children: [
@@ -104,14 +100,15 @@ class ServerCard extends StatelessWidget {
                     Checkbox(
                       value: isChecked,
                       onChanged: (_) => onToggleSelect?.call(),
+                      visualDensity: VisualDensity.compact,
                     ),
                     const Gap(4),
                   ],
 
                   // Flag emoji or protocol badge as leading icon
                   if (flagEmoji != null) ...[
-                    Text(flagEmoji, style: const TextStyle(fontSize: 24)),
-                    const Gap(12),
+                    Text(flagEmoji, style: const TextStyle(fontSize: 22)),
+                    const Gap(10),
                   ] else ...[
                     ProtocolBadge(protocol: server.protocol),
                     const Gap(8),
@@ -123,11 +120,10 @@ class ServerCard extends StatelessWidget {
                       children: [
                         Text(
                           server.name,
-                          style: theme.textTheme.titleMedium,
+                          style: theme.textTheme.bodyLarge,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const Gap(2),
                         Text(
                           '${server.address}:${server.port}',
                           style: theme.textTheme.bodySmall?.copyWith(
@@ -156,9 +152,10 @@ class ServerCard extends StatelessWidget {
 
                   // Active checkmark (only in normal mode)
                   if (!isMultiSelect && isSelected) ...[
-                    const Gap(8),
+                    const Gap(6),
                     Icon(
                       Icons.check_circle,
+                      size: 20,
                       color: colorScheme.primary,
                     ),
                   ],

@@ -39,6 +39,7 @@ class ServerListScreen extends ConsumerStatefulWidget {
 class _ServerListScreenState extends ConsumerState<ServerListScreen> {
   final Set<String> _collapsedGroups = {};
   final Set<String> _refreshingSubscriptions = {};
+  final Set<String> _pingingSubscriptions = {};
 
   @override
   Widget build(BuildContext context) {
@@ -248,6 +249,8 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
           isCollapsed: isCollapsed,
           isRefreshing:
               _refreshingSubscriptions.contains(firstServer.subscriptionId),
+          isPinging:
+              _pingingSubscriptions.contains(firstServer.subscriptionId),
           onToggleCollapse: () {
             setState(() {
               if (isCollapsed) {
@@ -260,6 +263,8 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
           onRefresh: subscription != null
               ? () => _onRefreshSubscription(subscription!.id)
               : null,
+          onPing: () => _onPingGroup(
+              context, subscription?.id, groupServers),
           onDeleteAll: subscription != null
               ? () => _onDeleteAllInSubscription(
                     context, subscription!.id, groupServers)
@@ -270,15 +275,12 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
       // Skip server cards if group is collapsed
       if (isCollapsed) continue;
 
-      items.add(const Gap(4));
+      items.add(const Gap(2));
       for (var j = 0; j < groupServers.length; j++) {
-        if (j > 0) {
-          items.add(const Gap(8));
-        }
         final server = groupServers[j];
         items.add(
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             child: isMultiSelectActive
                 ? ServerCard(
                     server: server,
@@ -307,7 +309,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
                       padding: const EdgeInsets.only(right: 24),
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.error,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
                         Icons.delete,
@@ -441,6 +443,28 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     } finally {
       if (mounted) {
         setState(() => _refreshingSubscriptions.remove(subscriptionId));
+      }
+    }
+  }
+
+  /// Ping all servers in a group (subscription or manual).
+  ///
+  /// For subscription groups, [subscriptionId] is used to track per-group
+  /// busy state. For manual groups (no subscription), busy state is skipped.
+  Future<void> _onPingGroup(
+    BuildContext context,
+    String? subscriptionId,
+    List<ServerConfig> servers,
+  ) async {
+    if (servers.isEmpty) return;
+    if (subscriptionId != null) {
+      setState(() => _pingingSubscriptions.add(subscriptionId));
+    }
+    try {
+      await ref.read(latencyProvider.notifier).testAllServers(servers);
+    } finally {
+      if (mounted && subscriptionId != null) {
+        setState(() => _pingingSubscriptions.remove(subscriptionId));
       }
     }
   }

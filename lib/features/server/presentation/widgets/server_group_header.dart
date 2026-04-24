@@ -23,8 +23,10 @@ class ServerGroupHeader extends StatelessWidget {
     this.isCollapsed = false,
     this.onToggleCollapse,
     this.onRefresh,
+    this.onPing,
     this.onDeleteAll,
     this.isRefreshing = false,
+    this.isPinging = false,
   });
 
   /// The group name to display (e.g., subscription name or "Manual").
@@ -45,11 +47,17 @@ class ServerGroupHeader extends StatelessWidget {
   /// Called when the refresh action is selected.
   final VoidCallback? onRefresh;
 
+  /// Called when the ping/check-all action is selected.
+  final VoidCallback? onPing;
+
   /// Called when "Delete All" is selected from the menu.
   final VoidCallback? onDeleteAll;
 
   /// Whether the subscription is currently being refreshed.
   final bool isRefreshing;
+
+  /// Whether the subscription is currently being pinged.
+  final bool isPinging;
 
   @override
   Widget build(BuildContext context) {
@@ -125,74 +133,97 @@ class ServerGroupHeader extends StatelessWidget {
                 ),
               ),
 
-              // Loading spinner or 3-dot menu
-              if (isRefreshing)
-                const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator.adaptive(strokeWidth: 2),
-                )
-              else
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert, size: 20),
-                  constraints: const BoxConstraints(
-                    minWidth: 32,
-                    minHeight: 32,
-                  ),
-                  padding: EdgeInsets.zero,
-                  onSelected: (value) {
-                    switch (value) {
-                      case 'refresh':
-                        onRefresh?.call();
-                      case 'deleteAll':
-                        onDeleteAll?.call();
-                      case 'copyUrl':
-                        Clipboard.setData(ClipboardData(text: sub.url));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(l10n.linkCopied),
-                            duration: const Duration(seconds: 2),
-                          ),
-                        );
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: 'refresh',
-                      child: Row(
-                        children: [
-                          const Icon(Icons.refresh, size: 20),
-                          const SizedBox(width: 8),
-                          Text(l10n.retryAction),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'copyUrl',
-                      child: Row(
-                        children: [
-                          const Icon(Icons.copy, size: 20),
-                          const SizedBox(width: 8),
-                          Text(l10n.linkCopied),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'deleteAll',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete_outline, size: 20,
-                              color: colorScheme.error),
-                          const SizedBox(width: 8),
-                          Text(
-                            l10n.deleteConfirm,
-                            style: TextStyle(color: colorScheme.error),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+              // Inline Update (refresh) button
+              _IconAction(
+                icon: Icons.refresh,
+                tooltip: 'Update',
+                busy: isRefreshing,
+                onTap: onRefresh,
+                color: colorScheme.onSurfaceVariant,
+              ),
+
+              // Inline Ping (check) button
+              _IconAction(
+                icon: Icons.network_check,
+                tooltip: 'Check servers',
+                busy: isPinging,
+                onTap: onPing,
+                color: colorScheme.onSurfaceVariant,
+              ),
+
+              // 3-dot overflow menu (Update / Check / Copy URL / Delete All)
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert, size: 20),
+                constraints: const BoxConstraints(
+                  minWidth: 32,
+                  minHeight: 32,
                 ),
+                padding: EdgeInsets.zero,
+                onSelected: (value) {
+                  switch (value) {
+                    case 'refresh':
+                      onRefresh?.call();
+                    case 'ping':
+                      onPing?.call();
+                    case 'deleteAll':
+                      onDeleteAll?.call();
+                    case 'copyUrl':
+                      Clipboard.setData(ClipboardData(text: sub.url));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(l10n.linkCopied),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'refresh',
+                    child: Row(
+                      children: [
+                        Icon(Icons.refresh, size: 20),
+                        SizedBox(width: 8),
+                        Text('Update'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'ping',
+                    child: Row(
+                      children: [
+                        Icon(Icons.network_check, size: 20),
+                        SizedBox(width: 8),
+                        Text('Check servers'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'copyUrl',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.copy, size: 20),
+                        const SizedBox(width: 8),
+                        Text(l10n.linkCopied),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'deleteAll',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline, size: 20,
+                            color: colorScheme.error),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Delete all',
+                          style: TextStyle(color: colorScheme.error),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
 
@@ -280,6 +311,45 @@ class ServerGroupHeader extends StatelessWidget {
 
     return RichText(
       text: TextSpan(children: parts),
+    );
+  }
+}
+
+/// Compact icon button that swaps to a spinner when [busy] is true.
+class _IconAction extends StatelessWidget {
+  const _IconAction({
+    required this.icon,
+    required this.tooltip,
+    required this.busy,
+    required this.onTap,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final bool busy;
+  final VoidCallback? onTap;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    if (busy) {
+      return const SizedBox(
+        width: 36,
+        height: 36,
+        child: Padding(
+          padding: EdgeInsets.all(8),
+          child: CircularProgressIndicator.adaptive(strokeWidth: 2),
+        ),
+      );
+    }
+    return IconButton(
+      icon: Icon(icon, size: 20, color: color),
+      tooltip: tooltip,
+      onPressed: onTap,
+      visualDensity: VisualDensity.compact,
+      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+      padding: EdgeInsets.zero,
     );
   }
 }
