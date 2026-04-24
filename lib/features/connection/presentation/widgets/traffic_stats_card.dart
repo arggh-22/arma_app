@@ -5,7 +5,7 @@ import 'package:gap/gap.dart';
 import 'package:arma_proxy_vpn_client/features/connection/presentation/providers/traffic_stats_provider.dart';
 import 'package:arma_proxy_vpn_client/xray/formatters/speed_formatter.dart';
 
-/// Real-time traffic stats display with two side-by-side cards (D-05).
+/// Real-time traffic stats display in a single merged card (D-05).
 ///
 /// Shows ↓ download speed and ↑ upload speed, updated in real-time
 /// from [trafficStatsProvider]. Uses [formatSpeed] for human-readable
@@ -19,57 +19,57 @@ class TrafficStatsCard extends ConsumerWidget {
     final uploadSpeed = formatSpeed(stats.uplinkBytesPerSecond);
     final downloadSpeed = formatSpeed(stats.downlinkBytesPerSecond);
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildStatCard(
-          context,
-          icon: Icons.arrow_downward,
-          label: '↓',
-          speed: downloadSpeed,
-          color: Colors.green,
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: _buildStatRow(
+                context,
+                icon: Icons.arrow_downward,
+                speed: downloadSpeed,
+                color: Colors.green,
+              ),
+            ),
+            Container(
+              width: 1,
+              height: 28,
+              color: colorScheme.outlineVariant,
+            ),
+            Expanded(
+              child: _buildStatRow(
+                context,
+                icon: Icons.arrow_upward,
+                speed: uploadSpeed,
+                color: Colors.blue,
+              ),
+            ),
+          ],
         ),
-        const Gap(16),
-        _buildStatCard(
-          context,
-          icon: Icons.arrow_upward,
-          label: '↑',
-          speed: uploadSpeed,
-          color: Colors.blue,
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildStatCard(
+  Widget _buildStatRow(
     BuildContext context, {
     required IconData icon,
-    required String label,
     required String speed,
     required Color color,
   }) {
     final theme = Theme.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 20),
-            const Gap(8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  label,
-                  style: theme.textTheme.labelSmall?.copyWith(color: color),
-                ),
-                Text(speed, style: theme.textTheme.titleMedium),
-              ],
-            ),
-          ],
-        ),
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: color, size: 20),
+          const Gap(8),
+          Text(speed, style: theme.textTheme.titleMedium),
+        ],
       ),
     );
   }
