@@ -18,11 +18,14 @@ class VpnPlatformService {
 
   /// Start the VPN with a complete Xray JSON config and server display name.
   Future<bool> startVpn(String configJson, String serverName) async {
-    print('[VpnPlatformService] startVpn(configJson.length=${configJson.length}, serverName=$serverName)');
-    final result = await _methodChannel.invokeMethod<bool>(
-          'startVpn',
-          {'config': configJson, 'serverName': serverName},
-        ) ??
+    print(
+      '[VpnPlatformService] startVpn(configJson.length=${configJson.length}, serverName=$serverName)',
+    );
+    final result =
+        await _methodChannel.invokeMethod<bool>('startVpn', {
+          'config': configJson,
+          'serverName': serverName,
+        }) ??
         false;
     print('[VpnPlatformService] startVpn result: $result');
     return result;
@@ -38,7 +41,8 @@ class VpnPlatformService {
 
   /// Check whether the VPN service is currently running.
   Future<bool> get isRunning async {
-    final result = await _methodChannel.invokeMethod<bool>('isRunning') ?? false;
+    final result =
+        await _methodChannel.invokeMethod<bool>('isRunning') ?? false;
     print('[VpnPlatformService] isRunning: $result');
     return result;
   }
@@ -46,7 +50,9 @@ class VpnPlatformService {
   /// Request VPN permission from the Android system.
   Future<bool> requestVpnPermission() async {
     print('[VpnPlatformService] requestVpnPermission()');
-    final result = await _methodChannel.invokeMethod<bool>('requestVpnPermission') ?? false;
+    final result =
+        await _methodChannel.invokeMethod<bool>('requestVpnPermission') ??
+        false;
     print('[VpnPlatformService] requestVpnPermission result: $result');
     return result;
   }
@@ -78,17 +84,14 @@ class VpnPlatformService {
 
   /// Stream of VPN events from native (status changes + traffic stats).
   Stream<Map<String, dynamic>> get vpnEvents {
-    _sharedEventStream ??= _eventChannel
-        .receiveBroadcastStream()
-        .map((event) {
-          final mapped = Map<String, dynamic>.from(event as Map);
-          // Log all events EXCEPT frequent traffic stats
-          if (mapped['type'] != 'stats') {
-            print('[VpnPlatformService] EVENT: $mapped');
-          }
-          return mapped;
-        })
-        .asBroadcastStream();
+    _sharedEventStream ??= _eventChannel.receiveBroadcastStream().map((event) {
+      final mapped = Map<String, dynamic>.from(event as Map);
+      // Log all events EXCEPT frequent traffic stats
+      if (mapped['type'] != 'stats') {
+        print('[VpnPlatformService] EVENT: $mapped');
+      }
+      return mapped;
+    }).asBroadcastStream();
     return _sharedEventStream!;
   }
 
@@ -96,8 +99,9 @@ class VpnPlatformService {
   /// Returns list of maps: {packageName: String, appName: String, icon: String (base64 PNG)}.
   Future<List<Map<String, dynamic>>> getInstalledApps() async {
     try {
-      final result =
-          await _methodChannel.invokeListMethod<Map>('getInstalledApps');
+      final result = await _methodChannel.invokeListMethod<Map>(
+        'getInstalledApps',
+      );
       return result?.map((e) => Map<String, dynamic>.from(e)).toList() ?? [];
     } on PlatformException catch (e) {
       debugPrint('[VpnPlatformService] getInstalledApps error: ${e.message}');
@@ -123,6 +127,43 @@ class VpnPlatformService {
       });
     } on PlatformException catch (e) {
       debugPrint('[VpnPlatformService] setPerAppConfig error: ${e.message}');
+    }
+  }
+
+  /// Toggle detailed foreground notification content (server + traffic stats).
+  Future<void> setNotificationDetailsEnabled(bool enabled) async {
+    try {
+      await _methodChannel.invokeMethod('setNotificationDetailsEnabled', {
+        'enabled': enabled,
+      });
+    } on MissingPluginException {
+      debugPrint(
+        '[VpnPlatformService] setNotificationDetailsEnabled not available on this build',
+      );
+    } on PlatformException catch (e) {
+      debugPrint(
+        '[VpnPlatformService] setNotificationDetailsEnabled error: ${e.message}',
+      );
+    }
+  }
+
+  /// Request notification permission from the Android system (Android 13+).
+  /// Returns true if permission is granted (or already granted on older Android).
+  Future<bool> requestNotificationPermission() async {
+    try {
+      final result =
+          await _methodChannel.invokeMethod<bool>('requestNotificationPermission');
+      return result ?? false;
+    } on MissingPluginException {
+      debugPrint(
+        '[VpnPlatformService] requestNotificationPermission not available on this build',
+      );
+      return true;
+    } on PlatformException catch (e) {
+      debugPrint(
+        '[VpnPlatformService] requestNotificationPermission error: ${e.message}',
+      );
+      return false;
     }
   }
 }

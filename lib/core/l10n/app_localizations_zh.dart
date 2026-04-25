@@ -108,6 +108,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get languageTitle => '语言';
 
   @override
+  String get connectionDisplaySection => '连接显示';
+
+  @override
+  String get detailedNotification => '详细 VPN 通知';
+
+  @override
+  String get detailedNotificationSubtitle => '在 Android VPN 通知中显示服务器名称和实时流量统计';
+
+  @override
+  String get dashboardStatistics => '仪表盘统计';
+
+  @override
+  String get dashboardStatisticsSubtitle => '在仪表盘显示实时上传/下载统计卡片';
+
+  @override
   String get routingPlaceholder => '自定义路由规则将在未来版本中推出';
 
   @override

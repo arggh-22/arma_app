@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/core/theme/app_theme.dart';
 import 'package:arma_proxy_vpn_client/core/router/app_router.dart';
+import 'package:arma_proxy_vpn_client/features/connection/data/datasources/vpn_platform_service.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/theme_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/locale_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/subscription_provider.dart';
@@ -29,6 +30,8 @@ class _ArmaAppState extends ConsumerState<ArmaApp> {
   @override
   void initState() {
     super.initState();
+    // Request notification permission on first app open (Android 13+)
+    _requestNotificationPermission();
     // Trigger auto-refresh once after first frame (D-04, CONF-07).
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_autoRefreshTriggered) {
@@ -36,6 +39,15 @@ class _ArmaAppState extends ConsumerState<ArmaApp> {
         ref.read(subscriptionProvider.notifier).refreshAllAutoUpdate();
       }
     });
+  }
+
+  Future<void> _requestNotificationPermission() async {
+    try {
+      final platformService = VpnPlatformService();
+      await platformService.requestNotificationPermission();
+    } catch (e) {
+      debugPrint('[ArmaApp] Error requesting notification permission: $e');
+    }
   }
 
   @override

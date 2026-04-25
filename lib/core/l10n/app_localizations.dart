@@ -296,6 +296,36 @@ abstract class AppLocalizations {
   /// **'Language'**
   String get languageTitle;
 
+  /// No description provided for @connectionDisplaySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection Display'**
+  String get connectionDisplaySection;
+
+  /// No description provided for @detailedNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed VPN Notification'**
+  String get detailedNotification;
+
+  /// No description provided for @detailedNotificationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show server name and live traffic stats in the Android VPN notification'**
+  String get detailedNotificationSubtitle;
+
+  /// No description provided for @dashboardStatistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard Statistics'**
+  String get dashboardStatistics;
+
+  /// No description provided for @dashboardStatisticsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show live upload/download statistics card on Dashboard'**
+  String get dashboardStatisticsSubtitle;
+
   /// No description provided for @routingPlaceholder.
   ///
   /// In en, this message translates to:

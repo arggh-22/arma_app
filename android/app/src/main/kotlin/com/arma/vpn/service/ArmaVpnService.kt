@@ -179,7 +179,12 @@ class ArmaVpnService : VpnService() {
         Log.w(TAG, "Step 1: Starting foreground notification")
         startForeground(
             VpnNotificationManager.NOTIFICATION_ID,
-            VpnNotificationManager.buildNotification(this, "Connecting...", serverName)
+            VpnNotificationManager.buildNotification(
+                this,
+                "Connecting...",
+                serverName,
+                showDetails = isNotificationDetailsEnabled()
+            )
         )
 
         // 2. Send connecting status to client
@@ -573,10 +578,20 @@ class ArmaVpnService : VpnService() {
         val upStr = formatSpeed(uplink)
         val downStr = formatSpeed(downlink)
         val notification = VpnNotificationManager.buildNotification(
-            this, "Connected", serverName, upStr, downStr
+            this,
+            "Connected",
+            serverName,
+            upStr,
+            downStr,
+            showDetails = isNotificationDetailsEnabled()
         )
         getSystemService(NotificationManager::class.java)
             .notify(VpnNotificationManager.NOTIFICATION_ID, notification)
+    }
+
+    private fun isNotificationDetailsEnabled(): Boolean {
+        val prefs = getSharedPreferences("vpn_runtime_prefs", MODE_PRIVATE)
+        return prefs.getBoolean("notification_details_enabled", true)
     }
 
     /**

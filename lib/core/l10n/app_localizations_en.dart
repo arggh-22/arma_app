@@ -111,6 +111,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageTitle => 'Language';
 
   @override
+  String get connectionDisplaySection => 'Connection Display';
+
+  @override
+  String get detailedNotification => 'Detailed VPN Notification';
+
+  @override
+  String get detailedNotificationSubtitle =>
+      'Show server name and live traffic stats in the Android VPN notification';
+
+  @override
+  String get dashboardStatistics => 'Dashboard Statistics';
+
+  @override
+  String get dashboardStatisticsSubtitle =>
+      'Show live upload/download statistics card on Dashboard';
+
+  @override
   String get routingPlaceholder =>
       'Custom routing rules coming in a future update';
 

@@ -1,11 +1,14 @@
 package com.arma.vpn
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
+import android.os.Build
 import android.os.Bundle
 import android.util.Base64
 import android.util.Log
@@ -43,6 +46,7 @@ class MainActivity : FlutterActivity() {
     private lateinit var methodChannel: MethodChannel
     private var eventSink: EventChannel.EventSink? = null
     private var vpnPermissionResult: MethodChannel.Result? = null
+    private var notificationPermissionResult: MethodChannel.Result? = null
     private lateinit var vpnConnection: VpnServiceConnection
     private var isVpnActive = false
 
@@ -50,6 +54,7 @@ class MainActivity : FlutterActivity() {
         private const val METHOD_CHANNEL = "com.arma.vpn/method"
         private const val EVENT_CHANNEL = "com.arma.vpn/vpn_status"
         private const val VPN_PERMISSION_REQUEST_CODE = 24
+        private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 25
         private const val TAG = "ArmaMainActivity"
     }
 
@@ -101,6 +106,9 @@ class MainActivity : FlutterActivity() {
                 }
                 "requestVpnPermission" -> {
                     requestVpnPermission(result)
+                }
+                "requestNotificationPermission" -> {
+                    requestNotificationPermission(result)
                 }
                 "measureDelay" -> {
                     val config = call.argument<String>("config")
@@ -200,6 +208,14 @@ class MainActivity : FlutterActivity() {
                     Log.w(TAG, "setPerAppConfig: mode=$mode, apps=${apps.size}")
                     result.success(true)
                 }
+                "setNotificationDetailsEnabled" -> {
+                    val enabled = call.argument<Boolean>("enabled") ?: true
+                    val prefs = getSharedPreferences("vpn_runtime_prefs", MODE_PRIVATE)
+                    prefs.edit()
+                        .putBoolean("notification_details_enabled", enabled)
+                        .apply()
+                    result.success(true)
+                }
                 else -> result.notImplemented()
             }
         }
@@ -272,6 +288,24 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+    private fun requestNotificationPermission(result: MethodChannel.Result) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            result.success(true)
+            return
+        }
+
+        if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            result.success(true)
+            return
+        }
+
+        notificationPermissionResult = result
+        requestPermissions(
+            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+            NOTIFICATION_PERMISSION_REQUEST_CODE
+        )
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == VPN_PERMISSION_REQUEST_CODE) {
             vpnPermissionResult?.success(resultCode == RESULT_OK)
@@ -279,6 +313,21 @@ class MainActivity : FlutterActivity() {
             return
         }
         super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
+            val granted =
+                grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+            notificationPermissionResult?.success(granted)
+            notificationPermissionResult = null
+            return
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     override fun onDestroy() {

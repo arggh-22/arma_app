@@ -111,6 +111,23 @@ class AppLocalizationsFa extends AppLocalizations {
   String get languageTitle => 'زبان';
 
   @override
+  String get connectionDisplaySection => 'نمایش اتصال';
+
+  @override
+  String get detailedNotification => 'اعلان جزئیات VPN';
+
+  @override
+  String get detailedNotificationSubtitle =>
+      'نمایش نام سرور و آمار زنده ترافیک در اعلان VPN اندروید';
+
+  @override
+  String get dashboardStatistics => 'آمار داشبورد';
+
+  @override
+  String get dashboardStatisticsSubtitle =>
+      'نمایش کارت آمار زنده آپلود/دانلود در داشبورد';
+
+  @override
   String get routingPlaceholder =>
       'قوانین مسیریابی سفارشی در به‌روزرسانی آینده اضافه می‌شود';
 

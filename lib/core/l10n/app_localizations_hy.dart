@@ -51,7 +51,7 @@ class AppLocalizationsHy extends AppLocalizations {
 
   @override
   String get parseErrorUnsupported =>
-      'Unsupported protocol — only VLESS, VMess, Trojan, Shadowsocks, and Hysteria2 links are supported';
+      'Չաջակցվող պրոտոկոլ — աջակցվում են միայն VLESS, VMess, Trojan, Shadowsocks և Hysteria2 հղումները';
 
   @override
   String get parseErrorEmptyClipboard => 'Clipboard-ը դատարկ է';
@@ -63,17 +63,18 @@ class AppLocalizationsHy extends AppLocalizations {
   String get duplicateServer => 'Այս սերվերն արդեն ներմուծված է';
 
   @override
-  String get disabledConnect => 'Connection available in next update';
+  String get disabledConnect =>
+      'Միացման հնարավորությունը հասանելի կլինի հաջորդ թարմացման մեջ';
 
   @override
-  String get disabledQrScan => 'QR scanning coming soon';
+  String get disabledQrScan => 'QR սկանավորումը շուտով կհասնի';
 
   @override
-  String get deleteServerTitle => 'Delete server?';
+  String get deleteServerTitle => 'Ջնջե՞լ սերվերը';
 
   @override
   String deleteServerBody(String serverName) {
-    return 'This will permanently remove $serverName.';
+    return 'Սա մշտապես կջնջի $serverName-ը։';
   }
 
   @override
@@ -83,17 +84,17 @@ class AppLocalizationsHy extends AppLocalizations {
   String get deleteCancel => 'Պահել';
 
   @override
-  String get pasteConfigTitle => 'Paste Config';
+  String get pasteConfigTitle => 'Տեղադրել կոնֆիգ';
 
   @override
   String get pasteConfigHint =>
-      'Paste a share link (vless://, vmess://, etc.) or raw JSON config';
+      'Տեղադրեք share հղում (vless://, vmess:// և այլն) կամ raw JSON կոնֆիգ';
 
   @override
-  String get pasteConfigAction => 'Import Config';
+  String get pasteConfigAction => 'Ներմուծել կոնֆիգ';
 
   @override
-  String get pasteConfigEmpty => 'Paste a config to continue';
+  String get pasteConfigEmpty => 'Շարունակելու համար տեղադրեք կոնֆիգ';
 
   @override
   String get themeSystem => 'Համակարգ';
@@ -111,6 +112,23 @@ class AppLocalizationsHy extends AppLocalizations {
   String get languageTitle => 'Լեզու';
 
   @override
+  String get connectionDisplaySection => 'Միացման ցուցադրում';
+
+  @override
+  String get detailedNotification => 'Մանրամասն VPN ծանուցում';
+
+  @override
+  String get detailedNotificationSubtitle =>
+      'Ցուցադրել սերվերի անունը և իրական ժամանակի տրաֆիկի վիճակագրությունը Android VPN ծանուցման մեջ';
+
+  @override
+  String get dashboardStatistics => 'Դեշբորդի վիճակագրություն';
+
+  @override
+  String get dashboardStatisticsSubtitle =>
+      'Ցուցադրել իրական ժամանակի ներբեռնման/վերբեռնման քարտը դեշբորդում';
+
+  @override
   String get routingPlaceholder =>
       'Custom routing rules coming in a future update';
 
@@ -119,7 +137,7 @@ class AppLocalizationsHy extends AppLocalizations {
 
   @override
   String get bypassLanSubtitle =>
-      'Don\'t route local network traffic (192.168.x.x, 10.x.x.x) through proxy';
+      'Չուղարկել տեղային ցանցի տրաֆիկը (192.168.x.x, 10.x.x.x) պրոքսիով';
 
   @override
   String get notConnected => 'Միացված չէ';
@@ -141,7 +159,7 @@ class AppLocalizationsHy extends AppLocalizations {
 
   @override
   String languageChanged(String language) {
-    return 'Language changed to $language';
+    return 'Լեզուն փոխվեց՝ $language';
   }
 
   @override
@@ -155,7 +173,7 @@ class AppLocalizationsHy extends AppLocalizations {
   }
 
   @override
-  String get viewAction => 'View';
+  String get viewAction => 'Դիտել';
 
   @override
   String get retryAction => 'Կրկնել';
@@ -170,87 +188,87 @@ class AppLocalizationsHy extends AppLocalizations {
   String get addSubscription => 'Ավելացնել բաժանորդագրություն';
 
   @override
-  String get noLogsYet => 'No logs yet';
+  String get noLogsYet => 'Լոգեր դեռ չկան';
 
   @override
-  String get noLogsBody => 'Connect to a server to see logs';
+  String get noLogsBody => 'Լոգերը տեսնելու համար միացեք սերվերի';
 
   @override
   String get subscriptionFetchError => 'Չհաջողվեց ստանալ բաժանորդագրությունը';
 
   @override
-  String get latencyTestFailed => 'Couldn\'t reach server';
+  String get latencyTestFailed => 'Չհաջողվեց կապ հաստատել սերվերի հետ';
 
   @override
-  String get qrUnrecognized => 'Couldn\'t recognize this QR code';
+  String get qrUnrecognized => 'Չհաջողվեց ճանաչել QR կոդը';
 
   @override
   String get cameraPermissionDenied =>
-      'Camera permission required to scan QR codes. Enable in Settings.';
+      'QR սկանավորման համար անհրաժեշտ է տեսախցիկի թույլտվություն';
 
   @override
   String deleteServersTitle(int count) {
-    return 'Delete $count servers?';
+    return 'Ջնջե՞լ $count սերվեր';
   }
 
   @override
   String get deleteServersBody =>
-      'This will permanently remove the selected servers. Servers from subscriptions will reappear on next refresh.';
+      'Սա մշտապես կջնջի ընտրված սերվերները։ Բաժանորդագրությունից սերվերները կվերադառնան թարմացման ժամանակ։';
 
   @override
   String deleteServersConfirm(int count) {
-    return 'Delete $count';
+    return 'Ջնջել $count';
   }
 
   @override
-  String get keepServers => 'Keep Servers';
+  String get keepServers => 'Պահել';
 
   @override
   String subscriptionRefreshSuccess(int count) {
-    return 'Updated $count subscriptions';
+    return 'Թարմացվել է $count բաժանորդագրություն';
   }
 
   @override
-  String get subscriptionRefreshNoChange => 'All up to date';
+  String get subscriptionRefreshNoChange => 'Ամեն ինչ արդիական է';
 
   @override
   String subscriptionRefreshFail(String name) {
-    return 'Failed to update $name. Check your connection.';
+    return 'Չհաջողվեց թարմացնել $name-ը';
   }
 
   @override
   String get qrSubscriptionPrompt =>
-      'This looks like a subscription URL. Add as subscription?';
+      'Սա նման է բաժանորդագրության URL-ի։ Ավելացնե՞լ որպես բաժանորդագրություն';
 
   @override
-  String get notNow => 'Not Now';
+  String get notNow => 'Հիմա ոչ';
 
   @override
-  String get dismissDialog => 'Dismiss';
+  String get dismissDialog => 'Փակել';
 
   @override
-  String get sortBy => 'Sort';
+  String get sortBy => 'Դասավորել';
 
   @override
   String get sortByDefault => 'Լռելյայն';
 
   @override
-  String get sortByName => 'Name';
+  String get sortByName => 'Անուն';
 
   @override
-  String get sortByLatency => 'Latency';
+  String get sortByLatency => 'Հապաղում';
 
   @override
-  String get sortByProtocol => 'Protocol';
+  String get sortByProtocol => 'Պրոտոկոլ';
 
   @override
-  String get filterAll => 'All';
+  String get filterAll => 'Բոլորը';
 
   @override
-  String get filterWorking => 'Working';
+  String get filterWorking => 'Աշխատող';
 
   @override
-  String get filterFailed => 'Failed';
+  String get filterFailed => 'Խափանված';
 
   @override
   String get testAllServers => 'Ստուգել բոլորը';
@@ -260,26 +278,26 @@ class AppLocalizationsHy extends AppLocalizations {
 
   @override
   String selectedCount(int count) {
-    return '$count selected';
+    return '$count ընտրված է';
   }
 
   @override
-  String get selectAll => 'Select All';
+  String get selectAll => 'Ընտրել բոլորը';
 
   @override
-  String get scanQrTitle => 'Scan QR Code';
+  String get scanQrTitle => 'QR սքանավորում';
 
   @override
-  String get scanQrInstruction => 'Point camera at a QR code';
+  String get scanQrInstruction => 'Տեսախցիկը ուղղեք QR կոդի վրա';
 
   @override
-  String get shareServer => 'Share Server';
+  String get shareServer => 'Կիսվել սերվերով';
 
   @override
-  String get copyLink => 'Copy Link';
+  String get copyLink => 'Պատճենել հղումը';
 
   @override
-  String get linkCopied => 'Link copied';
+  String get linkCopied => 'Հղումը պատճենվեց';
 
   @override
   String get shareLink => 'Կիսվել հղմամբ';
@@ -291,46 +309,46 @@ class AppLocalizationsHy extends AppLocalizations {
   String get viewLogs => 'Դիտել լոգերը';
 
   @override
-  String get autoScroll => 'Auto-scroll';
+  String get autoScroll => 'Ավտո-scroll';
 
   @override
   String linesCount(int count) {
-    return '$count lines';
+    return '$count տող';
   }
 
   @override
-  String get autoUpdateOnLaunch => 'Auto-update on app launch';
+  String get autoUpdateOnLaunch => 'Ավտոթարմացում գործարկման ժամանակ';
 
   @override
-  String get userAgentHint => 'Leave empty for default browser UA';
+  String get userAgentHint => 'Թողեք դատարկ՝ լռելյայն browser UA-ի համար';
 
   @override
   String get subscriptionUrl => 'URL';
 
   @override
-  String get subscriptionName => 'Name';
+  String get subscriptionName => 'Անուն';
 
   @override
   String subscriptionInfoFormat(int count) {
-    return '$count servers';
+    return '$count սերվեր';
   }
 
   @override
   String importedServersCount(int count) {
-    return 'Imported $count servers';
+    return 'Ներմուծվել է $count սերվեր';
   }
 
   @override
-  String get logFilterAll => 'All';
+  String get logFilterAll => 'Բոլորը';
 
   @override
-  String get logFilterInfo => 'Info';
+  String get logFilterInfo => 'Տեղեկություն';
 
   @override
-  String get logFilterWarning => 'Warning';
+  String get logFilterWarning => 'Զգուշացում';
 
   @override
-  String get logFilterError => 'Error';
+  String get logFilterError => 'Սխալ';
 
   @override
   String get diagnosticsSection => 'Ախտորոշում';
@@ -352,7 +370,7 @@ class AppLocalizationsHy extends AppLocalizations {
 
   @override
   String appsSelectedCount(int count) {
-    return '$count apps selected';
+    return '$count հավելված ընտրված է';
   }
 
   @override
@@ -363,55 +381,55 @@ class AppLocalizationsHy extends AppLocalizations {
 
   @override
   String get blacklistDescription =>
-      'All apps route through VPN except selected';
+      'Բոլոր հավելվածները անցնում են VPN-ով՝ բացի ընտրվածներից';
 
   @override
-  String get whitelistDescription => 'Only selected apps route through VPN';
+  String get whitelistDescription =>
+      'Միայն ընտրված հավելվածներն են անցնում VPN-ով';
 
   @override
   String switchedToMode(String mode) {
-    return 'Switched to $mode mode';
+    return 'Փոխվեց $mode ռեժիմի';
   }
 
   @override
-  String get loadingApps => 'Loading installed apps…';
+  String get loadingApps => 'Տեղադրված հավելվածների բեռնում…';
 
   @override
-  String get noAppsSelected =>
-      'No apps selected — check apps to include or exclude them';
+  String get noAppsSelected => 'Հավելվածներ չեն ընտրված';
 
   @override
   String get addRule => 'Ավելացնել կանոն';
 
   @override
-  String get addDomainRule => 'Add Domain Rule';
+  String get addDomainRule => 'Ավելացնել դոմեյնի կանոն';
 
   @override
-  String get discardRule => 'Discard';
+  String get discardRule => 'Չեղարկել';
 
   @override
   String get domainHint => 'example.com';
 
   @override
-  String get invalidDomain => 'Enter a valid domain (e.g., example.com)';
+  String get invalidDomain => 'Մուտքագրեք վավեր դոմեյն (օր. example.com)';
 
   @override
-  String get ruleRemoved => 'Rule removed';
+  String get ruleRemoved => 'Կանոնը ջնջվեց';
 
   @override
-  String get undo => 'Undo';
+  String get undo => 'Հետարկել';
 
   @override
-  String get noRulesYet => 'No custom rules yet — tap Add Rule to get started';
+  String get noRulesYet => 'Դեռ կանոններ չկան — սեղմեք «Ավելացնել կանոն»';
 
   @override
-  String get proxy => 'Proxy';
+  String get proxy => 'Պրոքսի';
 
   @override
-  String get direct => 'Direct';
+  String get direct => 'Ուղիղ';
 
   @override
-  String get block => 'Block';
+  String get block => 'Արգելափակել';
 
   @override
   String get updateRules => 'Թարմացնել կանոնները';
@@ -420,7 +438,8 @@ class AppLocalizationsHy extends AppLocalizations {
   String get rulesUpdated => 'Կանոնները թարմացվեցին';
 
   @override
-  String get bundledRulesNote => 'Uses bundled rules. Tap ↓ to update.';
+  String get bundledRulesNote =>
+      'Օգտագործվում են ներկառուցված կանոնները։ Սեղմեք ↓ թարմացնելու համար։';
 
   @override
   String get regionIran => 'Իրան 🇮🇷';
@@ -435,25 +454,25 @@ class AppLocalizationsHy extends AppLocalizations {
   String get dnsSection => 'DNS';
 
   @override
-  String get dnsProtocol => 'DNS Protocol';
+  String get dnsProtocol => 'DNS պրոտոկոլ';
 
   @override
-  String get remoteDns => 'Remote DNS';
+  String get remoteDns => 'Հեռակա DNS';
 
   @override
-  String get directDns => 'Direct DNS';
+  String get directDns => 'Ուղիղ DNS';
 
   @override
-  String get selectDnsServer => 'Select DNS Server';
+  String get selectDnsServer => 'Ընտրել DNS սերվեր';
 
   @override
-  String get customDns => 'Custom...';
+  String get customDns => 'Սեփական...';
 
   @override
-  String get enterDnsAddress => 'Enter DNS address';
+  String get enterDnsAddress => 'Մուտքագրեք DNS հասցեն';
 
   @override
-  String get dnsUpdated => 'DNS updated';
+  String get dnsUpdated => 'DNS-ը թարմացվեց';
 
   @override
   String get engineSettingsSection => 'Շարժիչի կարգավորումներ';
@@ -462,68 +481,70 @@ class AppLocalizationsHy extends AppLocalizations {
   String get sniffing => 'Sniffing';
 
   @override
-  String get sniffingSubtitle => 'Detect protocol type from traffic content';
+  String get sniffingSubtitle =>
+      'Բացահայտել պրոտոկոլի տեսակը տրաֆիկի բովանդակությունից';
 
   @override
-  String get mux => 'Mux (Multiplexing)';
+  String get mux => 'Mux (մուլտիպլեքսավորում)';
 
   @override
-  String get muxSubtitle => 'Combine multiple connections into one';
+  String get muxSubtitle => 'Միավորել մի քանի կապ մեկ կապի մեջ';
 
   @override
-  String get concurrency => 'Concurrency';
+  String get concurrency => 'Զուգահեռություն';
 
   @override
   String get antiCensorshipSection => 'Հակացենզուրա';
 
   @override
-  String get profile => 'Profile';
+  String get profile => 'Պրոֆիլ';
 
   @override
-  String get profileNone => 'None';
+  String get profileNone => 'Չկա';
 
   @override
-  String get profileLight => 'Light';
+  String get profileLight => 'Թեթև';
 
   @override
-  String get profileModerate => 'Moderate';
+  String get profileModerate => 'Միջին';
 
   @override
-  String get profileAggressive => 'Aggressive';
+  String get profileAggressive => 'Ագրեսիվ';
 
   @override
-  String get profileLightDesc => 'Minimal fragmentation for light filtering';
+  String get profileLightDesc => 'Նվազագույն fragment՝ թեթև ֆիլտրացիայի համար';
 
   @override
-  String get profileModerateDesc => 'Fragment + padding for moderate DPI';
+  String get profileModerateDesc => 'Fragment + padding՝ միջին DPI-ի համար';
 
   @override
   String get profileAggressiveDesc =>
-      'Full fragmentation + sleep + mixed SNI for heavy DPI';
+      'Լրիվ fragment + sleep + mixed SNI՝ ծանր DPI-ի համար';
 
   @override
   String get fragment => 'Fragment';
 
   @override
-  String get fragmentSubtitle => 'Split TLS ClientHello into fragments';
+  String get fragmentSubtitle => 'Բաժանել TLS ClientHello-ը մասերի';
 
   @override
-  String get fragmentSize => 'Fragment Size';
+  String get fragmentSize => 'Մասի չափ';
 
   @override
-  String get sleepMs => 'Sleep (ms)';
+  String get sleepMs => 'Դադար (մվ)';
 
   @override
   String get padding => 'Padding';
 
   @override
-  String get paddingSubtitle => 'Add padding to TLS records';
+  String get paddingSubtitle => 'Ավելացնել padding TLS գրառումներին';
 
   @override
   String get mixedSniCase => 'Mixed SNI Case';
 
   @override
-  String get mixedSniSubtitle => 'Randomize letter case in SNI field';
+  String get mixedSniSubtitle =>
+      'Պատահականացնել տառերի մեծ/փոքր լինելը SNI-ում';
 
   @override
   String get dataSection => 'Տվյալներ';
@@ -532,14 +553,14 @@ class AppLocalizationsHy extends AppLocalizations {
   String get clearCachedData => 'Մաքրել cache-ը';
 
   @override
-  String get clearCacheSubtitle => 'Geo rules, subscription cache, logs';
+  String get clearCacheSubtitle => 'Geo կանոններ, subscription cache, logs';
 
   @override
-  String get clearCacheTitle => 'Clear Cached Data?';
+  String get clearCacheTitle => 'Մաքրե՞լ cache-ը';
 
   @override
   String get clearCacheBody =>
-      'This will clear:\n• Downloaded geo rule files\n• Subscription response cache\n• Log files\n\nServer configs and preferences will NOT be affected.';
+      'Սա կմաքրի՝\n• Ներբեռնված geo կանոնների ֆայլերը\n• Subscription-ի cache-ը\n• Log ֆայլերը\n\nՍերվերի կոնֆիգներն ու նախընտրությունները չեն վնասվի։';
 
   @override
   String get clearCacheConfirm => 'Մաքրել cache-ը';
@@ -552,5 +573,5 @@ class AppLocalizationsHy extends AppLocalizations {
 
   @override
   String get couldntUpdateRules =>
-      'Couldn\'t update rules. Check your connection and try again.';
+      'Չհաջողվեց թարմացնել կանոնները։ Ստուգեք ինտերնետ կապը։';
 }

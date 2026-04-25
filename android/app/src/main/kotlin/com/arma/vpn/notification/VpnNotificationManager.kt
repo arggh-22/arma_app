@@ -56,7 +56,8 @@ object VpnNotificationManager {
         status: String,
         serverName: String,
         uploadSpeed: String = "",
-        downloadSpeed: String = ""
+        downloadSpeed: String = "",
+        showDetails: Boolean = true
     ): Notification {
         val pendingIntent = PendingIntent.getActivity(
             context, 0,
@@ -64,7 +65,13 @@ object VpnNotificationManager {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val contentText = if (uploadSpeed.isNotEmpty()) {
+        val title = if (showDetails) {
+            "Arma VPN — $serverName"
+        } else {
+            "Arma VPN"
+        }
+
+        val contentText = if (showDetails && uploadSpeed.isNotEmpty()) {
             "↓ $downloadSpeed  ↑ $uploadSpeed"
         } else {
             status
@@ -72,7 +79,7 @@ object VpnNotificationManager {
 
         return NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_vpn_key)
-            .setContentTitle("Arma VPN — $serverName")
+            .setContentTitle(title)
             .setContentText(contentText)
             .setContentIntent(pendingIntent)
             .setOngoing(true)

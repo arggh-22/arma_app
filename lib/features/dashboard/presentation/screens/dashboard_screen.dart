@@ -9,6 +9,7 @@ import 'package:arma_proxy_vpn_client/features/connection/presentation/widgets/c
 import 'package:arma_proxy_vpn_client/features/connection/presentation/widgets/traffic_stats_card.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/active_server_card.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/connect_button.dart';
+import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/ui_preferences_provider.dart';
 
 /// Dashboard screen — home screen of the app.
 ///
@@ -22,6 +23,7 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final status = ref.watch(connectionProvider);
+    final uiPreferences = ref.watch(uiPreferencesProvider);
 
     final (statusText, statusColor) = switch (status) {
       Disconnected(:final lastError) => (
@@ -32,10 +34,7 @@ class DashboardScreen extends ConsumerWidget {
         '${l10n.connecting}...',
         Theme.of(context).colorScheme.primary,
       ),
-      Connected() => (
-        l10n.connected,
-        Colors.green,
-      ),
+      Connected() => (l10n.connected, Colors.green),
       Disconnecting() => (
         'Disconnecting...',
         Theme.of(context).colorScheme.onSurfaceVariant,
@@ -57,9 +56,9 @@ class DashboardScreen extends ConsumerWidget {
             const Gap(16),
             Text(
               statusText,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: statusColor,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(color: statusColor),
             ),
             const Gap(8),
             const ConnectionTimer(),
@@ -68,11 +67,13 @@ class DashboardScreen extends ConsumerWidget {
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: ActiveServerCard(),
             ),
-            const Gap(16),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: TrafficStatsCard(),
-            ),
+            if (uiPreferences.showDashboardStatistics) ...[
+              const Gap(16),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: TrafficStatsCard(),
+              ),
+            ],
           ],
         ),
       ),

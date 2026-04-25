@@ -41,6 +41,10 @@ class SettingsLocalDatasource {
   static const _enabledRegionsKey = 'enabled_regions';
   static const _bypassLanKey = 'bypass_lan';
 
+  // UI / notification display
+  static const _showDetailedNotificationKey = 'show_detailed_notification';
+  static const _showDashboardStatisticsKey = 'show_dashboard_statistics';
+
   final SharedPreferences _prefs;
 
   SettingsLocalDatasource(this._prefs);
@@ -57,8 +61,7 @@ class SettingsLocalDatasource {
   String getLocale() => _prefs.getString(_localeKey) ?? 'en';
 
   /// Persists locale code (e.g., 'fa', 'ru', 'zh').
-  Future<void> setLocale(String locale) =>
-      _prefs.setString(_localeKey, locale);
+  Future<void> setLocale(String locale) => _prefs.setString(_localeKey, locale);
 
   /// Returns the active server ID, or null if none selected.
   String? getActiveServerId() => _prefs.getString(_activeServerKey);
@@ -84,14 +87,12 @@ class SettingsLocalDatasource {
   String getRemoteDns() =>
       _prefs.getString(_remoteDnsKey) ?? 'https://1.1.1.1/dns-query';
 
-  Future<void> setRemoteDns(String dns) =>
-      _prefs.setString(_remoteDnsKey, dns);
+  Future<void> setRemoteDns(String dns) => _prefs.setString(_remoteDnsKey, dns);
 
   /// Direct DNS server (used for domestic/direct traffic).
   String getDirectDns() => _prefs.getString(_directDnsKey) ?? 'localhost';
 
-  Future<void> setDirectDns(String dns) =>
-      _prefs.setString(_directDnsKey, dns);
+  Future<void> setDirectDns(String dns) => _prefs.setString(_directDnsKey, dns);
 
   // ── FakeIP DNS ────────────────────────────────────────────────────
 
@@ -105,8 +106,7 @@ class SettingsLocalDatasource {
       _prefs.setBool(_fakeIpEnabledKey, enabled);
 
   /// FakeIP CIDR range. Default 198.18.0.0/15.
-  String getFakeIpCidr() =>
-      _prefs.getString(_fakeIpCidrKey) ?? '198.18.0.0/15';
+  String getFakeIpCidr() => _prefs.getString(_fakeIpCidrKey) ?? '198.18.0.0/15';
 
   Future<void> setFakeIpCidr(String cidr) =>
       _prefs.setString(_fakeIpCidrKey, cidr);
@@ -142,14 +142,12 @@ class SettingsLocalDatasource {
   /// Minimum fragment size in bytes.
   int getFragmentMin() => _prefs.getInt(_fragmentMinKey) ?? 10;
 
-  Future<void> setFragmentMin(int min) =>
-      _prefs.setInt(_fragmentMinKey, min);
+  Future<void> setFragmentMin(int min) => _prefs.setInt(_fragmentMinKey, min);
 
   /// Maximum fragment size in bytes.
   int getFragmentMax() => _prefs.getInt(_fragmentMaxKey) ?? 100;
 
-  Future<void> setFragmentMax(int max) =>
-      _prefs.setInt(_fragmentMaxKey, max);
+  Future<void> setFragmentMax(int max) => _prefs.setInt(_fragmentMaxKey, max);
 
   /// Minimum sleep between fragments in ms.
   int getSleepMin() => _prefs.getInt(_sleepMinKey) ?? 0;
@@ -189,8 +187,7 @@ class SettingsLocalDatasource {
       _prefs.setBool(_perAppEnabledKey, enabled);
 
   /// Per-app mode: "blacklist" or "whitelist".
-  String getPerAppMode() =>
-      _prefs.getString(_perAppModeKey) ?? 'blacklist';
+  String getPerAppMode() => _prefs.getString(_perAppModeKey) ?? 'blacklist';
 
   Future<void> setPerAppMode(String mode) =>
       _prefs.setString(_perAppModeKey, mode);
@@ -224,4 +221,20 @@ class SettingsLocalDatasource {
 
   Future<void> setBypassLan(bool bypass) =>
       _prefs.setBool(_bypassLanKey, bypass);
+
+  // ── UI / Notification display ───────────────────────────────────────
+
+  /// Whether to show detailed VPN notification with server and traffic stats.
+  bool getShowDetailedNotification() =>
+      _prefs.getBool(_showDetailedNotificationKey) ?? true;
+
+  Future<void> setShowDetailedNotification(bool enabled) =>
+      _prefs.setBool(_showDetailedNotificationKey, enabled);
+
+  /// Whether to show traffic statistics card on dashboard.
+  bool getShowDashboardStatistics() =>
+      _prefs.getBool(_showDashboardStatisticsKey) ?? true;
+
+  Future<void> setShowDashboardStatistics(bool enabled) =>
+      _prefs.setBool(_showDashboardStatisticsKey, enabled);
 }

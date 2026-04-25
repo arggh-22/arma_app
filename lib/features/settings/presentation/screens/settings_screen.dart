@@ -13,6 +13,7 @@ import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/d
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/engine_settings_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/locale_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/theme_provider.dart';
+import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/ui_preferences_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/widgets/dns_picker_sheet.dart';
 
 /// Settings screen with theme, language, DNS, engine, anti-censorship, and more.
@@ -32,13 +33,11 @@ class SettingsScreen extends ConsumerWidget {
     final dnsSettings = ref.watch(dnsSettingsProvider);
     final engineSettings = ref.watch(engineSettingsProvider);
     final acSettings = ref.watch(antiCensorshipProvider);
+    final uiPreferences = ref.watch(uiPreferencesProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          l10n.settings,
-          style: theme.textTheme.titleLarge,
-        ),
+        title: Text(l10n.settings, style: theme.textTheme.titleLarge),
       ),
       body: ListView(
         children: [
@@ -56,10 +55,7 @@ class SettingsScreen extends ConsumerWidget {
           // Theme selector
           ListTile(
             leading: const Icon(Icons.brightness_6),
-            title: Text(
-              l10n.themeTitle,
-              style: theme.textTheme.titleMedium,
-            ),
+            title: Text(l10n.themeTitle, style: theme.textTheme.titleMedium),
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 8),
               child: SegmentedButton<ThemeMode>(
@@ -79,9 +75,7 @@ class SettingsScreen extends ConsumerWidget {
                 ],
                 selected: {currentThemeMode},
                 onSelectionChanged: (values) {
-                  ref
-                      .read(themeProvider.notifier)
-                      .setThemeMode(values.first);
+                  ref.read(themeProvider.notifier).setThemeMode(values.first);
                 },
               ),
             ),
@@ -90,10 +84,7 @@ class SettingsScreen extends ConsumerWidget {
           // Language selector
           ListTile(
             leading: const Icon(Icons.language),
-            title: Text(
-              l10n.languageTitle,
-              style: theme.textTheme.titleMedium,
-            ),
+            title: Text(l10n.languageTitle, style: theme.textTheme.titleMedium),
             trailing: Text(
               localeDisplayNames[currentLocale.languageCode] ?? 'English',
               style: theme.textTheme.bodyMedium,
@@ -101,14 +92,57 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => _showLanguageSheet(context, ref),
           ),
 
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              l10n.connectionDisplaySection,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: colorScheme.primary,
+              ),
+            ),
+          ),
+
+          SwitchListTile(
+            secondary: const Icon(Icons.notifications_active_outlined),
+            title: Text(
+              l10n.detailedNotification,
+              style: theme.textTheme.titleMedium,
+            ),
+            subtitle: Text(
+              l10n.detailedNotificationSubtitle,
+              style: theme.textTheme.bodyMedium,
+            ),
+            value: uiPreferences.showDetailedNotification,
+            onChanged: (value) {
+              ref
+                  .read(uiPreferencesProvider.notifier)
+                  .setShowDetailedNotification(value);
+            },
+          ),
+
+          SwitchListTile(
+            secondary: const Icon(Icons.speed_outlined),
+            title: Text(
+              l10n.dashboardStatistics,
+              style: theme.textTheme.titleMedium,
+            ),
+            subtitle: Text(
+              l10n.dashboardStatisticsSubtitle,
+              style: theme.textTheme.bodyMedium,
+            ),
+            value: uiPreferences.showDashboardStatistics,
+            onChanged: (value) {
+              ref
+                  .read(uiPreferencesProvider.notifier)
+                  .setShowDashboardStatistics(value);
+            },
+          ),
+
           const Divider(),
 
           // DNS section header
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Text(
               l10n.dnsSection,
               style: theme.textTheme.labelLarge?.copyWith(
@@ -120,10 +154,7 @@ class SettingsScreen extends ConsumerWidget {
           // DNS Protocol — SegmentedButton
           ListTile(
             leading: const Icon(Icons.dns_outlined),
-            title: Text(
-              l10n.dnsProtocol,
-              style: theme.textTheme.titleMedium,
-            ),
+            title: Text(l10n.dnsProtocol, style: theme.textTheme.titleMedium),
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 8),
               child: SegmentedButton<String>(
@@ -145,10 +176,7 @@ class SettingsScreen extends ConsumerWidget {
           // Remote DNS
           ListTile(
             leading: const Icon(Icons.cloud_outlined),
-            title: Text(
-              l10n.remoteDns,
-              style: theme.textTheme.titleMedium,
-            ),
+            title: Text(l10n.remoteDns, style: theme.textTheme.titleMedium),
             trailing: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 180),
               child: Text(
@@ -157,29 +185,18 @@ class SettingsScreen extends ConsumerWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            onTap: () => _showDnsPicker(
-              context,
-              ref,
-              isRemote: true,
-            ),
+            onTap: () => _showDnsPicker(context, ref, isRemote: true),
           ),
 
           // Direct DNS
           ListTile(
             leading: const Icon(Icons.home_outlined),
-            title: Text(
-              l10n.directDns,
-              style: theme.textTheme.titleMedium,
-            ),
+            title: Text(l10n.directDns, style: theme.textTheme.titleMedium),
             trailing: Text(
               dnsSettings.directDns,
               style: theme.textTheme.bodyMedium,
             ),
-            onTap: () => _showDnsPicker(
-              context,
-              ref,
-              isRemote: false,
-            ),
+            onTap: () => _showDnsPicker(context, ref, isRemote: false),
           ),
 
           // FakeIP DNS toggle
@@ -223,10 +240,7 @@ class SettingsScreen extends ConsumerWidget {
 
           // Engine Settings section header
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Text(
               l10n.engineSettingsSection,
               style: theme.textTheme.labelLarge?.copyWith(
@@ -238,10 +252,7 @@ class SettingsScreen extends ConsumerWidget {
           // Sniffing toggle — default ON (D-09)
           SwitchListTile(
             secondary: const Icon(Icons.visibility_outlined),
-            title: Text(
-              l10n.sniffing,
-              style: theme.textTheme.titleMedium,
-            ),
+            title: Text(l10n.sniffing, style: theme.textTheme.titleMedium),
             subtitle: Text(
               l10n.sniffingSubtitle,
               style: theme.textTheme.bodyMedium,
@@ -254,14 +265,8 @@ class SettingsScreen extends ConsumerWidget {
           // Mux toggle — default OFF (D-09)
           SwitchListTile(
             secondary: const Icon(Icons.merge_type),
-            title: Text(
-              l10n.mux,
-              style: theme.textTheme.titleMedium,
-            ),
-            subtitle: Text(
-              l10n.muxSubtitle,
-              style: theme.textTheme.bodyMedium,
-            ),
+            title: Text(l10n.mux, style: theme.textTheme.titleMedium),
+            subtitle: Text(l10n.muxSubtitle, style: theme.textTheme.bodyMedium),
             value: engineSettings.muxEnabled,
             onChanged: (v) =>
                 ref.read(engineSettingsProvider.notifier).setMux(v),
@@ -300,10 +305,7 @@ class SettingsScreen extends ConsumerWidget {
 
           // Anti-Censorship section header (D-10, D-11)
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Text(
               l10n.antiCensorshipSection,
               style: theme.textTheme.labelLarge?.copyWith(
@@ -315,22 +317,13 @@ class SettingsScreen extends ConsumerWidget {
           // Profile selector — SegmentedButton with 4 options
           ListTile(
             leading: const Icon(Icons.shield_outlined),
-            title: Text(
-              l10n.profile,
-              style: theme.textTheme.titleMedium,
-            ),
+            title: Text(l10n.profile, style: theme.textTheme.titleMedium),
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 8),
               child: SegmentedButton<String>(
                 segments: [
-                  ButtonSegment(
-                    value: 'none',
-                    label: Text(l10n.profileNone),
-                  ),
-                  ButtonSegment(
-                    value: 'light',
-                    label: Text(l10n.profileLight),
-                  ),
+                  ButtonSegment(value: 'none', label: Text(l10n.profileNone)),
+                  ButtonSegment(value: 'light', label: Text(l10n.profileLight)),
                   ButtonSegment(
                     value: 'moderate',
                     label: Text(l10n.profileModerate),
@@ -376,10 +369,7 @@ class SettingsScreen extends ConsumerWidget {
           // Fragment toggle
           SwitchListTile(
             secondary: const Icon(Icons.broken_image_outlined),
-            title: Text(
-              l10n.fragment,
-              style: theme.textTheme.titleMedium,
-            ),
+            title: Text(l10n.fragment, style: theme.textTheme.titleMedium),
             subtitle: Text(
               l10n.fragmentSubtitle,
               style: theme.textTheme.bodyMedium,
@@ -405,8 +395,7 @@ class SettingsScreen extends ConsumerWidget {
                         SizedBox(
                           width: 80,
                           child: TextFormField(
-                            initialValue:
-                                acSettings.fragmentMin.toString(),
+                            initialValue: acSettings.fragmentMin.toString(),
                             keyboardType: TextInputType.number,
                             decoration: const InputDecoration(
                               hintText: '10',
@@ -416,9 +405,7 @@ class SettingsScreen extends ConsumerWidget {
                               final n = int.tryParse(v);
                               if (n != null) {
                                 ref
-                                    .read(
-                                      antiCensorshipProvider.notifier,
-                                    )
+                                    .read(antiCensorshipProvider.notifier)
                                     .setFragmentMin(n);
                               }
                             },
@@ -431,8 +418,7 @@ class SettingsScreen extends ConsumerWidget {
                         SizedBox(
                           width: 80,
                           child: TextFormField(
-                            initialValue:
-                                acSettings.fragmentMax.toString(),
+                            initialValue: acSettings.fragmentMax.toString(),
                             keyboardType: TextInputType.number,
                             decoration: const InputDecoration(
                               hintText: '100',
@@ -442,9 +428,7 @@ class SettingsScreen extends ConsumerWidget {
                               final n = int.tryParse(v);
                               if (n != null) {
                                 ref
-                                    .read(
-                                      antiCensorshipProvider.notifier,
-                                    )
+                                    .read(antiCensorshipProvider.notifier)
                                     .setFragmentMax(n);
                               }
                             },
@@ -472,8 +456,7 @@ class SettingsScreen extends ConsumerWidget {
                         SizedBox(
                           width: 80,
                           child: TextFormField(
-                            initialValue:
-                                acSettings.sleepMin.toString(),
+                            initialValue: acSettings.sleepMin.toString(),
                             keyboardType: TextInputType.number,
                             decoration: const InputDecoration(
                               hintText: '1',
@@ -483,9 +466,7 @@ class SettingsScreen extends ConsumerWidget {
                               final n = int.tryParse(v);
                               if (n != null) {
                                 ref
-                                    .read(
-                                      antiCensorshipProvider.notifier,
-                                    )
+                                    .read(antiCensorshipProvider.notifier)
                                     .setSleepMin(n);
                               }
                             },
@@ -498,8 +479,7 @@ class SettingsScreen extends ConsumerWidget {
                         SizedBox(
                           width: 80,
                           child: TextFormField(
-                            initialValue:
-                                acSettings.sleepMax.toString(),
+                            initialValue: acSettings.sleepMax.toString(),
                             keyboardType: TextInputType.number,
                             decoration: const InputDecoration(
                               hintText: '50',
@@ -509,9 +489,7 @@ class SettingsScreen extends ConsumerWidget {
                               final n = int.tryParse(v);
                               if (n != null) {
                                 ref
-                                    .read(
-                                      antiCensorshipProvider.notifier,
-                                    )
+                                    .read(antiCensorshipProvider.notifier)
                                     .setSleepMax(n);
                               }
                             },
@@ -526,10 +504,7 @@ class SettingsScreen extends ConsumerWidget {
           // Padding toggle
           SwitchListTile(
             secondary: const Icon(Icons.expand),
-            title: Text(
-              l10n.padding,
-              style: theme.textTheme.titleMedium,
-            ),
+            title: Text(l10n.padding, style: theme.textTheme.titleMedium),
             subtitle: Text(
               l10n.paddingSubtitle,
               style: theme.textTheme.bodyMedium,
@@ -542,10 +517,7 @@ class SettingsScreen extends ConsumerWidget {
           // Mixed SNI toggle
           SwitchListTile(
             secondary: const Icon(Icons.text_fields),
-            title: Text(
-              l10n.mixedSniCase,
-              style: theme.textTheme.titleMedium,
-            ),
+            title: Text(l10n.mixedSniCase, style: theme.textTheme.titleMedium),
             subtitle: Text(
               l10n.mixedSniSubtitle,
               style: theme.textTheme.bodyMedium,
@@ -580,10 +552,7 @@ class SettingsScreen extends ConsumerWidget {
 
           // Data section header
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Text(
               l10n.dataSection,
               style: theme.textTheme.labelLarge?.copyWith(
@@ -622,10 +591,7 @@ class SettingsScreen extends ConsumerWidget {
 
           // Version
           ListTile(
-            title: Text(
-              l10n.version,
-              style: theme.textTheme.titleMedium,
-            ),
+            title: Text(l10n.version, style: theme.textTheme.titleMedium),
             trailing: Text(
               AppConstants.appVersion,
               style: theme.textTheme.bodyMedium,
@@ -659,7 +625,8 @@ class SettingsScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: supportedLocales.map((locale) {
               final displayName =
-                  localeDisplayNames[locale.languageCode] ?? locale.languageCode;
+                  localeDisplayNames[locale.languageCode] ??
+                  locale.languageCode;
               final isSelected =
                   locale.languageCode == currentLocale.languageCode;
 
@@ -677,8 +644,9 @@ class SettingsScreen extends ConsumerWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        AppLocalizations.of(context)!
-                            .languageChanged(displayName),
+                        AppLocalizations.of(
+                          context,
+                        )!.languageChanged(displayName),
                       ),
                       duration: AppConstants.snackBarDurationShort,
                     ),
@@ -698,8 +666,7 @@ class SettingsScreen extends ConsumerWidget {
     required bool isRemote,
   }) {
     final dnsSettings = ref.read(dnsSettingsProvider);
-    final currentDns =
-        isRemote ? dnsSettings.remoteDns : dnsSettings.directDns;
+    final currentDns = isRemote ? dnsSettings.remoteDns : dnsSettings.directDns;
     final l10n = AppLocalizations.of(context)!;
 
     showModalBottomSheet<void>(
@@ -770,9 +737,7 @@ class SettingsScreen extends ConsumerWidget {
                 }
               }
             },
-            style: TextButton.styleFrom(
-              foregroundColor: colorScheme.error,
-            ),
+            style: TextButton.styleFrom(foregroundColor: colorScheme.error),
             child: Text(l10n.clearCacheConfirm),
           ),
         ],

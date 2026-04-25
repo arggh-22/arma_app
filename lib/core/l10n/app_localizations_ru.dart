@@ -112,6 +112,23 @@ class AppLocalizationsRu extends AppLocalizations {
   String get languageTitle => 'Язык';
 
   @override
+  String get connectionDisplaySection => 'Отображение подключения';
+
+  @override
+  String get detailedNotification => 'Подробное VPN-уведомление';
+
+  @override
+  String get detailedNotificationSubtitle =>
+      'Показывать имя сервера и статистику трафика в уведомлении VPN Android';
+
+  @override
+  String get dashboardStatistics => 'Статистика на главной';
+
+  @override
+  String get dashboardStatisticsSubtitle =>
+      'Показывать карточку скорости загрузки/отдачи на экране Главная';
+
+  @override
   String get routingPlaceholder =>
       'Пользовательские правила маршрутизации появятся в будущем обновлении';
 
