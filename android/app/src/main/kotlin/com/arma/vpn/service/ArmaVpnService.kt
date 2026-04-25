@@ -177,15 +177,21 @@ class ArmaVpnService : VpnService() {
 
         // 1. Start foreground service with notification — must be within 5 seconds
         Log.w(TAG, "Step 1: Starting foreground notification")
-        startForeground(
-            VpnNotificationManager.NOTIFICATION_ID,
-            VpnNotificationManager.buildNotification(
-                this,
-                "Connecting...",
-                serverName,
-                showDetails = isNotificationDetailsEnabled()
+        try {
+            startForeground(
+                VpnNotificationManager.NOTIFICATION_ID,
+                VpnNotificationManager.buildNotification(
+                    this,
+                    "Connecting...",
+                    serverName,
+                    showDetails = isNotificationDetailsEnabled()
+                )
             )
-        )
+            Log.w(TAG, "Foreground notification started successfully")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to start foreground notification", e)
+            debugLog("Failed to start foreground: ${e.message}")
+        }
 
         // 2. Send connecting status to client
         Log.w(TAG, "Step 2: Sending 'connecting' status to client")
@@ -264,13 +270,18 @@ class ArmaVpnService : VpnService() {
                 }
             }, 2000)
 
-            // 8. Start traffic monitoring
-            Log.w(TAG, "Step 7: Starting traffic monitor")
+            // 8. Start traffic monitoring (delayed 1s to let Xray stats initialize)
+            Log.w(TAG, "Step 7: Starting traffic monitor (delayed 1s)")
             trafficMonitor = TrafficMonitor(coreController!!) { up, down ->
                 sendStatsToClient(up, down)
                 updateNotification(serverName, up, down)
             }
-            trafficMonitor?.start()
+            Handler(Looper.getMainLooper()).postDelayed({
+                if (isRunning) {
+                    trafficMonitor?.start()
+                    Log.w(TAG, "Traffic monitor started")
+                }
+            }, 1000)
 
             // 9. Register network callback for auto-reconnect (D-10)
             Log.w(TAG, "Step 8: Registering network callback")
@@ -573,20 +584,26 @@ class ArmaVpnService : VpnService() {
 
     /**
      * Update the foreground notification with current traffic speeds.
+     * Uses try-catch to handle notification manager errors gracefully.
      */
     private fun updateNotification(serverName: String, uplink: Long, downlink: Long) {
-        val upStr = formatSpeed(uplink)
-        val downStr = formatSpeed(downlink)
-        val notification = VpnNotificationManager.buildNotification(
-            this,
-            "Connected",
-            serverName,
-            upStr,
-            downStr,
-            showDetails = isNotificationDetailsEnabled()
-        )
-        getSystemService(NotificationManager::class.java)
-            .notify(VpnNotificationManager.NOTIFICATION_ID, notification)
+        try {
+            val upStr = formatSpeed(uplink)
+            val downStr = formatSpeed(downlink)
+            val notification = VpnNotificationManager.buildNotification(
+                this,
+                "Connected",
+                serverName,
+                upStr,
+                downStr,
+                showDetails = isNotificationDetailsEnabled()
+            )
+            getSystemService(NotificationManager::class.java)
+                .notify(VpnNotificationManager.NOTIFICATION_ID, notification)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to update notification", e)
+            debugLog("updateNotification error: ${e.message}")
+        }
     }
 
     private fun isNotificationDetailsEnabled(): Boolean {
