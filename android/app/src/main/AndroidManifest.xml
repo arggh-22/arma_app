@@ -10,7 +10,7 @@
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
-        android:label="Arma Vpn"
+        android:label="Arma VPN"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
