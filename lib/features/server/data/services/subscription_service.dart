@@ -52,12 +52,22 @@ class SubscriptionService {
   /// Uses the subscription's custom User-Agent if set, otherwise falls back
   /// to [_defaultUserAgent] (D-05 / CONF-08).
   ///
+  /// Includes device identification headers for provider compatibility:
+  /// - X-Hwid: Device hardware identifier
+  /// - X-Device-Model: Device model (e.g., "Pixel 9")
+  /// - X-Device-Os: Operating system (Android)
+  /// - X-Ver-Os: OS version (e.g., "16")
+  ///
   /// Throws on HTTP errors, timeouts, or oversized responses.
   Future<SubscriptionFetchResult> fetch(Subscription subscription) async {
     final headers = {
       'User-Agent': subscription.userAgent.isEmpty
           ? _defaultUserAgent
           : subscription.userAgent,
+      'X-Hwid': '7adbd63a1e86a4f0',
+      'X-Device-Model': 'Pixel 9',
+      'X-Device-Os': 'Android',
+      'X-Ver-Os': '16',
     };
 
     final response = await http
