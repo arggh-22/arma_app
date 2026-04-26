@@ -51,9 +51,11 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
     String userAgent = '',
     bool autoUpdate = true,
   }) async {
+    // Use provided name, or defer to profileTitle from subscription response
+    // Only use domain as last resort if both are unavailable
     final subscription = Subscription(
       id: const Uuid().v4(),
-      name: name.isEmpty ? Uri.parse(url).host : name,
+      name: name.isNotEmpty ? name : '', // Keep empty to prioritize profileTitle
       url: url,
       userAgent: userAgent,
       lastUpdated: DateTime.now(),
@@ -63,9 +65,17 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
 
     // Fetch and parse
     final result = await _service.fetch(subscription);
-    final resolvedName = (result.profileTitle ?? '').trim().isNotEmpty
-        ? result.profileTitle!.trim()
-        : subscription.name;
+    // Priority: user-provided name > profileTitle from response > domain
+    final resolvedName = () {
+      if (name.isNotEmpty && name.trim().isNotEmpty) {
+        return name.trim();
+      }
+      if ((result.profileTitle ?? '').trim().isNotEmpty) {
+        return result.profileTitle!.trim();
+      }
+      return Uri.parse(url).host; // Last resort: use domain
+    }();
+    
     final resolvedAutoUpdate = result.profileUpdateIntervalHours != null
         ? result.profileUpdateIntervalHours! > 0
         : autoUpdate;
