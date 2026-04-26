@@ -35,8 +35,8 @@ class AddSubscriptionDialog extends ConsumerStatefulWidget {
 class _AddSubscriptionDialogState extends ConsumerState<AddSubscriptionDialog> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _urlController;
-  final _nameController = TextEditingController();
-  final _uaController = TextEditingController();
+  late final TextEditingController _nameController;
+  late final TextEditingController _uaController;
   bool _autoUpdate = true;
   bool _isLoading = false;
   String? _errorMessage;
@@ -45,6 +45,8 @@ class _AddSubscriptionDialogState extends ConsumerState<AddSubscriptionDialog> {
   void initState() {
     super.initState();
     _urlController = TextEditingController(text: widget.initialUrl ?? '');
+    _nameController = TextEditingController();
+    _uaController = TextEditingController(text: 'arma');
   }
 
   @override

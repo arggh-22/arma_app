@@ -634,6 +634,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
         final importedCount = await ref.read(subscriptionProvider.notifier).addSubscription(
               url: trimmed,
               name: '',
+              userAgent: 'arma',
             );
         if (!context.mounted) return;
         messenger.clearSnackBars();

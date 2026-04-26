@@ -149,6 +149,7 @@ class _ImportFabState extends ConsumerState<ImportFab>
       final importedCount = await ref.read(subscriptionProvider.notifier).addSubscription(
             url: url,
             name: '',
+            userAgent: 'arma',
           );
 
       if (!context.mounted) return;
