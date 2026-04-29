@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:arma_proxy_vpn_client/core/constants/app_constants.dart';
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/features/log/presentation/providers/log_provider.dart';
+import 'package:arma_proxy_vpn_client/features/settings/domain/entities/dns_presets.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/anti_censorship_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/dns_settings_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/engine_settings_provider.dart';
@@ -174,6 +175,33 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
 
+          // DNS Presets
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              'DNS Presets',
+              style: theme.textTheme.titleSmall,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Wrap(
+              spacing: 4,
+              runSpacing: 4,
+              children: DnsPresets.list.map((preset) {
+                final isSelected = dnsSettings.presetId == preset.id;
+                return FilterChip(
+                  label: Text(preset.name),
+                  selected: isSelected,
+                  onSelected: (_) {
+                    ref.read(dnsSettingsProvider.notifier).applyPreset(preset);
+                  },
+                  tooltip: preset.description,
+                );
+              }).toList(),
+            ),
+          ),
+
           // Remote DNS
           ListTile(
             leading: const Icon(Icons.cloud_outlined),
@@ -235,6 +263,77 @@ class SettingsScreen extends ConsumerWidget {
                 },
               ),
             ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // DNS Filtering section header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              'DNS Filtering',
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: colorScheme.primary,
+              ),
+            ),
+          ),
+
+          // Block Ads
+          SwitchListTile(
+            secondary: const Icon(Icons.filter_alt_outlined),
+            title: Text('Block Ads', style: theme.textTheme.titleMedium),
+            subtitle: const Text('Filter advertising domains'),
+            value: dnsSettings.filtering.blockAds,
+            onChanged: (value) {
+              ref.read(dnsSettingsProvider.notifier).setBlockAds(value);
+            },
+          ),
+
+          // Block Malware
+          SwitchListTile(
+            secondary: const Icon(Icons.security_outlined),
+            title: Text('Block Malware', style: theme.textTheme.titleMedium),
+            subtitle: const Text('Filter malicious domains'),
+            value: dnsSettings.filtering.blockMalware,
+            onChanged: (value) {
+              ref.read(dnsSettingsProvider.notifier).setBlockMalware(value);
+            },
+          ),
+
+          // Block Adult Content
+          SwitchListTile(
+            secondary: const Icon(Icons.no_adult_content),
+            title: Text('Block Adult Content', style: theme.textTheme.titleMedium),
+            subtitle: const Text('Filter adult websites'),
+            value: dnsSettings.filtering.blockAdultContent,
+            onChanged: (value) {
+              ref.read(dnsSettingsProvider.notifier).setBlockAdultContent(value);
+            },
+          ),
+
+          // Block Trackers
+          SwitchListTile(
+            secondary: const Icon(Icons.visibility_off_outlined),
+            title: Text('Block Trackers', style: theme.textTheme.titleMedium),
+            subtitle: const Text('Filter tracking domains'),
+            value: dnsSettings.filtering.blockTrackers,
+            onChanged: (value) {
+              ref.read(dnsSettingsProvider.notifier).setBlockTrackers(value);
+            },
+          ),
+
+          // Custom Block List
+          ListTile(
+            leading: const Icon(Icons.list_outlined),
+            title: Text('Custom Block List', style: theme.textTheme.titleMedium),
+            subtitle: dnsSettings.filtering.customBlockList.isEmpty
+                ? const Text('No custom list')
+                : Text(
+                    dnsSettings.filtering.customBlockList,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+            onTap: () => _showCustomBlockListDialog(context, ref),
           ),
 
           const Divider(),
@@ -836,5 +935,43 @@ class SettingsScreen extends ConsumerWidget {
     }
 
     return deletedCount;
+  }
+
+  void _showCustomBlockListDialog(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final currentUrl =
+        ref.read(dnsSettingsProvider).filtering.customBlockList;
+    final controller = TextEditingController(text: currentUrl);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Custom Block List URL'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: 'https://example.com/blocklist.txt',
+            border: OutlineInputBorder(),
+            label: Text('Block List URL'),
+          ),
+          maxLines: 3,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              ref
+                  .read(dnsSettingsProvider.notifier)
+                  .setCustomBlockList(controller.text);
+              Navigator.pop(ctx);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
   }
 }

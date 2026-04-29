@@ -222,7 +222,59 @@ class SettingsLocalDatasource {
   Future<void> setBypassLan(bool bypass) =>
       _prefs.setBool(_bypassLanKey, bypass);
 
-  // ── UI / Notification display ───────────────────────────────────────
+  // ── DNS Presets and Filtering ──────────────────────────────────────────
+
+  static const _dnsPresetIdKey = 'dns_preset_id';
+  static const _dnsBlockAdsKey = 'dns_block_ads';
+  static const _dnsBlockMalwareKey = 'dns_block_malware';
+  static const _dnsBlockAdultContentKey = 'dns_block_adult_content';
+  static const _dnsBlockTrackersKey = 'dns_block_trackers';
+  static const _dnsCustomBlockListKey = 'dns_custom_block_list';
+
+  /// Current DNS preset ID (null if custom).
+  String? getDnsPresetId() => _prefs.getString(_dnsPresetIdKey);
+
+  Future<void> setDnsPresetId(String? id) async {
+    if (id == null) {
+      await _prefs.remove(_dnsPresetIdKey);
+    } else {
+      await _prefs.setString(_dnsPresetIdKey, id);
+    }
+  }
+
+  /// Block ads filter.
+  bool getDnsBlockAds() => _prefs.getBool(_dnsBlockAdsKey) ?? false;
+
+  Future<void> setDnsBlockAds(bool enabled) =>
+      _prefs.setBool(_dnsBlockAdsKey, enabled);
+
+  /// Block malware filter.
+  bool getDnsBlockMalware() => _prefs.getBool(_dnsBlockMalwareKey) ?? false;
+
+  Future<void> setDnsBlockMalware(bool enabled) =>
+      _prefs.setBool(_dnsBlockMalwareKey, enabled);
+
+  /// Block adult content filter.
+  bool getDnsBlockAdultContent() =>
+      _prefs.getBool(_dnsBlockAdultContentKey) ?? false;
+
+  Future<void> setDnsBlockAdultContent(bool enabled) =>
+      _prefs.setBool(_dnsBlockAdultContentKey, enabled);
+
+  /// Block trackers filter.
+  bool getDnsBlockTrackers() => _prefs.getBool(_dnsBlockTrackersKey) ?? false;
+
+  Future<void> setDnsBlockTrackers(bool enabled) =>
+      _prefs.setBool(_dnsBlockTrackersKey, enabled);
+
+  /// Custom block list URL.
+  String getDnsCustomBlockList() =>
+      _prefs.getString(_dnsCustomBlockListKey) ?? '';
+
+  Future<void> setDnsCustomBlockList(String url) =>
+      _prefs.setString(_dnsCustomBlockListKey, url);
+
+  // ── UI / Notification display ───────────────────────────────────────────
 
   /// Whether to show detailed VPN notification with server and traffic stats.
   bool getShowDetailedNotification() =>
