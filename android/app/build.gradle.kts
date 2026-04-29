@@ -49,6 +49,52 @@ flutter {
     source = "../.."
 }
 
+// Rename APK after build with proper task hooks
+afterEvaluate {
+    tasks.register("renameDebugApk") {
+        doLast {
+            val apkDir = File(buildDir, "outputs/flutter-apk")
+            val oldName = "app-debug.apk"
+            val oldFile = File(apkDir, oldName)
+            
+            if (oldFile.exists()) {
+                val versionName = android.defaultConfig.versionName
+                val newName = "ArmaVPN-debug-${versionName}.apk"
+                val newFile = File(apkDir, newName)
+                // Copy file to keep original for Flutter tool detection
+                oldFile.copyTo(newFile, overwrite = true)
+                println("✓ Created: $newName")
+            }
+        }
+    }
+
+    tasks.register("renameReleaseApk") {
+        doLast {
+            val apkDir = File(buildDir, "outputs/flutter-apk")
+            val oldName = "app-release.apk"
+            val oldFile = File(apkDir, oldName)
+            
+            if (oldFile.exists()) {
+                val versionName = android.defaultConfig.versionName
+                val newName = "ArmaVPN-release-${versionName}.apk"
+                val newFile = File(apkDir, newName)
+                // Copy file to keep original for Flutter tool detection
+                oldFile.copyTo(newFile, overwrite = true)
+                println("✓ Created: $newName")
+            }
+        }
+    }
+
+    // Hook rename tasks to assembleDebug and assembleRelease
+    tasks.named("assembleDebug") {
+        finalizedBy("renameDebugApk")
+    }
+
+    tasks.named("assembleRelease") {
+        finalizedBy("renameReleaseApk")
+    }
+}
+
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar"))))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
