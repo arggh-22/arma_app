@@ -14,6 +14,7 @@ import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/e
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/locale_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/theme_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/ui_preferences_provider.dart';
+import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/xray_version_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/widgets/dns_picker_sheet.dart';
 
 /// Settings screen with theme, language, DNS, engine, anti-censorship, and more.
@@ -596,6 +597,54 @@ class SettingsScreen extends ConsumerWidget {
               AppConstants.appVersion,
               style: theme.textTheme.bodyMedium,
             ),
+          ),
+
+          // Xray version
+          Consumer(
+            builder: (context, ref, _) {
+              final xrayVersion = ref.watch(xrayVersionProvider);
+              return xrayVersion.when(
+                data: (version) {
+                  return ListTile(
+                    title: Text(
+                      'Xray Version',
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    trailing: Text(
+                      version,
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  );
+                },
+                loading: () {
+                  return ListTile(
+                    title: Text(
+                      'Xray Version',
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    trailing: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                    ),
+                  );
+                },
+                error: (err, _) {
+                  return ListTile(
+                    title: Text(
+                      'Xray Version',
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    trailing: Text(
+                      'Unknown',
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  );
+                },
+              );
+            },
           ),
 
           // Open source licenses

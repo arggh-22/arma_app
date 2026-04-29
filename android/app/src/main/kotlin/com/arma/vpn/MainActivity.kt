@@ -110,6 +110,16 @@ class MainActivity : FlutterActivity() {
                 "requestNotificationPermission" -> {
                     requestNotificationPermission(result)
                 }
+                "getXrayVersion" -> {
+                    try {
+                        val version = libv2ray.Libv2ray.checkVersionX()
+                        Log.w(TAG, "Xray version: $version")
+                        result.success(version)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to get Xray version: ${e.message}")
+                        result.error("VERSION_FAILED", e.message, null)
+                    }
+                }
                 "measureDelay" -> {
                     val config = call.argument<String>("config")
                     val url = call.argument<String>("url") ?: "https://www.google.com/generate_204"

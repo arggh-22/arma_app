@@ -166,4 +166,20 @@ class VpnPlatformService {
       return false;
     }
   }
+
+  /// Get Xray-core version string from the native runtime.
+  /// Returns the version or empty string on error.
+  Future<String> getXrayVersion() async {
+    try {
+      final result =
+          await _methodChannel.invokeMethod<String>('getXrayVersion');
+      return result ?? 'Unknown';
+    } on MissingPluginException {
+      debugPrint('[VpnPlatformService] getXrayVersion not available on this build');
+      return 'Unknown';
+    } on PlatformException catch (e) {
+      debugPrint('[VpnPlatformService] getXrayVersion error: ${e.message}');
+      return 'Unknown';
+    }
+  }
 }
