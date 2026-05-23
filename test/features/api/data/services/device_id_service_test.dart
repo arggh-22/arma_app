@@ -35,22 +35,22 @@ void main() {
       }
     });
 
-    test('returns stored device id without platform call', () async {
-      await datasource.writeDeviceId('persisted-id');
+    test('returns stored device id when it matches stable platform id', () async {
+      await datasource.writeDeviceId('stable-id-123');
       var platformCalls = 0;
 
       final service = DeviceIdService(
         datasource,
         platformDeviceIdReader: () async {
           platformCalls++;
-          return 'android-id';
+          return 'stable-id-123';
         },
       );
 
       final resolved = await service.resolveDeviceId();
 
-      expect(resolved, 'persisted-id');
-      expect(platformCalls, 0);
+      expect(resolved, 'stable-id-123');
+      expect(platformCalls, 1);
     });
 
     test('stores and returns Android ID when no persisted value exists', () async {
@@ -93,6 +93,32 @@ void main() {
       expect(second, 'uuid-fallback-001');
       expect(platformCalls, 1);
       expect(uuidCalls, 1);
+    });
+
+    test('migrates legacy stored id to stable Android id when available', () async {
+      await datasource.writeDeviceId('legacy-build-id');
+      var platformCalls = 0;
+      var uuidCalls = 0;
+
+      final service = DeviceIdService(
+        datasource,
+        platformDeviceIdReader: () async {
+          platformCalls++;
+          return 'stable-android-id';
+        },
+        uuidGenerator: () {
+          uuidCalls++;
+          return 'uuid-fallback-should-not-run';
+        },
+      );
+
+      final resolved = await service.resolveDeviceId();
+      final persisted = datasource.readDeviceId();
+
+      expect(resolved, 'stable-android-id');
+      expect(persisted, 'stable-android-id');
+      expect(platformCalls, 1);
+      expect(uuidCalls, 0);
     });
 
     test('does not print plaintext identifiers while resolving device id', () async {
