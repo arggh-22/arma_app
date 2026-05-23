@@ -4,12 +4,12 @@ import 'package:arma_proxy_vpn_client/features/api/data/datasources/api_client.d
 import 'package:arma_proxy_vpn_client/features/api/data/datasources/auth_local_datasource.dart';
 import 'package:arma_proxy_vpn_client/features/api/data/repositories/auth_repository_impl.dart';
 import 'package:arma_proxy_vpn_client/features/api/data/services/device_id_service.dart';
+import 'package:arma_proxy_vpn_client/features/api/data/models/default_server_key_model.dart';
 import 'package:arma_proxy_vpn_client/features/api/data/models/device_auth_response.dart';
 import 'package:arma_proxy_vpn_client/features/api/domain/entities/auth_state.dart';
 import 'package:arma_proxy_vpn_client/features/api/domain/repositories/auth_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive_ce.dart';
-import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 void main() {
@@ -229,7 +229,7 @@ class _StubApiClient extends ApiClient {
   }
 
   @override
-  Future<List<dynamic>> getKeys(String token) {
+  Future<List<DefaultServerKeyModel>> getKeys(String token) {
     throw UnimplementedError();
   }
 }
