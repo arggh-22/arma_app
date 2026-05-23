@@ -56,7 +56,7 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final restored = await container.read(authStateNotifierProvider.future);
+      final restored = await container.read(authStateProvider.future);
 
       expect(restored.token, 'persisted-token');
       expect(restored.isAuthenticated, isTrue);
