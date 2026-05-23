@@ -33,5 +33,35 @@ void main() {
         expect(keyPrewarmReads, 1);
       },
     );
+
+    test('supports manual rerun after provider refresh', () async {
+      var authReads = 0;
+      var keyPrewarmReads = 0;
+      final container = ProviderContainer(
+        overrides: [
+          authTokenProvider.overrideWith((ref) async {
+            authReads++;
+            return 'startup-token';
+          }),
+          defaultServerKeysProvider.overrideWith((ref) async {
+            keyPrewarmReads++;
+            return const [];
+          }),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(authBootstrapProvider.future);
+      await Future<void>.delayed(Duration.zero);
+      expect(authReads, 1);
+      expect(keyPrewarmReads, 1);
+
+      container.refresh(authBootstrapProvider);
+      await container.read(authBootstrapProvider.future);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(authReads, 2);
+      expect(keyPrewarmReads, 2);
+    });
   });
 }

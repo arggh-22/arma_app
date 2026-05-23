@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:arma_proxy_vpn_client/features/api/presentation/providers/auth_bootstrap_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -26,6 +29,7 @@ class ArmaApp extends ConsumerStatefulWidget {
 
 class _ArmaAppState extends ConsumerState<ArmaApp> {
   bool _autoRefreshTriggered = false;
+  bool _authBootstrapTriggered = false;
 
   @override
   void initState() {
@@ -34,6 +38,10 @@ class _ArmaAppState extends ConsumerState<ArmaApp> {
     _requestNotificationPermission();
     // Trigger auto-refresh once after first frame (D-04, CONF-07).
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_authBootstrapTriggered) {
+        _authBootstrapTriggered = true;
+        unawaited(ref.read(authBootstrapProvider.future));
+      }
       if (!_autoRefreshTriggered) {
         _autoRefreshTriggered = true;
         ref.read(subscriptionProvider.notifier).refreshAllAutoUpdate();
