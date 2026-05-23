@@ -144,7 +144,7 @@ Requirements for integrating your VPN server API to display default servers in h
 
 ### API Integration
 
-- [ ] **API-01**: Device authentication with VPN server API (`POST /auth/device/`)
+- [x] **API-01**: Device authentication with VPN server API (`POST /auth/device/`)
   - Generate and persist device HWID (UUID) on app install
   - Maintain HWID across app updates and reinstalls
   - Send device_id, os_type, app_version to API
@@ -209,7 +209,7 @@ Requirements for integrating your VPN server API to display default servers in h
 
 ### Security & Reliability
 
-- [ ] **SEC-01**: Credentials storage
+- [x] **SEC-01**: Credentials storage
   - Store device HWID securely in Hive (encrypted)
   - Store API token securely (encrypted in Hive)
   - Never log tokens or HWID in plain text

@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: sing-box Engine Migration
 status: executing
-stopped_at: Milestone v1.2 questions gathered — ready for requirements and roadmap
-last_updated: "2026-05-23T23:08:02.426Z"
-last_activity: 2026-05-23 -- Phase 8 planning complete
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-05-23T23:12:58.865Z"
+last_activity: 2026-05-23
 progress:
-  total_phases: 6
+  total_phases: 3
   completed_phases: 0
-  total_plans: 3
+  total_plans: 0
   completed_plans: 0
   percent: 0
 ---
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
-**Current focus:** v1.2 default VPN servers integration — gathering requirements and creating roadmap
+**Current focus:** Phase 08 — api-client-device-auth
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
+Phase: 08 (api-client-device-auth) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-05-23 -- Phase 8 planning complete
+Last activity: 2026-05-23
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -54,6 +54,8 @@ Progress: [░░░░░░░░░░] 0%
 - Last 5 plans: 4min, 11min, 5min, 6min, — (Phase 03-04)
 - Trend: Stable
 
+| Phase 08 P01 | 157s | 2 tasks | 18 files |
+
 ## Accumulated Context
 
 ### Decisions
@@ -63,6 +65,8 @@ Progress: [░░░░░░░░░░] 0%
 - v1.2 Updates: Fetch on first launch, manual refresh button, auto-update with user-configurable intervals
 - v1.1 Roadmap: 3 phases (coarse granularity) — Foundation+Config → VPN Service+Monitoring → Feature Parity+Rollback
 - v1.1 Roadmap: Phase 05 merges library swap + config builder (parallelizable Kotlin/Dart, common foundation)
+- [Phase 08]: Token contract is opaque and not parsed as JWT in DTO/domain mapping
+- [Phase 08]: API DTO decode now enforces strict field-type checks with FormatException on malformed payloads
 
 ### Pending Todos
 
@@ -77,6 +81,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-24
-Stopped at: Milestone v1.2 questions gathered — ready for requirements and roadmap
+Last session: 2026-05-23T23:12:58.861Z
+Stopped at: Completed 08-01-PLAN.md
 Resume file: None
