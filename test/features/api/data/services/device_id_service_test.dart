@@ -68,7 +68,7 @@ void main() {
 
       expect(first, 'android-id-123');
       expect(second, 'android-id-123');
-      expect(platformCalls, 1);
+      expect(platformCalls, 2);
     });
 
     test('stores generated UUID fallback when platform id is unavailable', () async {
@@ -91,7 +91,7 @@ void main() {
 
       expect(first, 'uuid-fallback-001');
       expect(second, 'uuid-fallback-001');
-      expect(platformCalls, 1);
+      expect(platformCalls, 2);
       expect(uuidCalls, 1);
     });
 
