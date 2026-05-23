@@ -77,10 +77,10 @@ class AuthState {
 ---
 
 ### 3. Device Hardware ID (HWID) Generation & Persistence
-**Decision:** Android `Build.ID` + iOS UUID fallback, persisted to Hive
+**Decision:** Android stable device ID (`androidInfo.androidId`) + UUID fallback, persisted to Hive
 
 **Rationale:**
-- **Android ID (preferred):** Device-specific, survives app reinstalls (persists in OS-level partition), minimal privacy impact
+- **Android stable ID (preferred):** Use `androidInfo.androidId` semantics for stronger per-device stability than `Build.ID`
 - **iOS:** Hardware identification is restricted; use UUIDv4 generated once and stored
 - Persistent across app updates (same device = same ID)
 - API expects device_id in auth request, so it must survive app lifecycle
@@ -94,6 +94,7 @@ class AuthState {
 - On first app launch: Read platform HWID, save to Hive
 - Subsequent launches: Load from Hive (no platform calls needed)
 - `device_info_plus` package: Planned for Phase 08 (add to pubspec.yaml)
+- Legacy `Build.ID`-derived values are migrated once to stable Android ID when available
 
 ---
 
