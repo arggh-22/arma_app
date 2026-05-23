@@ -4,6 +4,7 @@
 
 - ✅ **v1.0 MVP** — Phases 1–4 (shipped 2026-04-06)
 - 🚧 **v1.1 sing-box Engine Migration** — Phases 5–7 (in progress)
+- 📋 **v1.2 Default VPN Servers Integration** — Phases 8–10 (planning)
 
 ## Phases
 
@@ -160,3 +161,6 @@ v1.1: 5 → 6 → 7
 | 5. Engine Foundation & Config Builder | v1.1 | 0/? | Not started | — |
 | 6. VPN Service & Connection Monitoring | v1.1 | 0/? | Not started | — |
 | 7. Feature Parity & Dual-Engine Safety | v1.1 | 0/? | Not started | — |
+| 8. API Client & Device Authentication | v1.2 | 0/? | Not started | — |
+| 9. Default Servers Home Screen Display | v1.2 | 0/? | Not started | — |
+| 10. Settings & Auto-Update Configuration | v1.2 | 0/? | Not started | — |

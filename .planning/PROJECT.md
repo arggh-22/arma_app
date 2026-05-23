@@ -46,17 +46,18 @@ Users can import a server configuration and connect in one tap — it just works
 - In-app purchases / monetization — not in v1 scope
 - TV platform support — deferred
 
-## Current Milestone: v1.1 sing-box Engine Migration
+## Current Milestone: v1.2 Default VPN Servers Integration
 
-**Goal:** Replace Xray-core with sing-box as the proxy engine, enabling future cross-platform support (iOS, macOS, Windows, Linux) while maintaining all v1.0 functionality.
+**Goal:** Integrate your VPN server API to fetch and display authenticated user's default VPN servers in the home screen, improving user experience with one-tap access to pre-configured servers.
 
 **Target features:**
-- Replace libv2ray.aar with sing-box library
-- Rewrite config builder for sing-box JSON format
-- Rewrite core manager for sing-box lifecycle
-- Update native VPN service integration
-- Maintain all existing protocol support
-- Verify anti-censorship features under sing-box
+- Device authentication with VPN API (`/auth/device/`)
+- Fetch user's VPN keys/subscriptions from API (`/keys/`)
+- Display default servers in home screen bottom half (below connection stats)
+- Fetch on app first launch + manual refresh button
+- Periodic auto-update with user-configurable intervals
+- Connect to default servers like any other server
+- Handle API errors gracefully with fallback UI
 
 ## Context
 
@@ -105,4 +106,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-07 — v1.1 milestone started*
+*Last updated: 2026-05-24 — v1.2 milestone started (Default VPN Servers Integration)*

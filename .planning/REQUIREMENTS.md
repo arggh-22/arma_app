@@ -138,6 +138,92 @@ Which phases cover which requirements. Updated during roadmap creation.
 - Phase 6 (VPN Service & Connection Monitoring): 7 requirements
 - Phase 7 (Feature Parity & Dual-Engine Safety): 12 requirements
 
+## v1.2 Requirements
+
+Requirements for integrating your VPN server API to display default servers in home screen.
+
+### API Integration
+
+- [ ] **API-01**: Device authentication with VPN server API (`POST /auth/device/`)
+  - Generate and persist device HWID (UUID) on app install
+  - Maintain HWID across app updates and reinstalls
+  - Send device_id, os_type, app_version to API
+  - Store and refresh authentication token securely
+
+- [ ] **API-02**: Fetch user's VPN keys from API (`GET /keys/`)
+  - Use stored token from device auth
+  - Parse response: id, name, key_body, subscription_url, expire_date, status, used_traffic, data_limit
+  - Handle 401 Unauthorized by requesting new device auth
+  - Handle network errors gracefully
+
+- [ ] **API-03**: Error handling for API calls
+  - Gracefully handle offline state (show cached servers or placeholder)
+  - Handle timeout errors (5-second timeout, show retry button)
+  - Handle 4xx/5xx errors with user-friendly messages
+  - Never crash or hang the app on API failures
+
+### Home Screen Display
+
+- [ ] **UI-01**: Default servers section in home screen
+  - Show in bottom half of home screen (below connection stats)
+  - Display server list with: name, status badge (active/expired/limited), traffic info
+  - Allow users to tap a server to connect (use existing connection logic)
+  - Show loading state while fetching from API
+
+- [ ] **UI-02**: Manual refresh button
+  - Add refresh button in default servers section
+  - Trigger re-fetch from API
+  - Show loading spinner during fetch
+  - Update list with latest servers from API
+
+### Data Management
+
+- [ ] **DATA-01**: Fetch on first launch
+  - Trigger device auth on first app open
+  - Fetch default servers immediately after auth
+  - Cache servers locally in Hive
+  - Display cached servers immediately
+
+- [ ] **DATA-02**: Auto-update functionality
+  - Support user-configurable update intervals (Disabled, 12h, 24h, 7 days)
+  - Implement background task to refresh servers at configured interval
+  - Update cached servers without requiring manual refresh
+  - Respect user's update preference from settings
+
+- [ ] **DATA-03**: Server storage
+  - Store default servers separately from user-added servers in Hive
+  - Include metadata: fetch_timestamp, expires_at, api_source
+  - Clear expired servers (compare with expire_date from API)
+
+### Integration with Existing Features
+
+- [ ] **COMPAT-01**: Connection compatibility
+  - Default servers must work with existing VPN connection logic
+  - Use key_body string as server config (same as user-added servers)
+  - Support all existing protocols (VLESS, VMess, Trojan, SS, Hysteria2)
+
+- [ ] **COMPAT-02**: Settings integration
+  - Add "Default Servers Auto-Update" setting to settings screen
+  - Options: Disabled, Every 12 Hours, Every 24 Hours, Every 7 Days
+  - Persist setting in Hive
+
+### Security & Reliability
+
+- [ ] **SEC-01**: Credentials storage
+  - Store device HWID securely in Hive (encrypted)
+  - Store API token securely (encrypted in Hive)
+  - Never log tokens or HWID in plain text
+
+- [ ] **REL-01**: Offline support
+  - Display cached default servers even when offline
+  - Queue refresh requests when network is unavailable
+  - Auto-retry failed fetches with exponential backoff
+
 ---
-*Requirements defined: 2026-04-08*
-*Last updated: 2026-04-08 after roadmap creation*
+**Coverage (v1.2):**
+- v1.2 requirements: 14 total
+- Mapped to phases: (pending roadmap)
+
+---
+*Requirements defined: 2026-05-24*
+*Last updated: 2026-05-24 before roadmap creation (v1.2)*

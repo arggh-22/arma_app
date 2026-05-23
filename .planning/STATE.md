@@ -1,13 +1,13 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: sing-box-engine-migration
-status: roadmap-complete
-stopped_at: Roadmap created — Phase 05 ready to plan
-last_updated: "2026-04-08T20:00:00.000Z"
-last_activity: 2026-04-08
+milestone: v1.2
+milestone_name: default-vpn-servers-integration
+status: roadmap-pending
+stopped_at: "Milestone questions gathered — ready for requirements and roadmap"
+last_updated: "2026-05-24T02:30:00.000Z"
+last_activity: 2026-05-24
 progress:
-  total_phases: 3
+  total_phases: 0
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -18,17 +18,17 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-07)
+See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
-**Current focus:** v1.1 sing-box engine migration — Phase 05 ready to plan
+**Current focus:** v1.2 default VPN servers integration — gathering requirements and creating roadmap
 
 ## Current Position
 
-Phase: 5 of 7 (Engine Foundation & Config Builder) — first phase of v1.1
-Plan: — (not yet planned)
-Status: Ready to plan
-Last activity: 2026-04-08 — Roadmap created for v1.1 (3 phases, 29 requirements)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-05-24 — Milestone v1.2 questions gathered
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -58,11 +58,11 @@ Progress: [░░░░░░░░░░] 0%
 
 ### Decisions
 
+- v1.2 Layout: Default servers shown in home screen bottom half (below connection stats)
+- v1.2 Auth: Users must authenticate with VPN API first before fetching defaults
+- v1.2 Updates: Fetch on first launch, manual refresh button, auto-update with user-configurable intervals
 - v1.1 Roadmap: 3 phases (coarse granularity) — Foundation+Config → VPN Service+Monitoring → Feature Parity+Rollback
 - v1.1 Roadmap: Phase 05 merges library swap + config builder (parallelizable Kotlin/Dart, common foundation)
-- v1.1 Roadmap: Phase 06 is highest risk — inverted TUN control, PlatformInterface (15+ methods), CommandServer lifecycle
-- v1.1 Roadmap: Dual-engine rollback (ENGINE-04) placed in Phase 07 as ship gate — both engines must work before release
-- v1.1 Roadmap: All monitoring (MONITOR-01-05) grouped in Phase 06 — CommandClient subscription is inseparable from CommandServer
 
 ### Pending Todos
 
@@ -70,13 +70,13 @@ None yet.
 
 ### Blockers/Concerns
 
-- Phase 06 risk: PlatformInterface inverted TUN control — highest-risk architectural change. May need `/gsd-research-phase`.
-- Phase 07 risk: Anti-censorship fragment (boolean-only in standard sing-box) may not suffice for Iran/China DPI. Field testing required.
-- Phase 07 risk: Dual-engine adds ~25MB APK size — acceptable for rollback safety.
+- v1.2 API Integration: Need to validate API error handling (offline, timeout, 401 unauthorized)
+- v1.2 UX: Need to decide storage strategy for default servers (refresh each launch vs cache with TTL)
+- v1.1 Phase 06 risk: PlatformInterface inverted TUN control — highest-risk architectural change.
 - Build: sing-box v1.13.6 pinned — do NOT pull v1.14+ (breaking DNS format changes).
 
 ## Session Continuity
 
-Last session: 2026-04-08
-Stopped at: Roadmap created for v1.1 milestone — Phase 05 ready to plan
+Last session: 2026-05-24
+Stopped at: Milestone v1.2 questions gathered — ready for requirements and roadmap
 Resume file: None
