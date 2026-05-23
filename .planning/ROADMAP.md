@@ -119,7 +119,12 @@ Plans:
   2. App generates sing-box JSON configs that pass `checkConfig()` validation for all 5 protocols: VLESS (including Reality + XTLS Vision), VMess, Trojan, Shadowsocks, and Hysteria2
   3. Generated configs correctly handle all transport types (TCP, WebSocket, gRPC, HTTP/2, HTTPUpgrade) and TLS modes including ECH (Encrypted Client Hello)
   4. Geo assets use sing-box rule-set format (.srs files) replacing v2fly .dat files, with bundled fallbacks for offline-first launch
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 08-01-PLAN.md — Define API/auth contracts and centralized config constants
+- [ ] 08-02-PLAN.md — Implement encrypted auth storage and persistent device ID service
+- [ ] 08-03-PLAN.md — Implement API client, auth repository lifecycle, and Riverpod provider wiring
 
 ### Phase 6: VPN Service & Connection Monitoring
 **Goal**: Users can connect and disconnect through sing-box engine and see real-time connection stats, traffic speeds, and server latency
@@ -164,3 +169,48 @@ v1.1: 5 → 6 → 7
 | 8. API Client & Device Authentication | v1.2 | 0/? | Not started | — |
 | 9. Default Servers Home Screen Display | v1.2 | 0/? | Not started | — |
 | 10. Settings & Auto-Update Configuration | v1.2 | 0/? | Not started | — |
+
+---
+
+## v1.2 Phases (Planning)
+
+### Phase 8: API Client & Device Authentication
+**Goal**: Build the API client library and implement device authentication flow.
+**Depends on**: v1.1 completed
+**Requirements**: API-01, SEC-01 (partial)
+**Success Criteria** (what must be TRUE):
+  1. User can authenticate their device with your VPN API on first app launch using HWID + device info
+  2. API token is stored securely in Hive (encrypted) and automatically refreshed on expiry
+  3. APIClient class provides methods for device auth and token management
+  4. Auth errors are handled gracefully with retry logic
+  5. Device HWID persists across app updates and reinstalls
+
+**Plans**: TBD
+
+### Phase 9: Default Servers Home Screen Display
+**Goal**: Display default servers in home screen bottom half with UI controls.
+**Depends on**: Phase 8
+**Requirements**: API-02, API-03, UI-01, UI-02, REL-01
+**Success Criteria** (what must be TRUE):
+  1. Default servers from API appear in home screen bottom half (below connection stats)
+  2. Manual refresh button fetches latest servers from API with loading state
+  3. Servers are parsed correctly (name, status, traffic info) and displayed in a list
+  4. Tapping a default server connects via existing VPN service (same as user-added servers)
+  5. Cached servers display when offline or API is unreachable
+  6. Network errors and timeouts show user-friendly error messages
+
+**Plans**: TBD
+
+### Phase 10: Settings & Auto-Update Configuration
+**Goal**: Add user settings for auto-update and implement periodic refresh background task.
+**Depends on**: Phase 9
+**Requirements**: DATA-01, DATA-02, DATA-03, COMPAT-01, COMPAT-02
+**Success Criteria** (what must be TRUE):
+  1. "Default Servers Auto-Update" setting appears in Settings screen with options: Disabled, Every 12 Hours, Every 24 Hours, Every 7 Days
+  2. Background task refreshes servers at the configured interval
+  3. Failed fetches are retried with exponential backoff
+  4. Default servers work seamlessly with existing VPN connection logic
+  5. Expired servers (compare expire_date from API) are automatically removed from cache
+  6. User preference persists across app sessions
+
+**Plans**: TBD
