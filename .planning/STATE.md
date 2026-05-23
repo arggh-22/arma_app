@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: sing-box Engine Migration
 status: executing
-stopped_at: Completed 08-01-PLAN.md
-last_updated: "2026-05-23T23:12:58.865Z"
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-05-23T23:17:58.291Z"
 last_activity: 2026-05-23
 progress:
   total_phases: 3
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-24)
 ## Current Position
 
 Phase: 08 (api-client-device-auth) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-05-23
 
@@ -55,6 +55,7 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: Stable
 
 | Phase 08 P01 | 157s | 2 tasks | 18 files |
+| Phase 08 P02 | 113 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,8 @@ Progress: [░░░░░░░░░░] 0%
 - v1.1 Roadmap: Phase 05 merges library swap + config builder (parallelizable Kotlin/Dart, common foundation)
 - [Phase 08]: Token contract is opaque and not parsed as JWT in DTO/domain mapping
 - [Phase 08]: API DTO decode now enforces strict field-type checks with FormatException on malformed payloads
+- [Phase 08]: Auth box encryption key is generated once, stored in flutter_secure_storage, and reused on reopen.
+- [Phase 08]: Device ID resolution prioritizes persisted value, then Android Build.ID, then UUID fallback persisted once.
 
 ### Pending Todos
 
@@ -81,6 +84,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-23T23:12:58.861Z
-Stopped at: Completed 08-01-PLAN.md
+Last session: 2026-05-23T23:17:58.287Z
+Stopped at: Completed 08-02-PLAN.md
 Resume file: None
