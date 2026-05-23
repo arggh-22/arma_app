@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: sing-box Engine Migration
-status: executing
-stopped_at: Completed 08-02-PLAN.md
-last_updated: "2026-05-23T23:17:58.291Z"
+status: verifying
+stopped_at: Completed 08-03-PLAN.md
+last_updated: "2026-05-23T23:24:20.077Z"
 last_activity: 2026-05-23
 progress:
   total_phases: 3
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-05-24)
 
 Phase: 08 (api-client-device-auth) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-05-23
 
 Progress: [░░░░░░░░░░] 0%
@@ -56,6 +56,7 @@ Progress: [░░░░░░░░░░] 0%
 
 | Phase 08 P01 | 157s | 2 tasks | 18 files |
 | Phase 08 P02 | 113 | 2 tasks | 5 files |
+| Phase 08-api-client-device-auth P03 | 25min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -70,6 +71,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 08]: API DTO decode now enforces strict field-type checks with FormatException on malformed payloads
 - [Phase 08]: Auth box encryption key is generated once, stored in flutter_secure_storage, and reused on reopen.
 - [Phase 08]: Device ID resolution prioritizes persisted value, then Android Build.ID, then UUID fallback persisted once.
+- [Phase 08-api-client-device-auth]: 401 is treated as explicit re-auth signal; repository clears stale auth and retries protected action once.
+- [Phase 08-api-client-device-auth]: Auth providers expose AsyncValue contracts (authState/authToken/defaultServerKeys) and keep UI retry manual via ref.refresh.
 
 ### Pending Todos
 
@@ -84,6 +87,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-23T23:17:58.287Z
-Stopped at: Completed 08-02-PLAN.md
+Last session: 2026-05-23T23:24:20.074Z
+Stopped at: Completed 08-03-PLAN.md
 Resume file: None
