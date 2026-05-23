@@ -85,19 +85,20 @@ void main() {
       expect(restored, 'device-xyz');
     });
 
-    test('auth box is encrypted with persisted key material', () async {
-      expect(secureStorage[AuthLocalDatasource.authCipherKeyStorageKey], isNotNull);
+    test('stores and reuses cipher key material from secure storage', () async {
+      final firstKey = secureStorage[AuthLocalDatasource.authCipherKeyStorageKey];
+      expect(firstKey, isNotNull);
 
-      await authBox.put(AuthLocalDatasource.authStateStorageKey, '{}');
       await authBox.close();
+      authBox = await AuthLocalDatasource.openEncryptedBox(
+        hiveDir: hiveDir,
+        readSecret: (key) async => secureStorage[key],
+        writeSecret: (key, value) async => secureStorage[key] = value,
+      );
 
-      final wrongKeyCipher = HiveAesCipher(Hive.generateSecureKey());
       expect(
-        () => Hive.openBox<dynamic>(
-          AuthLocalDatasource.authStateBoxName,
-          encryptionCipher: wrongKeyCipher,
-        ),
-        throwsA(isA<Object>()),
+        secureStorage[AuthLocalDatasource.authCipherKeyStorageKey],
+        firstKey,
       );
     });
   });

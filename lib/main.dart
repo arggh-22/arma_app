@@ -2,11 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:arma_proxy_vpn_client/app.dart';
+import 'package:arma_proxy_vpn_client/features/api/data/datasources/auth_local_datasource.dart';
 import 'package:arma_proxy_vpn_client/features/routing/data/models/domain_rule_model.dart';
 import 'package:arma_proxy_vpn_client/features/server/data/models/server_config_model.dart';
 import 'package:arma_proxy_vpn_client/features/server/data/models/subscription_model.dart';
@@ -49,6 +51,13 @@ void main() async {
   await _openBoxSafe<ServerConfigModel>('configs', hiveDir);
   await _openBoxSafe<SubscriptionModel>('subscriptions', hiveDir);
   await _openBoxSafe<DomainRuleModel>('domain_rules', hiveDir);
+  const secureStorage = FlutterSecureStorage();
+  await AuthLocalDatasource.openEncryptedBox(
+    hiveDir: hiveDir,
+    readSecret: (key) => secureStorage.read(key: key),
+    writeSecret: (key, value) =>
+        secureStorage.write(key: key, value: value),
+  );
 
   // Load SharedPreferences for settings persistence
   final prefs = await SharedPreferences.getInstance();
