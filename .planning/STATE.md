@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: sing-box Engine Migration
-status: verifying
-stopped_at: Completed 08-03-PLAN.md
-last_updated: "2026-05-23T23:24:20.077Z"
+status: executing
+stopped_at: Completed 08-04-PLAN.md
+last_updated: "2026-05-23T23:49:10.455Z"
 last_activity: 2026-05-23
 progress:
   total_phases: 3
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-05-24)
 ## Current Position
 
 Phase: 08 (api-client-device-auth) — EXECUTING
-Plan: 3 of 3
-Status: Phase complete — ready for verification
+Plan: 2 of 5
+Status: Ready to execute
 Last activity: 2026-05-23
 
 Progress: [░░░░░░░░░░] 0%
@@ -57,6 +57,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 08 P01 | 157s | 2 tasks | 18 files |
 | Phase 08 P02 | 113 | 2 tasks | 5 files |
 | Phase 08-api-client-device-auth P03 | 25min | 3 tasks | 10 files |
+| Phase 08-api-client-device-auth P04 | 492 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 08]: Device ID resolution prioritizes persisted value, then Android Build.ID, then UUID fallback persisted once.
 - [Phase 08-api-client-device-auth]: 401 is treated as explicit re-auth signal; repository clears stale auth and retries protected action once.
 - [Phase 08-api-client-device-auth]: Auth providers expose AsyncValue contracts (authState/authToken/defaultServerKeys) and keep UI retry manual via ref.refresh.
+- [Phase 08]: Startup auth bootstrap is triggered from ArmaApp initState post-frame and does not block UI render.
+- [Phase 08]: authBootstrapProvider is refreshable for explicit reruns while staying idempotent across repeated reads.
 
 ### Pending Todos
 
@@ -87,6 +90,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-23T23:24:20.074Z
-Stopped at: Completed 08-03-PLAN.md
+Last session: 2026-05-23T23:49:10.450Z
+Stopped at: Completed 08-04-PLAN.md
 Resume file: None

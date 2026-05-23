@@ -122,9 +122,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 08-01-PLAN.md — Define API/auth contracts and centralized config constants
-- [ ] 08-02-PLAN.md — Implement encrypted auth storage and persistent device ID service
-- [ ] 08-03-PLAN.md — Implement API client, auth repository lifecycle, and Riverpod provider wiring
+- [x] 08-01-PLAN.md — Define API/auth contracts and centralized config constants
+- [x] 08-02-PLAN.md — Implement encrypted auth storage and persistent device ID service
+- [x] 08-03-PLAN.md — Implement API client, auth repository lifecycle, and Riverpod provider wiring
 
 ### Phase 6: VPN Service & Connection Monitoring
 **Goal**: Users can connect and disconnect through sing-box engine and see real-time connection stats, traffic speeds, and server latency
