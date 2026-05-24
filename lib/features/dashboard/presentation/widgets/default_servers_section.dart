@@ -24,6 +24,7 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(defaultServersProvider);
+    final activeServer = ref.watch(activeServerProvider);
 
     ref.listen<DefaultServersState>(defaultServersProvider, (previous, next) {
       final previousFailure = previous?.lastFailureType;
@@ -87,6 +88,7 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
                       padding: const EdgeInsets.only(bottom: 8),
                       child: _DefaultServerTile(
                         item: item,
+                        isSelected: item.serverConfig?.id == activeServer?.id,
                         onTap: () => _onTapItem(item),
                       ),
                     ),
@@ -160,10 +162,12 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
 class _DefaultServerTile extends StatelessWidget {
   const _DefaultServerTile({
     required this.item,
+    required this.isSelected,
     required this.onTap,
   });
 
   final DefaultServerItem item;
+  final bool isSelected;
   final VoidCallback onTap;
 
   @override
@@ -175,12 +179,27 @@ class _DefaultServerTile extends StatelessWidget {
         ? 0.0
         : (item.usedTraffic / item.dataLimit).clamp(0.0, 1.0);
     final enabled = item.isConnectable;
+    final tileColor = isSelected
+        ? Color.alphaBlend(
+            colorScheme.primary.withValues(alpha: 0.08),
+            colorScheme.surfaceContainerLow,
+          )
+        : colorScheme.surfaceContainerLow;
+    final tileBorder = isSelected
+        ? BorderSide(
+            color: colorScheme.primary.withValues(alpha: 0.7),
+            width: 1.5,
+          )
+        : BorderSide.none;
 
     return Opacity(
       opacity: enabled ? 1 : 0.55,
       child: Material(
-        color: colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
+        color: tileColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: tileBorder,
+        ),
         child: InkWell(
           onTap: enabled ? onTap : null,
           borderRadius: BorderRadius.circular(12),

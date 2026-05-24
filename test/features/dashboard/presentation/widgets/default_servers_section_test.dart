@@ -150,9 +150,12 @@ void main() {
     final otherMaterial = _tileMaterialForName(tester, 'Other');
     final theme = Theme.of(tester.element(find.byType(DefaultServersSection)));
 
-    expect(selectedMaterial.shape, isA<RoundedRectangleBorder>());
+    final selectedShape = selectedMaterial.shape as RoundedRectangleBorder;
+    final otherShape = otherMaterial.shape as RoundedRectangleBorder;
+
+    expect(selectedShape.side.width, greaterThan(0));
     expect(selectedMaterial.color, isNot(theme.colorScheme.surfaceContainerLow));
-    expect(otherMaterial.shape, isNull);
+    expect(otherShape.side.width, equals(0));
     expect(otherMaterial.color, theme.colorScheme.surfaceContainerLow);
   });
 
@@ -290,13 +293,7 @@ Future<void> _pumpSection(
 
 Material _tileMaterialForName(WidgetTester tester, String name) {
   final candidate = find.ancestor(of: find.text(name), matching: find.byType(Material));
-  for (final element in candidate.evaluate()) {
-    final material = element.widget as Material;
-    if (material.borderRadius == BorderRadius.circular(12)) {
-      return material;
-    }
-  }
-  throw StateError('No tile material found for "$name"');
+  return tester.widget<Material>(candidate.first);
 }
 
 class TestDefaultServersNotifier extends DefaultServersNotifier {
