@@ -170,7 +170,7 @@ v1.1: 5 → 6 → 7
 | 8. API Client & Device Authentication | v1.2 | 0/? | Not started | — |
 | 9. Default Servers Home Screen Display | v1.2 | 0/? | Not started | — |
 | 10. Settings & Auto-Update Configuration | v1.2 | 5/5 | Complete   | 2026-05-24 |
-| 11. Telegram Link API Integration | v1.3 | 2/2 | Complete   | 2026-05-24 |
+| 11. Telegram Link API Integration | v1.3 | 2/2 | Complete    | 2026-05-24 |
 | 12. Telegram Link UI & Guided Flow | v1.3 | 0/? | Not started | — |
 | 13. Telegram Link UX Hardening & Validation | v1.3 | 0/? | Not started | — |
 
