@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Dashboard Layout Refresh + Servers Screen Defaults
-status: executing
+status: completed
 stopped_at: Completed 17-02-PLAN.md
-last_updated: "2026-05-24T22:41:27.760Z"
+last_updated: "2026-05-24T22:51:10.469Z"
 last_activity: 2026-05-24
 progress:
   total_phases: 2
@@ -21,7 +21,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
-**Current focus:** Milestone v1.5 complete
+**Current focus:** Planning next milestone
 
 ## Current Position
 

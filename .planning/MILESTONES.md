@@ -1,5 +1,25 @@
 # Milestones
 
+## v1.5 Dashboard Layout Refresh + Servers Screen Defaults (Shipped: 2026-05-24)
+
+**Phases completed:** 2 phases, 5 plans, 15 tasks
+**Archive:** `.planning/milestones/v1.5-ROADMAP.md`, `.planning/milestones/v1.5-REQUIREMENTS.md`
+**Phase artifacts:** `.planning/milestones/v1.5-phases/`
+
+**Key accomplishments:**
+
+- Servers screen now ships a collapsible default-servers section with compact rows, parity-safe tap switching, and regression coverage that preserves imported-group UX.
+- Closed UAT Test 1 by expanding default sub-link payloads into per-server rows and keeping defaults reachable when imported servers are absent.
+- Default keys now resolve through each `subscription_url` and render as collapsible grouped default server lists while preserving imported-group and tap-parity behavior.
+- Dashboard now reads as grouped 35/65 visual composition in a single scroll while preserving announcement/FAB/default-server parity and adding selected-server parked emphasis.
+- Default server list now highlights the active server tile with the same parked border+tint semantics as ActiveServerCard while preserving tap/connect behavior.
+
+### Known Gaps Accepted at Archive Time
+
+- No `v1.5-MILESTONE-AUDIT.md` was present at archive time; milestone was completed with accepted audit debt.
+
+---
+
 ## v1.4 Telegram Link Status & Dashboard Announcements (Shipped: 2026-05-24)
 
 **Phases completed:** 3 phases, 4 plans, 9 tasks

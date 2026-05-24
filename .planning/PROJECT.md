@@ -2,21 +2,15 @@
 
 ## Current State
 
-- **Last shipped milestone:** v1.4 Telegram Link Status & Dashboard Announcements (archived 2026-05-24)
-- **Archive files:** `.planning/milestones/v1.4-ROADMAP.md`, `.planning/milestones/v1.4-REQUIREMENTS.md`, `.planning/milestones/v1.4-MILESTONE-AUDIT.md`
-- **Milestone note:** archived with accepted audit debt (missing per-phase `VERIFICATION.md` artifacts in v1.4 audit gate)
+- **Last shipped milestone:** v1.5 Dashboard Layout Refresh + Servers Screen Defaults (archived 2026-05-24)
+- **Archive files:** `.planning/milestones/v1.5-ROADMAP.md`, `.planning/milestones/v1.5-REQUIREMENTS.md`
+- **Milestone note:** archived with accepted audit debt (milestone audit file was not present at archive time)
 
-## Current Milestone: v1.5 Dashboard Layout Refresh + Servers Screen Defaults
+## Next Milestone Goals
 
-**Goal:** Redesign dashboard UI layout while keeping existing behavior and add default servers into the Servers screen.
-
-**Target features:**
-- Dashboard uses a 35%/65% layout split.
-- Top 35% shows connect button, selected server, and statistics.
-- Bottom 65% shows announcements and default servers.
-- Default servers render as cards.
-- Selected server is visually parked/highlighted.
-- Servers screen includes default servers.
+- Define next milestone requirements from latest user feedback and production usage.
+- Decide whether to clear carried verification/audit debt before expanding feature scope.
+- Build the next roadmap via `/gsd-new-milestone`.
 
 ## Previous Snapshot
 
