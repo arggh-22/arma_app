@@ -244,7 +244,11 @@ Plans:
   2. Input validation blocks invalid Telegram IDs and prevents duplicate submit requests
   3. Unauthorized and transient failures follow existing API/auth recovery patterns without crashes
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 11-01-PLAN.md — Telegram link endpoint + auth-retry repository + typed outcome mapping
+- [ ] 11-02-PLAN.md — Telegram link provider submit flow with validation and duplicate in-flight guard
 
 ### Phase 12: Telegram Link UI & Guided Flow
 **Goal**: Add home-screen Link entry and full step-by-step Telegram guide screen.
