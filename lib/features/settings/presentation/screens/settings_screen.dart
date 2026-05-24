@@ -8,8 +8,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:arma_proxy_vpn_client/core/constants/app_constants.dart';
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/features/log/presentation/providers/log_provider.dart';
+import 'package:arma_proxy_vpn_client/features/settings/domain/entities/default_server_auto_update_interval.dart';
 import 'package:arma_proxy_vpn_client/features/settings/domain/entities/dns_presets.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/anti_censorship_provider.dart';
+import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/default_server_auto_update_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/dns_settings_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/engine_settings_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/locale_provider.dart';
@@ -36,6 +38,7 @@ class SettingsScreen extends ConsumerWidget {
     final engineSettings = ref.watch(engineSettingsProvider);
     final acSettings = ref.watch(antiCensorshipProvider);
     final uiPreferences = ref.watch(uiPreferencesProvider);
+    final autoUpdateInterval = ref.watch(defaultServerAutoUpdateProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -43,6 +46,72 @@ class SettingsScreen extends ConsumerWidget {
       ),
       body: ListView(
         children: [
+          // Arma VPN settings section header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              'Arma VPN settings',
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: colorScheme.primary,
+              ),
+            ),
+          ),
+
+          RadioListTile<DefaultServerAutoUpdateInterval>(
+            key: const Key('default-server-auto-update-disabled'),
+            value: DefaultServerAutoUpdateInterval.disabled,
+            groupValue: autoUpdateInterval,
+            title: const Text('Disabled'),
+            onChanged: (value) async {
+              if (value != null) {
+                await ref
+                    .read(defaultServerAutoUpdateProvider.notifier)
+                    .setInterval(value);
+              }
+            },
+          ),
+          RadioListTile<DefaultServerAutoUpdateInterval>(
+            key: const Key('default-server-auto-update-12h'),
+            value: DefaultServerAutoUpdateInterval.every12Hours,
+            groupValue: autoUpdateInterval,
+            title: const Text('Every 12 Hours'),
+            onChanged: (value) async {
+              if (value != null) {
+                await ref
+                    .read(defaultServerAutoUpdateProvider.notifier)
+                    .setInterval(value);
+              }
+            },
+          ),
+          RadioListTile<DefaultServerAutoUpdateInterval>(
+            key: const Key('default-server-auto-update-24h'),
+            value: DefaultServerAutoUpdateInterval.every24Hours,
+            groupValue: autoUpdateInterval,
+            title: const Text('Every 24 Hours'),
+            onChanged: (value) async {
+              if (value != null) {
+                await ref
+                    .read(defaultServerAutoUpdateProvider.notifier)
+                    .setInterval(value);
+              }
+            },
+          ),
+          RadioListTile<DefaultServerAutoUpdateInterval>(
+            key: const Key('default-server-auto-update-7d'),
+            value: DefaultServerAutoUpdateInterval.every7Days,
+            groupValue: autoUpdateInterval,
+            title: const Text('Every 7 Days'),
+            onChanged: (value) async {
+              if (value != null) {
+                await ref
+                    .read(defaultServerAutoUpdateProvider.notifier)
+                    .setInterval(value);
+              }
+            },
+          ),
+
+          const Divider(),
+
           // General section header
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -178,10 +247,7 @@ class SettingsScreen extends ConsumerWidget {
           // DNS Presets
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              'DNS Presets',
-              style: theme.textTheme.titleSmall,
-            ),
+            child: Text('DNS Presets', style: theme.textTheme.titleSmall),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -303,11 +369,16 @@ class SettingsScreen extends ConsumerWidget {
           // Block Adult Content
           SwitchListTile(
             secondary: const Icon(Icons.no_adult_content),
-            title: Text('Block Adult Content', style: theme.textTheme.titleMedium),
+            title: Text(
+              'Block Adult Content',
+              style: theme.textTheme.titleMedium,
+            ),
             subtitle: const Text('Filter adult websites'),
             value: dnsSettings.filtering.blockAdultContent,
             onChanged: (value) {
-              ref.read(dnsSettingsProvider.notifier).setBlockAdultContent(value);
+              ref
+                  .read(dnsSettingsProvider.notifier)
+                  .setBlockAdultContent(value);
             },
           ),
 
@@ -325,7 +396,10 @@ class SettingsScreen extends ConsumerWidget {
           // Custom Block List
           ListTile(
             leading: const Icon(Icons.list_outlined),
-            title: Text('Custom Block List', style: theme.textTheme.titleMedium),
+            title: Text(
+              'Custom Block List',
+              style: theme.textTheme.titleMedium,
+            ),
             subtitle: dnsSettings.filtering.customBlockList.isEmpty
                 ? const Text('No custom list')
                 : Text(
@@ -709,10 +783,7 @@ class SettingsScreen extends ConsumerWidget {
                       'Xray Version',
                       style: theme.textTheme.titleMedium,
                     ),
-                    trailing: Text(
-                      version,
-                      style: theme.textTheme.bodyMedium,
-                    ),
+                    trailing: Text(version, style: theme.textTheme.bodyMedium),
                   );
                 },
                 loading: () {
@@ -724,9 +795,7 @@ class SettingsScreen extends ConsumerWidget {
                     trailing: SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                      ),
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                   );
                 },
@@ -939,8 +1008,7 @@ class SettingsScreen extends ConsumerWidget {
 
   void _showCustomBlockListDialog(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final currentUrl =
-        ref.read(dnsSettingsProvider).filtering.customBlockList;
+    final currentUrl = ref.read(dnsSettingsProvider).filtering.customBlockList;
     final controller = TextEditingController(text: currentUrl);
 
     showDialog(

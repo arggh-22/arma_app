@@ -33,35 +33,37 @@ void main() {
     final generalHeaderTop = tester.getTopLeft(find.text('General')).dy;
     expect(armaHeaderTop, lessThan(generalHeaderTop));
 
-    final disabledRadio = tester.widget<RadioListTile<DefaultServerAutoUpdateInterval>>(
-      find.byKey(const Key('default-server-auto-update-disabled')),
-    );
+    final disabledRadio = tester
+        .widget<RadioListTile<DefaultServerAutoUpdateInterval>>(
+          find.byKey(const Key('default-server-auto-update-disabled')),
+        );
     expect(disabledRadio.groupValue, DefaultServerAutoUpdateInterval.disabled);
   });
 
-  testWidgets('selecting interval persists value and triggers scheduler update', (
-    tester,
-  ) async {
-    SharedPreferences.setMockInitialValues(<String, Object>{});
-    final prefs = await SharedPreferences.getInstance();
-    final fakeScheduler = _FakeSchedulerClient();
+  testWidgets(
+    'selecting interval persists value and triggers scheduler update',
+    (tester) async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final prefs = await SharedPreferences.getInstance();
+      final fakeScheduler = _FakeSchedulerClient();
 
-    await _pumpSettingsScreen(
-      tester,
-      prefs: prefs,
-      fakeScheduler: fakeScheduler,
-    );
+      await _pumpSettingsScreen(
+        tester,
+        prefs: prefs,
+        fakeScheduler: fakeScheduler,
+      );
 
-    await tester.tap(find.byKey(const Key('default-server-auto-update-12h')));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('default-server-auto-update-12h')));
+      await tester.pumpAndSettle();
 
-    expect(prefs.getString('default_server_auto_update_interval'), '12h');
-    expect(fakeScheduler.periodicRegistrations, hasLength(1));
-    expect(
-      fakeScheduler.periodicRegistrations.single.frequency,
-      const Duration(hours: 12),
-    );
-  });
+      expect(prefs.getString('default_server_auto_update_interval'), '12h');
+      expect(fakeScheduler.periodicRegistrations, hasLength(1));
+      expect(
+        fakeScheduler.periodicRegistrations.single.frequency,
+        const Duration(hours: 12),
+      );
+    },
+  );
 }
 
 Future<void> _pumpSettingsScreen(
