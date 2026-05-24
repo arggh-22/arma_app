@@ -9,10 +9,10 @@ Requirements for dashboard visual redesign and default-servers integration in Se
 
 ### Dashboard Layout
 
-- [ ] **DLAY-01**: User sees dashboard split into fixed 35% top panel and 65% bottom panel.
-- [ ] **DLAY-02**: User sees connect button, selected server, and statistics in the top panel.
-- [ ] **DLAY-03**: User sees announcements and default server cards in the bottom panel.
-- [ ] **DLAY-04**: User can clearly identify the selected server via parked/highlighted card UI.
+- [x] **DLAY-01**: User sees dashboard split into fixed 35% top panel and 65% bottom panel.
+- [x] **DLAY-02**: User sees connect button, selected server, and statistics in the top panel.
+- [x] **DLAY-03**: User sees announcements and default server cards in the bottom panel.
+- [x] **DLAY-04**: User can clearly identify the selected server via parked/highlighted card UI.
 
 ### Servers Screen Defaults
 
@@ -44,10 +44,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DLAY-01 | Phase 17 | Pending |
-| DLAY-02 | Phase 17 | Pending |
-| DLAY-03 | Phase 17 | Pending |
-| DLAY-04 | Phase 17 | Pending |
+| DLAY-01 | Phase 17 | Complete |
+| DLAY-02 | Phase 17 | Complete |
+| DLAY-03 | Phase 17 | Complete |
+| DLAY-04 | Phase 17 | Complete |
 | SRVD-01 | Phase 16 | Complete |
 | SRVD-02 | Phase 16 | Complete |
 | SRVD-03 | Phase 16 | Complete |

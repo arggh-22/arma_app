@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Dashboard Layout Refresh + Servers Screen Defaults
-status: phase_planned
-stopped_at: Phase 17 planning complete
-last_updated: "2026-05-25T01:50:00+04:00"
-last_activity: 2026-05-25 -- Phase 17 plan created and checker-verified
+status: executing
+stopped_at: Completed 17-01-PLAN.md
+last_updated: "2026-05-24T22:25:45.942Z"
+last_activity: 2026-05-24
 progress:
   total_phases: 2
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
-  percent: 75
+  completed_plans: 4
+  percent: 100
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
-**Current focus:** Planning Phase 17
+**Current focus:** Phase 17 execution completed
 
 ## Current Position
 
-Phase: 17 (Dashboard 35/65 Layout Refresh) — PLANNED
-Plan: 0 of 1
-Status: Phase 17 plan ready for execution
-Last activity: 2026-05-25 -- Phase 17 plan created and checker-verified
+Phase: 17 (Dashboard 35/65 Layout Refresh) — COMPLETE
+Plan: 1 of 1
+Status: Plan execution complete
+Last activity: 2026-05-24
 
-Progress: [███████---] 75%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -76,6 +76,7 @@ Progress: [███████---] 75%
 | Phase 16 P01 | 254 | 3 tasks | 5 files |
 | Phase 16 P02 | 97 | 3 tasks | 5 files |
 | Phase 16 P03 | 422 | 3 tasks | 6 files |
+| Phase 17 P01 | 183 | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -126,6 +127,8 @@ Progress: [███████---] 75%
 - [Phase 16]: Resolve defaults per key through SubscriptionService.fetch with per-key keyBody fallback only on fetch failure.
 - [Phase 16]: Render defaults as nested subgroup headers keyed by subscription_url while showing safe group labels only.
 - [Phase 16]: Keep default-row tap parity unchanged: select first, then disconnect/connect only when connected to another target.
+- [Phase 17]: Kept SingleChildScrollView root and implemented 35/65 as visual top/bottom grouping with stable test keys.
+- [Phase 17]: Bound parked selected-server styling strictly to activeServerProvider selected state while preserving navigation and tap behavior.
 
 ### Roadmap Evolution
 
@@ -144,6 +147,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-24T22:09:59.961Z
-Stopped at: Phase 17 UI-SPEC approved
-Resume file: .planning/phases/17-dashboard-35-65-layout-refresh/17-UI-SPEC.md
+Last session: 2026-05-24T22:25:45.938Z
+Stopped at: Completed 17-01-PLAN.md
+Resume file: None
