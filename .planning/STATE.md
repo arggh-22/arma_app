@@ -1,15 +1,15 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: sing-box Engine Migration
-status: completed
-stopped_at: Phase 13 planning complete
+milestone: v1.3
+milestone_name: Telegram Account Linking
+status: verifying
+stopped_at: Phase 13 execution complete
 last_updated: "2026-05-24T16:48:44.481Z"
 last_activity: 2026-05-24
 progress:
-  total_phases: 9
-  completed_phases: 5
-  total_plans: 20
+  total_phases: 13
+  completed_phases: 7
+  total_plans: 24
   completed_plans: 24
   percent: 100
 ---
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
-**Current focus:** Phase 12 — telegram-link-ui-guided-flow
+**Current focus:** Phase 13 — telegram-link-ux-hardening-validation
 
 ## Current Position
 
-Phase: 12
+Phase: 13
 Plan: Complete
-Status: Phase execution complete — ready for security/validation
+Status: Phase execution complete — ready for security/validation/UAT
 Last activity: 2026-05-24
 
 Progress: [░░░░░░░░░░] 0%
@@ -130,5 +130,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-05-24T16:48:44.472Z
-Stopped at: Phase 13 planning complete
-Resume file: .planning/phases/13-telegram-link-ux-hardening-validation/13-01-PLAN.md
+Stopped at: Phase 13 execution complete
+Resume file: .planning/phases/13-telegram-link-ux-hardening-validation/13-02-SUMMARY.md

@@ -40,18 +40,21 @@ void main() {
       expect(apiClient.lastTelegramId, '123456789');
     });
 
-    test('returns already_linked outcome when API status indicates already linked', () async {
-      apiClient.linkHandler = ({required token, required telegramId}) async {
-        return const TelegramLinkResponse(
-          detail: 'Telegram is already linked',
-          status: 'already_linked',
-        );
-      };
+    test(
+      'returns already_linked outcome when API status indicates already linked',
+      () async {
+        apiClient.linkHandler = ({required token, required telegramId}) async {
+          return const TelegramLinkResponse(
+            detail: 'Telegram is already linked',
+            status: 'already_linked',
+          );
+        };
 
-      final outcome = await repository.linkTelegram('123456789');
+        final outcome = await repository.linkTelegram('123456789');
 
-      expect(outcome.type, TelegramLinkOutcomeType.alreadyLinked);
-    });
+        expect(outcome.type, TelegramLinkOutcomeType.alreadyLinked);
+      },
+    );
 
     test('maps unauthorizedAfterRetry to unauthorized outcome', () async {
       authRepository.executeError = const AuthRepositoryException(
@@ -135,6 +138,17 @@ void main() {
       final authOutcome = await repository.linkTelegram('123456789');
       expect(authOutcome.type, TelegramLinkOutcomeType.unknown);
     });
+
+    test('maps unexpected thrown exceptions to unknown outcome', () async {
+      apiClient.linkHandler = ({required token, required telegramId}) async {
+        throw StateError('unexpected');
+      };
+
+      final outcome = await repository.linkTelegram('123456789');
+
+      expect(outcome.type, TelegramLinkOutcomeType.unknown);
+      expect(outcome.message, contains('unexpected'));
+    });
   });
 }
 
@@ -148,7 +162,9 @@ class _StubAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<T> executeWithAuthRetry<T>(Future<T> Function(String token) action) async {
+  Future<T> executeWithAuthRetry<T>(
+    Future<T> Function(String token) action,
+  ) async {
     executeCalls++;
     if (executeError case final AuthRepositoryException error?) {
       throw error;
@@ -172,7 +188,8 @@ class _StubApiClient extends ApiClient {
   Future<TelegramLinkResponse> Function({
     required String token,
     required String telegramId,
-  })? linkHandler;
+  })?
+  linkHandler;
   ApiClientException? linkError;
   String? lastToken;
   String? lastTelegramId;

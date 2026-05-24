@@ -180,7 +180,7 @@ v1.1: 5 → 6 → 7
 | 10. Settings & Auto-Update Configuration | v1.2 | 5/5 | Complete   | 2026-05-24 |
 | 11. Telegram Link API Integration | v1.3 | 2/2 | Complete    | 2026-05-24 |
 | 12. Telegram Link UI & Guided Flow | v1.3 | 2/2 | Complete   | 2026-05-24 |
-| 13. Telegram Link UX Hardening & Validation | v1.3 | 0/? | Not started | — |
+| 13. Telegram Link UX Hardening & Validation | v1.3 | 2/2 | Complete   | 2026-05-24 |
 
 ---
 
@@ -289,5 +289,5 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 13-01-PLAN.md — Telegram guide submit-state hardening (loading/success/error + retry) with widget regression coverage
-- [ ] 13-02-PLAN.md — Provider/repository reliability test expansion and rollout-readiness verification run
+- [x] 13-01-PLAN.md — Telegram guide submit-state hardening (loading/success/error + retry) with widget regression coverage
+- [x] 13-02-PLAN.md — Provider/repository reliability test expansion and rollout-readiness verification run

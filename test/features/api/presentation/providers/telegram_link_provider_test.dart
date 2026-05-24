@@ -14,19 +14,24 @@ import 'package:http/http.dart' as http;
 
 void main() {
   group('telegram link providers', () {
-    test('telegramLinkRepositoryProvider resolves repository implementation', () {
-      final container = ProviderContainer(
-        overrides: [
-          apiClientProvider.overrideWithValue(ApiClient(client: http.Client())),
-          authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
-        ],
-      );
-      addTearDown(container.dispose);
+    test(
+      'telegramLinkRepositoryProvider resolves repository implementation',
+      () {
+        final container = ProviderContainer(
+          overrides: [
+            apiClientProvider.overrideWithValue(
+              ApiClient(client: http.Client()),
+            ),
+            authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      final repository = container.read(telegramLinkRepositoryProvider);
+        final repository = container.read(telegramLinkRepositoryProvider);
 
-      expect(repository, isA<TelegramLinkRepositoryImpl>());
-    });
+        expect(repository, isA<TelegramLinkRepositoryImpl>());
+      },
+    );
 
     test('submit delegates to telegram link repository', () async {
       final fakeRepository = _FakeTelegramLinkRepository();
@@ -119,8 +124,61 @@ void main() {
       completer.complete(
         const TelegramLinkOutcome(type: TelegramLinkOutcomeType.linked),
       );
-      await first;
-      await second;
+      final firstOutcome = await first;
+      final secondOutcome = await second;
+      expect(firstOutcome.type, TelegramLinkOutcomeType.linked);
+      expect(secondOutcome.type, TelegramLinkOutcomeType.linked);
+    });
+
+    test('submit maps repository throws to unknown and allows retry', () async {
+      var shouldThrow = true;
+      final fakeRepository = _FakeTelegramLinkRepository(
+        responder: (_) async {
+          if (shouldThrow) {
+            shouldThrow = false;
+            throw StateError('boom');
+          }
+          return const TelegramLinkOutcome(
+            type: TelegramLinkOutcomeType.linked,
+          );
+        },
+      );
+      final container = ProviderContainer(
+        overrides: [
+          telegramLinkRepositoryProvider.overrideWithValue(fakeRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(telegramLinkProvider.notifier);
+      final firstOutcome = await notifier.submit('12345');
+      final firstState = container.read(telegramLinkProvider);
+      final secondOutcome = await notifier.submit('12345');
+      final secondState = container.read(telegramLinkProvider);
+
+      expect(firstOutcome.type, TelegramLinkOutcomeType.unknown);
+      expect(firstState.isSubmitting, isFalse);
+      expect(secondOutcome.type, TelegramLinkOutcomeType.linked);
+      expect(secondState.isSubmitting, isFalse);
+      expect(fakeRepository.calls, 2);
+    });
+
+    test('validation failure preserves normalized lastSubmittedId', () async {
+      final fakeRepository = _FakeTelegramLinkRepository();
+      final container = ProviderContainer(
+        overrides: [
+          telegramLinkRepositoryProvider.overrideWithValue(fakeRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(telegramLinkProvider.notifier);
+      final outcome = await notifier.submit(' 12a3 ');
+      final state = container.read(telegramLinkProvider);
+
+      expect(outcome.type, TelegramLinkOutcomeType.invalidId);
+      expect(state.lastSubmittedId, '12a3');
+      expect(fakeRepository.calls, 0);
     });
   });
 }

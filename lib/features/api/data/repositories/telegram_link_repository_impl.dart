@@ -18,10 +18,8 @@ class TelegramLinkRepositoryImpl implements TelegramLinkRepository {
   Future<TelegramLinkOutcome> linkTelegram(String telegramId) async {
     try {
       final response = await _authRepository.executeWithAuthRetry(
-        (token) => _apiClient.linkTelegram(
-          token: token,
-          telegramId: telegramId,
-        ),
+        (token) =>
+            _apiClient.linkTelegram(token: token, telegramId: telegramId),
       );
       return _mapResponse(response);
     } on AuthRepositoryException catch (error) {
@@ -37,6 +35,11 @@ class TelegramLinkRepositoryImpl implements TelegramLinkRepository {
       );
     } on ApiClientException catch (error) {
       return _mapApiException(error);
+    } catch (error) {
+      return TelegramLinkOutcome(
+        type: TelegramLinkOutcomeType.unknown,
+        message: error.toString(),
+      );
     }
   }
 
