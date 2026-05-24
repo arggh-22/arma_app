@@ -140,65 +140,82 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           child: Column(
             children: [
-              const ConnectButton(),
-              const Gap(16),
-              Text(
-                statusText,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(color: statusColor),
-              ),
-              const Gap(8),
-              const ConnectionTimer(),
-              const Gap(24),
-              const ActiveServerCard(),
-              if (uiPreferences.showDashboardStatistics) ...[
-                const Gap(16),
-                const TrafficStatsCard(),
-              ],
-              if (hasAnnouncement) ...[
-                const Gap(16),
-                Card(
-                  key: const Key('dashboard-announcement-card'),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (hasAnnouncementTitle)
-                          Text(
-                            announcementTitle!,
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                        if (hasAnnouncementTitle && hasAnnouncementText)
-                          const Gap(8),
-                        if (hasAnnouncementText)
-                          Text(
-                            announcementText!,
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        if (hasAnnouncementText) ...[
-                          const Gap(8),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              key: const Key(
-                                'dashboard-announcement-read-more',
-                              ),
-                              onPressed: () =>
-                                  _openAnnouncementSheet(announcementText!),
-                              child: Text(l10n.dashboardAnnouncementReadMore),
-                            ),
-                          ),
-                        ],
-                      ],
+              Container(
+                key: const Key('dashboard-top-visual-group'),
+                width: double.infinity,
+                constraints: const BoxConstraints(minHeight: 260),
+                child: Column(
+                  children: [
+                    const ConnectButton(),
+                    const Gap(16),
+                    Text(
+                      statusText,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.titleMedium?.copyWith(color: statusColor),
                     ),
-                  ),
+                    const Gap(8),
+                    const ConnectionTimer(),
+                    const Gap(24),
+                    const ActiveServerCard(),
+                    if (uiPreferences.showDashboardStatistics) ...[
+                      const Gap(16),
+                      const TrafficStatsCard(),
+                    ],
+                  ],
                 ),
-              ],
+              ),
               const Gap(24),
-              const DefaultServersSection(),
+              Container(
+                key: const Key('dashboard-bottom-visual-group'),
+                width: double.infinity,
+                child: Column(
+                  children: [
+                    if (hasAnnouncement) ...[
+                      Card(
+                        key: const Key('dashboard-announcement-card'),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (hasAnnouncementTitle)
+                                Text(
+                                  announcementTitle!,
+                                  style: Theme.of(context).textTheme.titleMedium,
+                                ),
+                              if (hasAnnouncementTitle && hasAnnouncementText)
+                                const Gap(8),
+                              if (hasAnnouncementText)
+                                Text(
+                                  announcementText!,
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              if (hasAnnouncementText) ...[
+                                const Gap(8),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton(
+                                    key: const Key(
+                                      'dashboard-announcement-read-more',
+                                    ),
+                                    onPressed: () =>
+                                        _openAnnouncementSheet(announcementText!),
+                                    child: Text(l10n.dashboardAnnouncementReadMore),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                      const Gap(16),
+                    ],
+                    const DefaultServersSection(),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
