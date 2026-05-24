@@ -1,17 +1,14 @@
 ---
-status: partial
+status: complete
 phase: 09-default-servers-home-screen-display
 source: [09-VERIFICATION.md]
 started: 2026-05-24T00:00:00Z
-updated: 2026-05-24T03:55:00Z
+updated: 2026-05-24T04:12:00Z
 ---
 
 ## Current Test
 
-number: 2
-name: Real end-to-end connect flow
-expected: Disconnected tap selects default server; connected tap switches server via disconnect/reconnect path.
-awaiting: user response
+[testing complete]
 
 ## Tests
 
@@ -23,19 +20,21 @@ reported: "Unhandled ProviderException on dashboard load: HiveError 'Box not fou
 
 ### 2. Real end-to-end connect flow
 expected: Disconnected tap selects default server; connected tap switches server via disconnect/reconnect path.
-result: pending
+result: skipped
+reason: "continue to phase 10"
 
 ### 3. Live API failure UX
 expected: Timeout/offline/401/server failures show correct localized runtime feedback and cache fallback behavior.
-result: pending
+result: skipped
+reason: "i whil test later"
 
 ## Summary
 
 total: 3
 passed: 0
 issues: 1
-pending: 2
-skipped: 0
+pending: 0
+skipped: 2
 blocked: 0
 
 ## Gaps
