@@ -121,18 +121,126 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('disconnected tap selects active server only', (tester) async {
+    final defaultNotifier = TestDefaultServersNotifier(
+      DefaultServersState(
+        items: [_item(id: 'new', name: 'New server')],
+        isRefreshing: false,
+        isOfflineData: false,
+        lastFailureType: null,
+        hasPendingRetry: false,
+        retryAttempt: 0,
+      ),
+    );
+    final activeNotifier = TestActiveServerNotifier();
+    final connectionNotifier = TestConnectionNotifier();
+
+    await _pumpSection(
+      tester,
+      defaultServersNotifier: defaultNotifier,
+      activeServerNotifier: activeNotifier,
+      connectionNotifier: connectionNotifier,
+    );
+
+    await tester.tap(find.text('New server'));
+    await tester.pumpAndSettle();
+
+    expect(activeNotifier.selectedIds, ['new']);
+    expect(connectionNotifier.events, isEmpty);
+  });
+
+  testWidgets(
+    'connected tap on different server selects then reconnects',
+    (tester) async {
+      final oldServer = _serverConfig(id: 'old', name: 'Old server');
+      final newServer = _serverConfig(id: 'new', name: 'New server');
+      final defaultNotifier = TestDefaultServersNotifier(
+        DefaultServersState(
+          items: [
+            _item(id: 'new', name: 'New server', serverConfig: newServer),
+          ],
+          isRefreshing: false,
+          isOfflineData: false,
+          lastFailureType: null,
+          hasPendingRetry: false,
+          retryAttempt: 0,
+        ),
+      );
+      final activeNotifier = TestActiveServerNotifier(initialServer: oldServer);
+      final connectionNotifier = TestConnectionNotifier(
+        initialState: Connected(
+          serverName: 'Old server',
+          connectedAt: DateTime.utc(2026, 1, 1),
+        ),
+      );
+
+      await _pumpSection(
+        tester,
+        defaultServersNotifier: defaultNotifier,
+        activeServerNotifier: activeNotifier,
+        connectionNotifier: connectionNotifier,
+      );
+
+      await tester.tap(find.text('New server'));
+      await tester.pumpAndSettle();
+
+      expect(activeNotifier.selectedIds, ['new']);
+      expect(connectionNotifier.events, ['disconnect', 'connect:new']);
+    },
+  );
+
+  testWidgets('non-active items remain non-interactive', (tester) async {
+    final defaultNotifier = TestDefaultServersNotifier(
+      DefaultServersState(
+        items: [
+          _item(
+            id: 'expired',
+            name: 'Expired server',
+            status: 'expired',
+            isActive: false,
+          ),
+        ],
+        isRefreshing: false,
+        isOfflineData: false,
+        lastFailureType: null,
+        hasPendingRetry: false,
+        retryAttempt: 0,
+      ),
+    );
+    final activeNotifier = TestActiveServerNotifier();
+    final connectionNotifier = TestConnectionNotifier();
+
+    await _pumpSection(
+      tester,
+      defaultServersNotifier: defaultNotifier,
+      activeServerNotifier: activeNotifier,
+      connectionNotifier: connectionNotifier,
+    );
+
+    await tester.tap(find.text('Expired server'));
+    await tester.pumpAndSettle();
+
+    expect(activeNotifier.selectedIds, isEmpty);
+    expect(connectionNotifier.events, isEmpty);
+  });
 }
 
 Future<void> _pumpSection(
   WidgetTester tester, {
   required TestDefaultServersNotifier defaultServersNotifier,
+  TestActiveServerNotifier? activeServerNotifier,
+  TestConnectionNotifier? connectionNotifier,
 }) async {
+  final activeNotifier = activeServerNotifier ?? TestActiveServerNotifier();
+  final connection = connectionNotifier ?? TestConnectionNotifier();
+
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         defaultServersProvider.overrideWith(() => defaultServersNotifier),
-        activeServerProvider.overrideWith(() => TestActiveServerNotifier()),
-        connectionProvider.overrideWith(() => TestConnectionNotifier()),
+        activeServerProvider.overrideWith(() => activeNotifier),
+        connectionProvider.overrideWith(() => connection),
       ],
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -166,46 +274,73 @@ class TestDefaultServersNotifier extends DefaultServersNotifier {
 }
 
 class TestActiveServerNotifier extends ActiveServerNotifier {
+  TestActiveServerNotifier({this.initialServer});
+
+  final ServerConfig? initialServer;
+  final List<String> selectedIds = [];
+
   @override
-  ServerConfig? build() => null;
+  ServerConfig? build() => initialServer;
 
   @override
   Future<void> selectServer(ServerConfig? server) async {
+    if (server != null) {
+      selectedIds.add(server.id);
+    }
     state = server;
   }
 }
 
 class TestConnectionNotifier extends ConnectionNotifier {
-  @override
-  ConnectionStatus build() => const Disconnected();
+  TestConnectionNotifier({this.initialState = const Disconnected()});
+
+  final ConnectionStatus initialState;
+  final List<String> events = [];
 
   @override
-  Future<void> connect(ServerConfig server, {bool isManual = true}) async {}
+  ConnectionStatus build() => initialState;
 
   @override
-  Future<void> disconnect() async {}
+  Future<void> connect(ServerConfig server, {bool isManual = true}) async {
+    events.add('connect:${server.id}');
+    state = Connected(serverName: server.name, connectedAt: DateTime.now());
+  }
+
+  @override
+  Future<void> disconnect() async {
+    events.add('disconnect');
+    state = const Disconnected();
+  }
 }
 
 DefaultServerItem _item({
   required String id,
   required String name,
+  String status = 'active',
+  bool isActive = true,
+  ServerConfig? serverConfig,
 }) {
+  final config = serverConfig ?? _serverConfig(id: id, name: name);
   return DefaultServerItem(
     id: id,
     name: name,
-    status: 'active',
+    status: status,
     usedTraffic: 1024,
     dataLimit: 4096,
     subscriptionUrl: 'https://example.com/$id',
     expireDate: DateTime.utc(2027, 1, 1),
-    isActive: true,
-    serverConfig: ServerConfig(
-      id: id,
-      name: name,
-      protocol: ProtocolType.vless,
-      address: 'example.com',
-      port: 443,
-      addedAt: DateTime.utc(2026, 1, 1),
-    ),
+    isActive: isActive,
+    serverConfig: config,
+  );
+}
+
+ServerConfig _serverConfig({required String id, required String name}) {
+  return ServerConfig(
+    id: id,
+    name: name,
+    protocol: ProtocolType.vless,
+    address: 'example.com',
+    port: 443,
+    addedAt: DateTime.utc(2026, 1, 1),
   );
 }
