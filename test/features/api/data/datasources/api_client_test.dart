@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:arma_proxy_vpn_client/features/api/data/datasources/api_client.dart';
 import 'package:arma_proxy_vpn_client/features/api/data/models/default_server_key_model.dart';
 import 'package:arma_proxy_vpn_client/features/api/data/models/device_auth_response.dart';
+import 'package:arma_proxy_vpn_client/features/api/data/models/telegram_link_response.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -142,6 +143,93 @@ void main() {
           isA<ApiClientException>()
               .having((e) => e.statusCode, 'statusCode', 401)
               .having((e) => e.message.contains('token-secret-very-long'), 'contains token', isFalse),
+        ),
+      );
+      expect(attempts, 1);
+    });
+
+    test('linkTelegram sends bearer auth and telegram_id payload', () async {
+      late http.Request capturedRequest;
+      final client = MockClient((request) async {
+        capturedRequest = request;
+        return http.Response(
+          '{"detail":"Link request sent","status":"linked"}',
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      });
+      final apiClient = ApiClient(
+        client: client,
+        baseUrl: 'https://example.com/api/v1',
+      );
+
+      final response = await apiClient.linkTelegram(
+        token: 'bearer-token-123',
+        telegramId: '123456789',
+      );
+
+      expect(response, isA<TelegramLinkResponse>());
+      expect(response.status, 'linked');
+      expect(capturedRequest.method, 'POST');
+      expect(
+        capturedRequest.url.toString(),
+        'https://example.com/api/v1/auth/telegram/link/',
+      );
+      expect(capturedRequest.headers['Authorization'], 'Bearer bearer-token-123');
+      expect(capturedRequest.headers['content-type'], 'application/json');
+      expect(capturedRequest.body, '{"telegram_id":"123456789"}');
+    });
+
+    test('linkTelegram retries once for transient 5xx then succeeds', () async {
+      var attempts = 0;
+      final client = MockClient((_) async {
+        attempts++;
+        if (attempts == 1) {
+          return http.Response('{"detail":"temporary"}', 503);
+        }
+        return http.Response(
+          '{"detail":"Link request sent","status":"linked"}',
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      });
+      final apiClient = ApiClient(
+        client: client,
+        baseUrl: 'https://example.com/api/v1',
+        retryDelay: Duration.zero,
+      );
+
+      final response = await apiClient.linkTelegram(
+        token: 'bearer-token-123',
+        telegramId: '123456789',
+      );
+
+      expect(response.status, 'linked');
+      expect(attempts, 2);
+    });
+
+    test('linkTelegram does not retry 401 unauthorized', () async {
+      var attempts = 0;
+      final client = MockClient((_) async {
+        attempts++;
+        return http.Response('{"detail":"unauthorized"}', 401);
+      });
+      final apiClient = ApiClient(
+        client: client,
+        baseUrl: 'https://example.com/api/v1',
+        retryDelay: Duration.zero,
+      );
+
+      final call = apiClient.linkTelegram(
+        token: 'bearer-token-secret-very-long',
+        telegramId: '123456789',
+      );
+      await expectLater(
+        call,
+        throwsA(
+          isA<ApiClientException>()
+              .having((e) => e.type, 'type', ApiClientErrorType.unauthorized)
+              .having((e) => e.statusCode, 'statusCode', 401),
         ),
       );
       expect(attempts, 1);
