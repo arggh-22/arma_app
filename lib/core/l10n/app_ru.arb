@@ -193,6 +193,13 @@
   "defaultServerAutoUpdateEvery12Hours": "Каждые 12 часов",
   "defaultServerAutoUpdateEvery24Hours": "Каждые 24 часа",
   "defaultServerAutoUpdateEvery7Days": "Каждые 7 дней",
+  "defaultServerAutoUpdateUpdatedIndicatorLabel": "Обновлено после пропущенного обновления",
+  "defaultServerAutoUpdateUpdatedIndicatorTimestamp": "Обновлено: {timestamp}",
+  "@defaultServerAutoUpdateUpdatedIndicatorTimestamp": {
+    "placeholders": {
+      "timestamp": {}
+    }
+  },
   "defaultServersTitle": "Серверы по умолчанию",
   "defaultServersShowAll": "Показать все серверы",
   "defaultServersRefreshSemantics": "Обновить серверы по умолчанию",

@@ -193,6 +193,13 @@
   "defaultServerAutoUpdateEvery12Hours": "Every 12 Hours",
   "defaultServerAutoUpdateEvery24Hours": "Every 24 Hours",
   "defaultServerAutoUpdateEvery7Days": "Every 7 Days",
+  "defaultServerAutoUpdateUpdatedIndicatorLabel": "Updated after a missed refresh",
+  "defaultServerAutoUpdateUpdatedIndicatorTimestamp": "Updated {timestamp}",
+  "@defaultServerAutoUpdateUpdatedIndicatorTimestamp": {
+    "placeholders": {
+      "timestamp": {}
+    }
+  },
   "defaultServersTitle": "Default servers",
   "defaultServersShowAll": "Show all servers",
   "defaultServersRefreshSemantics": "Refresh default servers",

@@ -592,6 +592,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get defaultServerAutoUpdateEvery7Days => 'Every 7 Days';
 
   @override
+  String get defaultServerAutoUpdateUpdatedIndicatorLabel =>
+      'Updated after a missed refresh';
+
+  @override
+  String defaultServerAutoUpdateUpdatedIndicatorTimestamp(Object timestamp) {
+    return 'Updated $timestamp';
+  }
+
+  @override
   String get defaultServersTitle => 'Default servers';
 
   @override

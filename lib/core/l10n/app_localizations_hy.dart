@@ -595,6 +595,15 @@ class AppLocalizationsHy extends AppLocalizations {
   String get defaultServerAutoUpdateEvery7Days => 'Ամեն 7 օրը մեկ';
 
   @override
+  String get defaultServerAutoUpdateUpdatedIndicatorLabel =>
+      'Թարմացվել է բաց թողնված թարմացումից հետո';
+
+  @override
+  String defaultServerAutoUpdateUpdatedIndicatorTimestamp(Object timestamp) {
+    return 'Թարմացվել է $timestamp';
+  }
+
+  @override
   String get defaultServersTitle => 'Լռելյայն սերվերներ';
 
   @override

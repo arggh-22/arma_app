@@ -597,6 +597,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String get defaultServerAutoUpdateEvery7Days => 'Каждые 7 дней';
 
   @override
+  String get defaultServerAutoUpdateUpdatedIndicatorLabel =>
+      'Обновлено после пропущенного обновления';
+
+  @override
+  String defaultServerAutoUpdateUpdatedIndicatorTimestamp(Object timestamp) {
+    return 'Обновлено: $timestamp';
+  }
+
+  @override
   String get defaultServersTitle => 'Серверы по умолчанию';
 
   @override

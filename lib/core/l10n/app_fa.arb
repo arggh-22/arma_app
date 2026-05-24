@@ -193,6 +193,13 @@
   "defaultServerAutoUpdateEvery12Hours": "هر ۱۲ ساعت",
   "defaultServerAutoUpdateEvery24Hours": "هر ۲۴ ساعت",
   "defaultServerAutoUpdateEvery7Days": "هر ۷ روز",
+  "defaultServerAutoUpdateUpdatedIndicatorLabel": "پس از تازه‌سازی جبرانی به‌روزرسانی شد",
+  "defaultServerAutoUpdateUpdatedIndicatorTimestamp": "به‌روزرسانی در {timestamp}",
+  "@defaultServerAutoUpdateUpdatedIndicatorTimestamp": {
+    "placeholders": {
+      "timestamp": {}
+    }
+  },
   "defaultServersTitle": "سرورهای پیش‌فرض",
   "defaultServersShowAll": "نمایش همه سرورها",
   "defaultServersRefreshSemantics": "تازه‌سازی سرورهای پیش‌فرض",

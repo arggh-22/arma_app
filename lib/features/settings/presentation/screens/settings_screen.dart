@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:arma_proxy_vpn_client/core/constants/app_constants.dart';
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
+import 'package:arma_proxy_vpn_client/features/api/presentation/providers/default_server_refresh_scheduler_provider.dart';
 import 'package:arma_proxy_vpn_client/features/log/presentation/providers/log_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/domain/entities/default_server_auto_update_interval.dart';
 import 'package:arma_proxy_vpn_client/features/settings/domain/entities/dns_presets.dart';
@@ -39,6 +40,9 @@ class SettingsScreen extends ConsumerWidget {
     final acSettings = ref.watch(antiCensorshipProvider);
     final uiPreferences = ref.watch(uiPreferencesProvider);
     final autoUpdateInterval = ref.watch(defaultServerAutoUpdateProvider);
+    final overdueRefreshState = ref.watch(
+      defaultServerRefreshSchedulerProvider,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -116,6 +120,13 @@ class SettingsScreen extends ConsumerWidget {
               }
             },
           ),
+          if (overdueRefreshState.hasRecentOverdueRefresh)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: _OverdueRefreshUpdatedIndicator(
+                timestamp: overdueRefreshState.lastOverdueRefreshAt,
+              ),
+            ),
 
           const Divider(),
 
@@ -1046,6 +1057,72 @@ class SettingsScreen extends ConsumerWidget {
             child: const Text('Save'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _OverdueRefreshUpdatedIndicator extends StatelessWidget {
+  const _OverdueRefreshUpdatedIndicator({required this.timestamp});
+
+  final DateTime? timestamp;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final materialL10n = MaterialLocalizations.of(context);
+    final use24HourFormat =
+        MediaQuery.maybeOf(context)?.alwaysUse24HourFormat ?? false;
+    final localTimestamp = timestamp?.toLocal();
+    final timestampText = localTimestamp == null
+        ? null
+        : l10n.defaultServerAutoUpdateUpdatedIndicatorTimestamp(
+            '${materialL10n.formatCompactDate(localTimestamp)} '
+            '${materialL10n.formatTimeOfDay(TimeOfDay.fromDateTime(localTimestamp), alwaysUse24HourFormat: use24HourFormat)}',
+          );
+
+    return DecoratedBox(
+      key: const Key('default-server-overdue-refresh-indicator'),
+      decoration: BoxDecoration(
+        color: colorScheme.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.check_circle_outline,
+              size: 18,
+              color: colorScheme.primary,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.defaultServerAutoUpdateUpdatedIndicatorLabel,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (timestampText != null)
+                    Text(
+                      timestampText,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

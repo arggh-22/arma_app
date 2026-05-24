@@ -193,6 +193,13 @@
   "defaultServerAutoUpdateEvery12Hours": "每 12 小时",
   "defaultServerAutoUpdateEvery24Hours": "每 24 小时",
   "defaultServerAutoUpdateEvery7Days": "每 7 天",
+  "defaultServerAutoUpdateUpdatedIndicatorLabel": "已在补偿刷新后更新",
+  "defaultServerAutoUpdateUpdatedIndicatorTimestamp": "更新时间：{timestamp}",
+  "@defaultServerAutoUpdateUpdatedIndicatorTimestamp": {
+    "placeholders": {
+      "timestamp": {}
+    }
+  },
   "defaultServersTitle": "默认服务器",
   "defaultServersShowAll": "显示全部服务器",
   "defaultServersRefreshSemantics": "刷新默认服务器",

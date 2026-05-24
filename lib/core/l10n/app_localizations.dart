@@ -1178,6 +1178,18 @@ abstract class AppLocalizations {
   /// **'Every 7 Days'**
   String get defaultServerAutoUpdateEvery7Days;
 
+  /// No description provided for @defaultServerAutoUpdateUpdatedIndicatorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated after a missed refresh'**
+  String get defaultServerAutoUpdateUpdatedIndicatorLabel;
+
+  /// No description provided for @defaultServerAutoUpdateUpdatedIndicatorTimestamp.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {timestamp}'**
+  String defaultServerAutoUpdateUpdatedIndicatorTimestamp(Object timestamp);
+
   /// No description provided for @defaultServersTitle.
   ///
   /// In en, this message translates to:

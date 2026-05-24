@@ -193,6 +193,13 @@
   "defaultServerAutoUpdateEvery12Hours": "Ամեն 12 ժամը մեկ",
   "defaultServerAutoUpdateEvery24Hours": "Ամեն 24 ժամը մեկ",
   "defaultServerAutoUpdateEvery7Days": "Ամեն 7 օրը մեկ",
+  "defaultServerAutoUpdateUpdatedIndicatorLabel": "Թարմացվել է բաց թողնված թարմացումից հետո",
+  "defaultServerAutoUpdateUpdatedIndicatorTimestamp": "Թարմացվել է {timestamp}",
+  "@defaultServerAutoUpdateUpdatedIndicatorTimestamp": {
+    "placeholders": {
+      "timestamp": {}
+    }
+  },
   "defaultServersTitle": "Լռելյայն սերվերներ",
   "defaultServersShowAll": "Ցուցադրել բոլոր սերվերները",
   "defaultServersRefreshSemantics": "Թարմացնել լռելյայն սերվերները",

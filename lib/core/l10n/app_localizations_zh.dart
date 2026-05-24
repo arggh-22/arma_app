@@ -576,6 +576,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get defaultServerAutoUpdateEvery7Days => '每 7 天';
 
   @override
+  String get defaultServerAutoUpdateUpdatedIndicatorLabel => '已在补偿刷新后更新';
+
+  @override
+  String defaultServerAutoUpdateUpdatedIndicatorTimestamp(Object timestamp) {
+    return '更新时间：$timestamp';
+  }
+
+  @override
   String get defaultServersTitle => '默认服务器';
 
   @override

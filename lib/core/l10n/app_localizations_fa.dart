@@ -594,6 +594,15 @@ class AppLocalizationsFa extends AppLocalizations {
   String get defaultServerAutoUpdateEvery7Days => 'هر ۷ روز';
 
   @override
+  String get defaultServerAutoUpdateUpdatedIndicatorLabel =>
+      'پس از تازه‌سازی جبرانی به‌روزرسانی شد';
+
+  @override
+  String defaultServerAutoUpdateUpdatedIndicatorTimestamp(Object timestamp) {
+    return 'به‌روزرسانی در $timestamp';
+  }
+
+  @override
   String get defaultServersTitle => 'سرورهای پیش‌فرض';
 
   @override
