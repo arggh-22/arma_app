@@ -3,9 +3,12 @@ import 'dart:io';
 import 'package:arma_proxy_vpn_client/features/api/data/datasources/api_client.dart';
 import 'package:arma_proxy_vpn_client/features/api/data/datasources/auth_local_datasource.dart';
 import 'package:arma_proxy_vpn_client/features/api/data/repositories/auth_repository_impl.dart';
+import 'package:arma_proxy_vpn_client/features/api/data/repositories/telegram_link_repository_impl.dart';
 import 'package:arma_proxy_vpn_client/features/api/data/services/device_id_service.dart';
 import 'package:arma_proxy_vpn_client/features/api/domain/entities/auth_state.dart';
 import 'package:arma_proxy_vpn_client/features/api/domain/repositories/auth_repository.dart';
+import 'package:arma_proxy_vpn_client/features/api/domain/repositories/telegram_link_repository.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce/hive_ce.dart';
 import 'package:http/http.dart' as http;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -44,6 +47,15 @@ AuthRepository authRepository(Ref ref) {
     osType: Platform.isAndroid ? 'android' : 'ios',
   );
 }
+
+final telegramLinkRepositoryProvider = Provider<TelegramLinkRepository>((ref) {
+  final apiClient = ref.watch(apiClientProvider);
+  final authRepository = ref.watch(authRepositoryProvider);
+  return TelegramLinkRepositoryImpl(
+    apiClient: apiClient,
+    authRepository: authRepository,
+  );
+});
 
 @Riverpod(keepAlive: true)
 class AuthStateNotifier extends _$AuthStateNotifier {
