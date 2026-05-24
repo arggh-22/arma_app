@@ -89,23 +89,83 @@ void main() {
     expect(find.text('Отключено'), findsOneWidget);
     expect(find.text('Каждые 12 часов'), findsOneWidget);
   });
+
+  testWidgets(
+    'shows overdue refresh updated indicator when scheduler reports recent refresh',
+    (tester) async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final prefs = await SharedPreferences.getInstance();
+      final fakeScheduler = _FakeSchedulerClient();
+
+      await _pumpSettingsScreen(
+        tester,
+        prefs: prefs,
+        fakeScheduler: fakeScheduler,
+        schedulerState: DefaultServerRefreshSchedulerState(
+          hasRecentOverdueRefresh: true,
+          lastOverdueRefreshAt: DateTime.utc(2026, 1, 2, 3, 4),
+        ),
+      );
+
+      final context = tester.element(find.byType(SettingsScreen));
+      final l10n = AppLocalizations.of(context)!;
+      expect(
+        find.byKey(const Key('default-server-overdue-refresh-indicator')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(l10n.defaultServerAutoUpdateUpdatedIndicatorLabel),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
+    'hides overdue refresh updated indicator with default scheduler state',
+    (tester) async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final prefs = await SharedPreferences.getInstance();
+      final fakeScheduler = _FakeSchedulerClient();
+
+      await _pumpSettingsScreen(
+        tester,
+        prefs: prefs,
+        fakeScheduler: fakeScheduler,
+      );
+
+      expect(
+        find.byKey(const Key('default-server-overdue-refresh-indicator')),
+        findsNothing,
+      );
+    },
+  );
 }
 
 Future<void> _pumpSettingsScreen(
   WidgetTester tester, {
   required SharedPreferences prefs,
   required _FakeSchedulerClient fakeScheduler,
+  DefaultServerRefreshSchedulerState? schedulerState,
   Locale? locale,
 }) async {
+  final overrides = [
+    sharedPreferencesProvider.overrideWithValue(prefs),
+    defaultServerBackgroundSchedulerClientProvider.overrideWithValue(
+      fakeScheduler,
+    ),
+    xrayVersionProvider.overrideWith((ref) async => '1.0.0'),
+  ];
+  if (schedulerState != null) {
+    overrides.add(
+      defaultServerRefreshSchedulerProvider.overrideWith(
+        () => _TestDefaultServerRefreshSchedulerNotifier(schedulerState),
+      ),
+    );
+  }
+
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-        defaultServerBackgroundSchedulerClientProvider.overrideWithValue(
-          fakeScheduler,
-        ),
-        xrayVersionProvider.overrideWith((ref) async => '1.0.0'),
-      ],
+      overrides: overrides,
       child: MaterialApp(
         locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -115,6 +175,16 @@ Future<void> _pumpSettingsScreen(
     ),
   );
   await tester.pumpAndSettle();
+}
+
+class _TestDefaultServerRefreshSchedulerNotifier
+    extends DefaultServerRefreshSchedulerNotifier {
+  _TestDefaultServerRefreshSchedulerNotifier(this._state);
+
+  final DefaultServerRefreshSchedulerState _state;
+
+  @override
+  DefaultServerRefreshSchedulerState build() => _state;
 }
 
 class _FakeSchedulerClient implements DefaultServerBackgroundSchedulerClient {
