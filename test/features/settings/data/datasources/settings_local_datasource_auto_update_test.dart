@@ -49,10 +49,7 @@ void main() {
       expect(datasource.getDefaultServerAutoUpdateLastSuccessAt(), isNull);
 
       await datasource.setDefaultServerAutoUpdateLastSuccessAt(timestamp);
-      expect(
-        datasource.getDefaultServerAutoUpdateLastSuccessAt(),
-        timestamp,
-      );
+      expect(datasource.getDefaultServerAutoUpdateLastSuccessAt(), timestamp);
 
       await datasource.setDefaultServerAutoUpdateLastSuccessAt(null);
       expect(datasource.getDefaultServerAutoUpdateLastSuccessAt(), isNull);

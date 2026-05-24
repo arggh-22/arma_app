@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:arma_proxy_vpn_client/features/settings/domain/entities/default_server_auto_update_interval.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Local data source for user preferences backed by SharedPreferences.
@@ -44,6 +45,10 @@ class SettingsLocalDatasource {
   // UI / notification display
   static const _showDetailedNotificationKey = 'show_detailed_notification';
   static const _showDashboardStatisticsKey = 'show_dashboard_statistics';
+  static const _defaultServerAutoUpdateIntervalKey =
+      'default_server_auto_update_interval';
+  static const _defaultServerAutoUpdateLastSuccessAtKey =
+      'default_server_auto_update_last_success_at';
 
   final SharedPreferences _prefs;
 
@@ -289,4 +294,37 @@ class SettingsLocalDatasource {
 
   Future<void> setShowDashboardStatistics(bool enabled) =>
       _prefs.setBool(_showDashboardStatisticsKey, enabled);
+
+  /// Selected interval for default-server background auto-update.
+  ///
+  /// Returns [DefaultServerAutoUpdateInterval.disabled] when missing/invalid.
+  DefaultServerAutoUpdateInterval getDefaultServerAutoUpdateInterval() {
+    final stored = _prefs.getString(_defaultServerAutoUpdateIntervalKey);
+    return DefaultServerAutoUpdateInterval.fromStorageValue(stored);
+  }
+
+  Future<void> setDefaultServerAutoUpdateInterval(
+    DefaultServerAutoUpdateInterval interval,
+  ) => _prefs.setString(
+    _defaultServerAutoUpdateIntervalKey,
+    interval.storageValue,
+  );
+
+  /// Last successful default-server refresh timestamp in UTC.
+  DateTime? getDefaultServerAutoUpdateLastSuccessAt() {
+    final stored = _prefs.getInt(_defaultServerAutoUpdateLastSuccessAtKey);
+    if (stored == null) return null;
+    return DateTime.fromMillisecondsSinceEpoch(stored, isUtc: true);
+  }
+
+  Future<void> setDefaultServerAutoUpdateLastSuccessAt(DateTime? value) async {
+    if (value == null) {
+      await _prefs.remove(_defaultServerAutoUpdateLastSuccessAtKey);
+      return;
+    }
+    await _prefs.setInt(
+      _defaultServerAutoUpdateLastSuccessAtKey,
+      value.toUtc().millisecondsSinceEpoch,
+    );
+  }
 }
