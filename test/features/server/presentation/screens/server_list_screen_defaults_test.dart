@@ -111,6 +111,145 @@ void main() {
     expect(find.text('Default 1'), findsOneWidget);
   });
 
+  testWidgets('renders defaults as grouped per-subscription sublists', (
+    tester,
+  ) async {
+    await _pumpScreen(
+      tester,
+      servers: [_server(id: 'imported-1', name: 'Imported 1')],
+      defaults: [
+        _item(
+          id: 'default-a-1',
+          name: 'Default A1',
+          subscriptionUrl: 'https://example.com/sub-a',
+          groupName: 'Default Key A',
+        ),
+        _item(
+          id: 'default-a-2',
+          name: 'Default A2',
+          subscriptionUrl: 'https://example.com/sub-a',
+          groupName: 'Default Key A',
+        ),
+        _item(
+          id: 'default-b-1',
+          name: 'Default B1',
+          subscriptionUrl: 'https://example.com/sub-b',
+          groupName: 'Default Key B',
+        ),
+      ],
+    );
+
+    expect(
+      find.byKey(
+        const ValueKey(
+          'server-list-default-subgroup-header-https://example.com/sub-a',
+        ),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Default Key A (2)'), findsOneWidget);
+    expect(find.text('Default Key B (1)'), findsOneWidget);
+  });
+
+  testWidgets('default subgroups support independent collapse and expand', (
+    tester,
+  ) async {
+    await _pumpScreen(
+      tester,
+      servers: [_server(id: 'imported-1', name: 'Imported 1')],
+      defaults: [
+        _item(
+          id: 'default-a-1',
+          name: 'Default A1',
+          subscriptionUrl: 'https://example.com/sub-a',
+          groupName: 'Default Key A',
+        ),
+        _item(
+          id: 'default-a-2',
+          name: 'Default A2',
+          subscriptionUrl: 'https://example.com/sub-a',
+          groupName: 'Default Key A',
+        ),
+        _item(
+          id: 'default-b-1',
+          name: 'Default B1',
+          subscriptionUrl: 'https://example.com/sub-b',
+          groupName: 'Default Key B',
+        ),
+      ],
+    );
+
+    await tester.tap(
+      find.byKey(
+        const ValueKey(
+          'server-list-default-subgroup-toggle-https://example.com/sub-a',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Default A1'), findsNothing);
+    expect(find.text('Default A2'), findsNothing);
+    expect(find.text('Default B1'), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(
+        const ValueKey(
+          'server-list-default-subgroup-toggle-https://example.com/sub-a',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Default A1'), findsOneWidget);
+    expect(find.text('Default A2'), findsOneWidget);
+  });
+
+  testWidgets('default subgroups start expanded when screen is opened', (
+    tester,
+  ) async {
+    const subgroupUrl = 'https://example.com/sub-a';
+
+    await _pumpScreen(
+      tester,
+      servers: [_server(id: 'imported-1', name: 'Imported 1')],
+      defaults: [
+        _item(
+          id: 'default-a-1',
+          name: 'Default A1',
+          subscriptionUrl: subgroupUrl,
+          groupName: 'Default Key A',
+        ),
+      ],
+    );
+
+    await tester.tap(
+      find.byKey(
+        const ValueKey('server-list-default-subgroup-toggle-$subgroupUrl'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Default A1'), findsNothing);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+
+    await _pumpScreen(
+      tester,
+      servers: [_server(id: 'imported-1', name: 'Imported 1')],
+      defaults: [
+        _item(
+          id: 'default-a-1',
+          name: 'Default A1',
+          subscriptionUrl: subgroupUrl,
+          groupName: 'Default Key A',
+        ),
+      ],
+    );
+
+    expect(find.text('Default A1'), findsOneWidget);
+  });
+
   testWidgets('selected default row shows selected-state emphasis', (
     tester,
   ) async {
@@ -230,6 +369,8 @@ DefaultServerItem _item({
   required String id,
   required String name,
   ServerConfig? config,
+  String? subscriptionUrl,
+  String groupName = 'Imported',
 }) {
   return DefaultServerItem(
     id: id,
@@ -237,14 +378,18 @@ DefaultServerItem _item({
     status: 'active',
     usedTraffic: 200,
     dataLimit: 1000,
-    subscriptionUrl: 'https://example.com/$id',
+    subscriptionUrl: subscriptionUrl ?? 'https://example.com/$id',
     expireDate: DateTime.utc(2027, 1, 1),
     isActive: true,
-    serverConfig: config ?? _server(id: id, name: name),
+    serverConfig: config ?? _server(id: id, name: name, groupName: groupName),
   );
 }
 
-ServerConfig _server({required String id, required String name}) {
+ServerConfig _server({
+  required String id,
+  required String name,
+  String groupName = 'Imported',
+}) {
   return ServerConfig(
     id: id,
     name: name,
@@ -252,6 +397,6 @@ ServerConfig _server({required String id, required String name}) {
     address: 'example.com',
     port: 443,
     addedAt: DateTime.utc(2026, 1, 1),
-    groupName: 'Imported',
+    groupName: groupName,
   );
 }
