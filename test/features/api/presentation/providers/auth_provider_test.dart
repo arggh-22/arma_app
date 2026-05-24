@@ -1,6 +1,8 @@
 import 'dart:io';
 
+import 'package:arma_proxy_vpn_client/core/constants/app_constants.dart';
 import 'package:arma_proxy_vpn_client/features/api/data/datasources/auth_local_datasource.dart';
+import 'package:arma_proxy_vpn_client/features/api/data/repositories/auth_repository_impl.dart';
 import 'package:arma_proxy_vpn_client/features/api/domain/entities/auth_state.dart';
 import 'package:arma_proxy_vpn_client/features/api/domain/repositories/auth_repository.dart';
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/auth_provider.dart';
@@ -50,9 +52,7 @@ void main() {
       );
 
       final container = ProviderContainer(
-        overrides: [
-          authLocalDatasourceProvider.overrideWithValue(datasource),
-        ],
+        overrides: [authLocalDatasourceProvider.overrideWithValue(datasource)],
       );
       addTearDown(container.dispose);
 
@@ -78,22 +78,87 @@ void main() {
       expect(token, 'repo-token');
       expect(fakeRepo.getValidTokenCalls, 1);
     });
+
+    test(
+      'authRepositoryProvider uses shared AppConstants app version',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            authLocalDatasourceProvider.overrideWithValue(datasource),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        final repository = container.read(authRepositoryProvider);
+
+        expect(repository, isA<AuthRepositoryImpl>());
+        expect(
+          (repository as AuthRepositoryImpl).appVersion,
+          AppConstants.appVersion,
+        );
+      },
+    );
+
+    test(
+      'authStatusRefreshProvider triggers authenticateDevice and updates state',
+      () async {
+        final refreshedState = AuthState(
+          token: 'fresh-token',
+          isAuthenticated: true,
+          isGuest: false,
+          userId: 7,
+          deviceId: 'device-id',
+          expiresAt: DateTime.utc(2026, 1, 2),
+        );
+        final fakeRepo = _FakeAuthRepository(
+          token: 'repo-token',
+          refreshedState: refreshedState,
+        );
+        final container = ProviderContainer(
+          overrides: [
+            authRepositoryProvider.overrideWithValue(fakeRepo),
+            authLocalDatasourceProvider.overrideWithValue(datasource),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        final refresh = container.read(authStatusRefreshProvider);
+        final result = await refresh();
+
+        expect(fakeRepo.authenticateDeviceCalls, 1);
+        expect(result, refreshedState);
+        expect(container.read(authStateProvider).value, refreshedState);
+      },
+    );
   });
 }
 
 class _FakeAuthRepository implements AuthRepository {
-  _FakeAuthRepository({required this.token});
+  _FakeAuthRepository({required this.token, AuthState? refreshedState})
+    : _refreshedState =
+          refreshedState ??
+          const AuthState(
+            token: 'token',
+            isAuthenticated: true,
+            isGuest: true,
+            userId: 1,
+          );
 
   final String token;
+  final AuthState _refreshedState;
+  int authenticateDeviceCalls = 0;
   int getValidTokenCalls = 0;
 
   @override
-  Future<AuthState> authenticateDevice() {
-    throw UnimplementedError();
+  Future<AuthState> authenticateDevice() async {
+    authenticateDeviceCalls++;
+    return _refreshedState;
   }
 
   @override
-  Future<T> executeWithAuthRetry<T>(Future<T> Function(String token) action) async {
+  Future<T> executeWithAuthRetry<T>(
+    Future<T> Function(String token) action,
+  ) async {
     return action(token);
   }
 

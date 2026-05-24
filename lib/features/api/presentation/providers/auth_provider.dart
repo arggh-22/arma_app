@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:arma_proxy_vpn_client/core/constants/app_constants.dart';
 import 'package:arma_proxy_vpn_client/features/api/data/datasources/api_client.dart';
 import 'package:arma_proxy_vpn_client/features/api/data/datasources/auth_local_datasource.dart';
 import 'package:arma_proxy_vpn_client/features/api/data/repositories/auth_repository_impl.dart';
@@ -14,6 +15,8 @@ import 'package:http/http.dart' as http;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'auth_provider.g.dart';
+
+typedef AuthStatusRefresh = Future<AuthState> Function();
 
 @Riverpod(keepAlive: true)
 ApiClient apiClient(Ref ref) {
@@ -43,10 +46,19 @@ AuthRepository authRepository(Ref ref) {
     apiClient: apiClient,
     authLocalDatasource: datasource,
     deviceIdService: deviceIdService,
-    appVersion: '1.0.0',
+    appVersion: AppConstants.appVersion,
     osType: Platform.isAndroid ? 'android' : 'ios',
   );
 }
+
+final authStatusRefreshProvider = Provider<AuthStatusRefresh>((ref) {
+  return () async {
+    final repository = ref.read(authRepositoryProvider);
+    final refreshed = await repository.authenticateDevice();
+    ref.read(authStateProvider.notifier).setRefreshedState(refreshed);
+    return refreshed;
+  };
+});
 
 final telegramLinkRepositoryProvider = Provider<TelegramLinkRepository>((ref) {
   final apiClient = ref.watch(apiClientProvider);
@@ -68,6 +80,10 @@ class AuthStateNotifier extends _$AuthStateNotifier {
   Future<void> reload() async {
     final datasource = ref.read(authLocalDatasourceProvider);
     state = AsyncValue.data(datasource.readAuthState());
+  }
+
+  void setRefreshedState(AuthState value) {
+    state = AsyncValue.data(value);
   }
 }
 

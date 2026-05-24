@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
+import 'package:arma_proxy_vpn_client/features/api/domain/entities/auth_state.dart';
+import 'package:arma_proxy_vpn_client/features/api/domain/repositories/auth_repository.dart';
 import 'package:arma_proxy_vpn_client/features/api/domain/entities/telegram_link_outcome.dart';
 import 'package:arma_proxy_vpn_client/features/api/domain/repositories/telegram_link_repository.dart';
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/auth_provider.dart';
@@ -23,13 +25,17 @@ void main() {
       find.byKey(const Key('telegram-link-submit-button')),
       findsOneWidget,
     );
+    expect(
+      find.byKey(const Key('telegram-check-status-button')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('paste action fills input from clipboard', (tester) async {
     final repository = _FakeTelegramLinkRepository();
     await _pumpGuide(tester, repository: repository, clipboardText: '12345678');
 
-    await tester.tap(find.byKey(const Key('telegram-paste-button')));
+    await _tapPaste(tester);
     await tester.pumpAndSettle();
 
     expect(find.text('12345678'), findsOneWidget);
@@ -79,7 +85,7 @@ void main() {
       find.byKey(const Key('telegram-id-input')),
       '123456',
     );
-    await tester.tap(find.byKey(const Key('telegram-link-submit-button')));
+    await _tapSubmit(tester);
     await tester.pumpAndSettle();
 
     expect(find.text('Open Guide'), findsOneWidget);
@@ -100,7 +106,7 @@ void main() {
       find.byKey(const Key('telegram-id-input')),
       '123456',
     );
-    await tester.tap(find.byKey(const Key('telegram-link-submit-button')));
+    await _tapSubmit(tester);
     await tester.pumpAndSettle();
 
     expect(find.byType(TelegramLinkGuideScreen), findsOneWidget);
@@ -123,7 +129,7 @@ void main() {
       find.byKey(const Key('telegram-id-input')),
       '123456',
     );
-    await tester.tap(find.byKey(const Key('telegram-link-submit-button')));
+    await _tapSubmit(tester);
     await tester.pump();
 
     expect(
@@ -175,7 +181,7 @@ void main() {
       find.byKey(const Key('telegram-id-input')),
       '123456',
     );
-    await tester.tap(find.byKey(const Key('telegram-link-submit-button')));
+    await _tapSubmit(tester);
     await tester.pumpAndSettle();
 
     expect(find.byType(TelegramLinkGuideScreen), findsOneWidget);
@@ -185,15 +191,105 @@ void main() {
     );
     expect(repository.calls, 1);
 
+    await tester.pump(const Duration(seconds: 4));
+    await tester.pumpAndSettle();
+
     await tester.enterText(
       find.byKey(const Key('telegram-id-input')),
       '234567',
     );
-    await tester.tap(find.byKey(const Key('telegram-link-submit-button')));
+    await _tapSubmit(tester);
     await tester.pumpAndSettle();
 
     expect(repository.calls, 2);
     expect(find.byType(TelegramLinkGuideScreen), findsNothing);
+  });
+
+  testWidgets('status check in-flight disables button and shows spinner', (
+    tester,
+  ) async {
+    final repository = _FakeTelegramLinkRepository();
+    final statusCompleter = Completer<AuthState>();
+    await _pumpGuide(
+      tester,
+      repository: repository,
+      statusChecker: () => statusCompleter.future,
+    );
+
+    await tester.tap(find.byKey(const Key('telegram-check-status-button')));
+    await tester.pump();
+
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.byKey(const Key('telegram-check-status-button')),
+          )
+          .onPressed,
+      isNull,
+    );
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    statusCompleter.complete(
+      const AuthState(
+        token: 'token',
+        isAuthenticated: true,
+        isGuest: true,
+        userId: 1,
+      ),
+    );
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('status check linked result pops back to dashboard', (
+    tester,
+  ) async {
+    final repository = _FakeTelegramLinkRepository();
+    await _pumpGuide(
+      tester,
+      repository: repository,
+      statusChecker: () async => const AuthState(
+        token: 'token',
+        isAuthenticated: true,
+        isGuest: false,
+        userId: 99,
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('telegram-check-status-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Telegram account linked successfully.'), findsOneWidget);
+    expect(find.byType(TelegramLinkGuideScreen), findsNothing);
+  });
+
+  testWidgets('status check failure shows error and allows retry', (
+    tester,
+  ) async {
+    final repository = _FakeTelegramLinkRepository();
+    var calls = 0;
+    await _pumpGuide(
+      tester,
+      repository: repository,
+      statusChecker: () async {
+        calls++;
+        throw const AuthRepositoryException(
+          type: AuthRepositoryFailureType.authenticationFailed,
+          message: 'failed',
+        );
+      },
+    );
+
+    await tester.tap(find.byKey(const Key('telegram-check-status-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TelegramLinkGuideScreen), findsOneWidget);
+    expect(find.text('Unexpected error. Please try again.'), findsOneWidget);
+    expect(calls, 1);
+
+    final button = tester.widget<FilledButton>(
+      find.byKey(const Key('telegram-check-status-button')),
+    );
+    expect(button.onPressed, isNotNull);
   });
 
   testWidgets('invalid Telegram ID is blocked and does not call repository', (
@@ -203,12 +299,15 @@ void main() {
     await _pumpGuide(tester, repository: repository);
 
     await tester.enterText(find.byKey(const Key('telegram-id-input')), '12ab');
-    await tester.tap(find.byKey(const Key('telegram-link-submit-button')));
+    await _tapSubmit(tester);
     await tester.pumpAndSettle();
 
     expect(repository.calls, 0);
     expect(find.byType(TelegramLinkGuideScreen), findsOneWidget);
-    expect(find.text('Telegram ID is invalid. Use 5–20 digits.'), findsOneWidget);
+    expect(
+      find.text('Telegram ID is invalid. Use 5–20 digits.'),
+      findsOneWidget,
+    );
   });
 }
 
@@ -217,11 +316,21 @@ Future<void> _pumpGuide(
   required _FakeTelegramLinkRepository repository,
   String? clipboardText,
   TelegramUrlLauncher? launcher,
+  Future<AuthState> Function()? statusChecker,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         telegramLinkRepositoryProvider.overrideWithValue(repository),
+        authStatusRefreshProvider.overrideWithValue(
+          statusChecker ??
+              () async => const AuthState(
+                token: 'token',
+                isAuthenticated: true,
+                isGuest: true,
+                userId: 1,
+              ),
+        ),
         telegramUrlLauncherProvider.overrideWithValue(
           launcher ?? (_) async => true,
         ),
@@ -256,6 +365,28 @@ Future<void> _pumpGuide(
 
   await tester.tap(find.text('Open Guide'));
   await tester.pumpAndSettle();
+}
+
+Future<void> _tapSubmit(WidgetTester tester) async {
+  final submitButton = find.byKey(const Key('telegram-link-submit-button'));
+  await tester.scrollUntilVisible(
+    submitButton,
+    200,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.pumpAndSettle();
+  await tester.tap(submitButton);
+}
+
+Future<void> _tapPaste(WidgetTester tester) async {
+  final pasteButton = find.byKey(const Key('telegram-paste-button'));
+  await tester.scrollUntilVisible(
+    pasteButton,
+    200,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.pumpAndSettle();
+  await tester.tap(pasteButton);
 }
 
 class _FakeTelegramLinkRepository implements TelegramLinkRepository {

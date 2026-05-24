@@ -1,6 +1,9 @@
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/core/utils/clipboard_helper.dart';
+import 'package:arma_proxy_vpn_client/features/api/domain/entities/auth_state.dart';
+import 'package:arma_proxy_vpn_client/features/api/domain/repositories/auth_repository.dart';
 import 'package:arma_proxy_vpn_client/features/api/domain/entities/telegram_link_outcome.dart';
+import 'package:arma_proxy_vpn_client/features/api/presentation/providers/auth_provider.dart';
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/telegram_link_provider.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/telegram_link_step_card.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +15,8 @@ typedef TelegramUrlLauncher = Future<bool> Function(Uri uri);
 typedef ClipboardTextReader = Future<String?> Function();
 
 const _telegramBotUri = 'https://t.me/devarmabot';
+const _checkLinkStatusLabel = 'Check Link Status';
+const _checkLinkStatusNotLinkedMessage = 'Telegram account is not linked yet.';
 
 final telegramUrlLauncherProvider = Provider<TelegramUrlLauncher>(
   (ref) =>
@@ -33,6 +38,7 @@ class TelegramLinkGuideScreen extends ConsumerStatefulWidget {
 class _TelegramLinkGuideScreenState
     extends ConsumerState<TelegramLinkGuideScreen> {
   final TextEditingController _telegramIdController = TextEditingController();
+  bool _isCheckingStatus = false;
 
   @override
   void dispose() {
@@ -85,6 +91,41 @@ class _TelegramLinkGuideScreenState
     }
   }
 
+  Future<void> _checkLinkStatus() async {
+    final l10n = AppLocalizations.of(context)!;
+    setState(() => _isCheckingStatus = true);
+    try {
+      final refresh = ref.read(authStatusRefreshProvider);
+      final AuthState refreshed = await refresh();
+      if (!mounted) {
+        return;
+      }
+
+      if (refreshed.isGuest) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(_checkLinkStatusNotLinkedMessage)),
+        );
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.telegramLinkSuccess)));
+      Navigator.of(context).maybePop();
+    } on AuthRepositoryException {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.telegramLinkUnknownError)));
+    } finally {
+      if (mounted) {
+        setState(() => _isCheckingStatus = false);
+      }
+    }
+  }
+
   String _messageForOutcome(
     AppLocalizations l10n,
     TelegramLinkOutcome outcome,
@@ -104,6 +145,7 @@ class _TelegramLinkGuideScreenState
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(telegramLinkProvider);
+    final isCheckDisabled = state.isSubmitting || _isCheckingStatus;
 
     return Scaffold(
       key: const Key('telegram-guide-screen'),
@@ -130,6 +172,24 @@ class _TelegramLinkGuideScreenState
               stepNumber: 2,
               title: l10n.telegramLinkStepGetIdTitle,
               body: l10n.telegramLinkStepGetIdBody,
+            ),
+            const SizedBox(height: 12),
+            TelegramLinkStepCard(
+              stepNumber: 3,
+              title: _checkLinkStatusLabel,
+              body: _checkLinkStatusNotLinkedMessage,
+            ),
+            const SizedBox(height: 8),
+            FilledButton(
+              key: const Key('telegram-check-status-button'),
+              onPressed: isCheckDisabled ? null : _checkLinkStatus,
+              child: _isCheckingStatus
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text(_checkLinkStatusLabel),
             ),
             const SizedBox(height: 16),
             TextField(

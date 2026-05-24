@@ -9,7 +9,7 @@ Requirements for Telegram link-status visibility and dashboard announcement UX.
 
 ### Telegram Link Status
 
-- [ ] **TGSTAT-01**: User can tap Step 3 **Check Link Status** in Telegram link screen and trigger `/auth/device/` refresh.
+- [x] **TGSTAT-01**: User can tap Step 3 **Check Link Status** in Telegram link screen and trigger `/auth/device/` refresh.
 - [ ] **TGSTAT-02**: User sees clear status-check feedback states (loading/success/failure with retry).
 
 ### Dashboard CTA Behavior
@@ -19,7 +19,7 @@ Requirements for Telegram link-status visibility and dashboard announcement UX.
 
 ### Device Auth Payload Version
 
-- [ ] **TGVER-01**: `/auth/device/` sends app version from the shared Settings app-version source (no stale hardcoded auth-flow value).
+- [x] **TGVER-01**: `/auth/device/` sends app version from the shared Settings app-version source (no stale hardcoded auth-flow value).
 
 ### Announcements
 
@@ -46,11 +46,11 @@ Deferred to future milestones.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TGSTAT-01 | Phase 1 | Pending |
+| TGSTAT-01 | Phase 1 | Complete |
 | TGSTAT-02 | Phase 2 | Pending |
 | TGCTA-01 | Phase 3 | Pending |
 | TGCTA-02 | Phase 3 | Pending |
-| TGVER-01 | Phase 1 | Pending |
+| TGVER-01 | Phase 1 | Complete |
 | TGANN-01 | Phase 3 | Pending |
 | TGANN-02 | Phase 3 | Pending |
 
@@ -61,4 +61,4 @@ Deferred to future milestones.
 
 ---
 *Requirements defined: 2026-05-24*
-*Last updated: 2026-05-24 after v1.4 roadmap mapping*
+*Last updated: 2026-05-24 after Phase 1 execution*
