@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.3
-milestone_name: Telegram Account Linking
+milestone: v1.4
+milestone_name: Telegram Link Status & Dashboard Announcements
 status: active
-stopped_at: Milestone v1.3 archived (known gap accepted)
+stopped_at: Milestone v1.4 started
 last_updated: "2026-05-24T17:36:47.394Z"
 last_activity: 2026-05-24
 progress:
-  total_phases: 13
-  completed_phases: 12
-  total_plans: 26
-  completed_plans: 25
-  percent: 96
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
-**Current focus:** Post-v1.3 follow-up (execute Phase 15.1, then start new milestone)
+**Current focus:** Defining requirements and roadmap for v1.4
 
 ## Current Position
 
-Phase: 15.1
-Plan: 01
-Status: v1.3 archived with accepted TGAPI-01 gap; urgent fix remains planned
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
 Last activity: 2026-05-24
 
 Progress: [░░░░░░░░░░] 0%

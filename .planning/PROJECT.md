@@ -6,11 +6,15 @@
 - **Archive files:** `.planning/milestones/v1.3-ROADMAP.md`, `.planning/milestones/v1.3-REQUIREMENTS.md`, `.planning/milestones/v1.3-MILESTONE-AUDIT.md`
 - **Milestone note:** archived with accepted known gap `TGAPI-01` (`Token` vs `Bearer` auth-header regression in Telegram link API call)
 
-## Next Milestone Goals
+## Current Milestone: v1.4 Telegram Link Status & Dashboard Announcements
 
-1. Close `TGAPI-01` by executing Phase 15.1 and syncing audit status to passed.
-2. Define the next milestone scope and fresh requirements via `/gsd-new-milestone`.
-3. Continue roadmap execution from the updated milestone baseline.
+**Goal:** Extend Telegram linking feedback and dashboard API-driven UX by adding link-status checks, role-aware CTA behavior, correct app-version payloading, and conditional announcements.
+
+**Target features:**
+- Add Step 3 **Check Link Status** button in Telegram link screen using `/auth/device/`.
+- Replace dashboard Link CTA with Telegram bot CTA when `is_guest=false`.
+- Use the same app-version source shown in Settings for `/auth/device/` payloads (no hardcoded stale version in auth flow).
+- Show announcement area between statistics and default servers with read-more bottom sheet, hidden when title/text is null or empty.
 
 ## Previous Snapshot
 
