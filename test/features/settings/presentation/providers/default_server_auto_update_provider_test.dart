@@ -1,3 +1,4 @@
+import 'package:arma_proxy_vpn_client/features/api/presentation/providers/default_server_refresh_scheduler_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/domain/entities/default_server_auto_update_interval.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/default_server_auto_update_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/theme_provider.dart';
@@ -13,7 +14,12 @@ void main() {
       });
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          defaultServerBackgroundSchedulerClientProvider.overrideWithValue(
+            _NoopSchedulerClient(),
+          ),
+        ],
       );
       addTearDown(container.dispose);
 
@@ -27,7 +33,12 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          defaultServerBackgroundSchedulerClientProvider.overrideWithValue(
+            _NoopSchedulerClient(),
+          ),
+        ],
       );
       addTearDown(container.dispose);
 
@@ -41,7 +52,12 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          defaultServerBackgroundSchedulerClientProvider.overrideWithValue(
+            _NoopSchedulerClient(),
+          ),
+        ],
       );
       addTearDown(container.dispose);
 
@@ -56,4 +72,24 @@ void main() {
       expect(prefs.getString('default_server_auto_update_interval'), '12h');
     });
   });
+}
+
+class _NoopSchedulerClient implements DefaultServerBackgroundSchedulerClient {
+  @override
+  Future<void> cancelByUniqueName(String uniqueName) async {}
+
+  @override
+  Future<void> registerOneOff({
+    required String uniqueName,
+    required String taskName,
+    required Duration initialDelay,
+    required Map<String, Object?> inputData,
+  }) async {}
+
+  @override
+  Future<void> registerPeriodic({
+    required String uniqueName,
+    required String taskName,
+    required Duration frequency,
+  }) async {}
 }
