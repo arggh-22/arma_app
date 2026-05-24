@@ -1,10 +1,10 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: sing-box Engine Migration
-status: verifying
-stopped_at: Completed 10-05-PLAN.md
-last_updated: "2026-05-24T13:07:59.506Z"
+milestone: v1.3
+milestone_name: Telegram Account Linking
+status: active
+stopped_at: Milestone initialized
+last_updated: "2026-05-24T14:23:00.000Z"
 last_activity: 2026-05-24
 progress:
   total_phases: 3
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
-**Current focus:** Phase 10 — settings-auto-update-configuration
+**Current focus:** Phase 11 — telegram-link-api-integration
 
 ## Current Position
 
-Phase: 10 (settings-auto-update-configuration) — EXECUTING
-Plan: 4 of 4
-Status: Phase complete — ready for verification
+Phase: Not started (defining requirements and roadmap)
+Plan: —
+Status: Milestone v1.3 initialized — ready for Phase 11 discussion/planning
 Last activity: 2026-05-24
 
 Progress: [░░░░░░░░░░] 0%

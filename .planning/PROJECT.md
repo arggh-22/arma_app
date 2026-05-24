@@ -32,10 +32,10 @@ Users can import a server configuration and connect in one tap — it just works
 
 ### Active
 
-- [ ] Replace Xray-core engine with sing-box for cross-platform support
-- [ ] Maintain all v1.0 protocol support under sing-box (VLESS, VMess, Trojan, SS, Hysteria2)
-- [ ] sing-box config generation replacing Xray JSON format
-- [ ] Verify anti-censorship features work under sing-box (fragment, Reality, etc.)
+- [ ] Telegram account linking via `POST /auth/telegram/link/` with existing bearer auth lifecycle
+- [ ] Home-screen Link entry with Telegram icon and guided linking UX
+- [ ] Step-by-step Telegram bot flow (`https://t.me/devarmabot`) with ID retrieval guidance (`Get Telegram ID`/`/my_id`)
+- [ ] Reliable submit/result states and validation coverage for linking flow
 
 ### Out of Scope
 
@@ -46,18 +46,17 @@ Users can import a server configuration and connect in one tap — it just works
 - In-app purchases / monetization — not in v1 scope
 - TV platform support — deferred
 
-## Current Milestone: v1.2 Default VPN Servers Integration
+## Current Milestone: v1.3 Telegram Account Linking
 
-**Goal:** Integrate your VPN server API to fetch and display authenticated user's default VPN servers in the home screen, improving user experience with one-tap access to pre-configured servers.
+**Goal:** Let users link their Telegram account from inside the app using a guided flow and a secure API call to `/auth/telegram/link/`.
 
 **Target features:**
-- Device authentication with VPN API (`/auth/device/`)
-- Fetch user's VPN keys/subscriptions from API (`/keys/`)
-- Display default servers in home screen bottom half (below connection stats)
-- Fetch on app first launch + manual refresh button
-- Periodic auto-update with user-configurable intervals
-- Connect to default servers like any other server
-- Handle API errors gracefully with fallback UI
+- Home-screen `Link` button with Telegram icon
+- Dedicated Telegram linking screen with step-by-step guide
+- External bot entrypoint to `https://t.me/devarmabot`
+- User flow for getting Telegram ID (`Get Telegram ID` command or `/my_id`) and pasting it into app
+- Link action calling `POST /auth/telegram/link/` with bearer auth and `{ "telegram_id": "<id>" }`
+- Clear success/error feedback and retry behavior for linking failures
 
 ## Context
 
@@ -106,4 +105,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-24 — v1.2 milestone started (Default VPN Servers Integration)*
+*Last updated: 2026-05-24 — v1.3 milestone started (Telegram Account Linking)*
