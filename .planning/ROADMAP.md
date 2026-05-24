@@ -54,9 +54,10 @@ Plans:
   2. When `is_guest=false`, user sees a Telegram bot CTA instead of Link CTA, and tapping it opens the bot link.
   3. Dashboard announcement block appears between statistics and default servers only when announcement title/text has non-empty content.
   4. User can tap **Read more** and view full announcement text in a bottom sheet.
-**Plans**: 1 plan
+**Plans**: 2 plans
 Plans:
 - [x] 03-01-PLAN.md — Implement auth-state announcement propagation and dashboard CTA/announcement behaviors with full test coverage
+- [x] 03-02-PLAN.md — Gap closure: force `/auth/device/` refresh on app open bootstrap for fresh announcements
 **UI hint**: yes
 
 ## Progress
@@ -65,4 +66,4 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Telegram Link Status Refresh | 1/1 | Complete | 2026-05-24 |
 | 2. Link Status Feedback & Retry UX | 1/1 | Complete | 2026-05-24 |
-| 3. Dashboard Telegram CTA & Announcements | 1/1 | Complete | 2026-05-24 |
+| 3. Dashboard Telegram CTA & Announcements | 2/2 | Complete | 2026-05-24 |

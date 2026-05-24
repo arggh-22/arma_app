@@ -1,4 +1,5 @@
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/auth_bootstrap_provider.dart';
+import 'package:arma_proxy_vpn_client/features/api/domain/entities/auth_state.dart';
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/auth_provider.dart';
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/default_server_keys_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,13 +10,18 @@ void main() {
     test(
       'resolves startup auth and key prewarm only once per container lifecycle',
       () async {
-        var authReads = 0;
+        var refreshCalls = 0;
         var keyPrewarmReads = 0;
         final container = ProviderContainer(
           overrides: [
-            authTokenProvider.overrideWith((ref) async {
-              authReads++;
-              return 'startup-token';
+            authStatusRefreshProvider.overrideWithValue(() async {
+              refreshCalls++;
+              return const AuthState(
+                token: 'startup-token',
+                isAuthenticated: true,
+                isGuest: true,
+                userId: 1,
+              );
             }),
             defaultServerKeysProvider.overrideWith((ref) async {
               keyPrewarmReads++;
@@ -29,19 +35,24 @@ void main() {
         await container.read(authBootstrapProvider.future);
         await Future<void>.delayed(Duration.zero);
 
-        expect(authReads, 1);
+        expect(refreshCalls, 1);
         expect(keyPrewarmReads, 1);
       },
     );
 
     test('supports manual rerun after provider refresh', () async {
-      var authReads = 0;
+      var refreshCalls = 0;
       var keyPrewarmReads = 0;
       final container = ProviderContainer(
         overrides: [
-          authTokenProvider.overrideWith((ref) async {
-            authReads++;
-            return 'startup-token';
+          authStatusRefreshProvider.overrideWithValue(() async {
+            refreshCalls++;
+            return const AuthState(
+              token: 'startup-token',
+              isAuthenticated: true,
+              isGuest: true,
+              userId: 1,
+            );
           }),
           defaultServerKeysProvider.overrideWith((ref) async {
             keyPrewarmReads++;
@@ -53,14 +64,14 @@ void main() {
 
       await container.read(authBootstrapProvider.future);
       await Future<void>.delayed(Duration.zero);
-      expect(authReads, 1);
+      expect(refreshCalls, 1);
       expect(keyPrewarmReads, 1);
 
       container.refresh(authBootstrapProvider);
       await container.read(authBootstrapProvider.future);
       await Future<void>.delayed(Duration.zero);
 
-      expect(authReads, 2);
+      expect(refreshCalls, 2);
       expect(keyPrewarmReads, 2);
     });
   });

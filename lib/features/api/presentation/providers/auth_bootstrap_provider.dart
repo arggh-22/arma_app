@@ -15,7 +15,8 @@ class AuthBootstrap extends _$AuthBootstrap {
   }
 
   Future<void> _runBootstrap() async {
-    await ref.read(authTokenProvider.future);
+    final refresh = ref.read(authStatusRefreshProvider);
+    await refresh();
     unawaited(ref.read(defaultServerKeysProvider.future));
   }
 }

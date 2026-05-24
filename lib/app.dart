@@ -45,6 +45,7 @@ class _ArmaAppState extends ConsumerState<ArmaApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_authBootstrapTriggered) {
         _authBootstrapTriggered = true;
+        ref.invalidate(authBootstrapProvider);
         unawaited(ref.read(authBootstrapProvider.future));
       }
       if (!_autoRefreshTriggered) {
