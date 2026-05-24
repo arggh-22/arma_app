@@ -1,5 +1,18 @@
 # Milestones
 
+## v1.4 Telegram Link Status & Dashboard Announcements (Active)
+
+**Phase numbering:** reset for clean milestone restart (Phase 1+).
+**Roadmap:** `.planning/ROADMAP.md` (v1.4 section)
+
+**Scope requirements:**
+- TGSTAT-01, TGSTAT-02
+- TGCTA-01, TGCTA-02
+- TGVER-01
+- TGANN-01, TGANN-02
+
+---
+
 ## v1.3 Telegram Account Linking (Shipped: 2026-05-24)
 
 **Phases completed:** 11, 12, 13, 14, 15  

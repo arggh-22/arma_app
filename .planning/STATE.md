@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Telegram Link Status & Dashboard Announcements
 status: active
-stopped_at: Milestone v1.4 started
-last_updated: "2026-05-24T17:36:47.394Z"
+stopped_at: v1.4 roadmap ready
+last_updated: "2026-05-24T18:10:00.000Z"
 last_activity: 2026-05-24
 progress:
-  total_phases: 0
+  total_phases: 3
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
-**Current focus:** Defining requirements and roadmap for v1.4
+**Current focus:** Phase 1 planning readiness for v1.4
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
+Phase: 1 - Telegram Link Status Refresh
+Plan: Ready for `/gsd-plan-phase 1`
+Status: Roadmap approved, execution not started
 Last activity: 2026-05-24
 
 Progress: [░░░░░░░░░░] 0%
@@ -134,5 +134,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-05-24T16:48:44.472Z
-Stopped at: Phase 15 execution complete
-Resume file: .planning/phases/15-telegram-reliability-verification-backfill/15-02-SUMMARY.md
+Stopped at: v1.4 roadmap created
+Resume file: .planning/ROADMAP.md

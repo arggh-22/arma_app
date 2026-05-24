@@ -46,19 +46,19 @@ Deferred to future milestones.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TGSTAT-01 | Phase TBD | Pending |
-| TGSTAT-02 | Phase TBD | Pending |
-| TGCTA-01 | Phase TBD | Pending |
-| TGCTA-02 | Phase TBD | Pending |
-| TGVER-01 | Phase TBD | Pending |
-| TGANN-01 | Phase TBD | Pending |
-| TGANN-02 | Phase TBD | Pending |
+| TGSTAT-01 | Phase 1 | Pending |
+| TGSTAT-02 | Phase 2 | Pending |
+| TGCTA-01 | Phase 3 | Pending |
+| TGCTA-02 | Phase 3 | Pending |
+| TGVER-01 | Phase 1 | Pending |
+| TGANN-01 | Phase 3 | Pending |
+| TGANN-02 | Phase 3 | Pending |
 
 **Coverage:**
 - v1.4 requirements: 7 total
-- Mapped to phases: 0
-- Unmapped: 7 ⚠️
+- Mapped to phases: 7 ✅
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-05-24*
-*Last updated: 2026-05-24 after v1.4 scope confirmation*
+*Last updated: 2026-05-24 after v1.4 roadmap mapping*
