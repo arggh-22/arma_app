@@ -41,16 +41,16 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TGFIX-01 | Phase TBD | Pending |
-| TGFIX-02 | Phase TBD | Pending |
-| TGAUD-01 | Phase TBD | Pending |
-| TGAUD-02 | Phase TBD | Pending |
+| TGFIX-01 | Phase 1 | Pending |
+| TGFIX-02 | Phase 1 | Pending |
+| TGAUD-01 | Phase 2 | Pending |
+| TGAUD-02 | Phase 2 | Pending |
 
 **Coverage:**
 - v1.4 requirements: 4 total
-- Mapped to phases: 0
-- Unmapped: 4 ⚠️
+- Mapped to phases: 4
+- Unmapped: 0 ✅
 
 ---
 *Requirements defined: 2026-05-24*
-*Last updated: 2026-05-24 after v1.4 milestone initialization*
+*Last updated: 2026-05-24 after v1.4 roadmap mapping*
