@@ -633,4 +633,71 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get defaultServersStatusUnknown => '未知';
+
+  @override
+  String get telegramLinkFabLabel => 'Link';
+
+  @override
+  String get telegramLinkScreenTitle => 'Link Telegram';
+
+  @override
+  String get telegramLinkOpenBot => 'Open Telegram Bot';
+
+  @override
+  String get telegramLinkStepStartTitle => 'Tap Start in Telegram bot';
+
+  @override
+  String get telegramLinkStepStartBody => 'Open @devarmabot and tap Start.';
+
+  @override
+  String get telegramLinkStepGetIdTitle => 'Get your Telegram ID';
+
+  @override
+  String get telegramLinkStepGetIdBody =>
+      'In bot menu commands tap Get Telegram ID, or send /my_id.';
+
+  @override
+  String get telegramLinkIdLabel => 'Telegram ID';
+
+  @override
+  String get telegramLinkIdHint => 'Paste numeric Telegram ID';
+
+  @override
+  String get telegramLinkPasteAction => 'Paste';
+
+  @override
+  String get telegramLinkSubmitAction => 'Link';
+
+  @override
+  String get telegramLinkOpenBotFailed =>
+      'Couldn’t open Telegram bot. Try again.';
+
+  @override
+  String get telegramLinkPasteEmpty => 'Clipboard is empty.';
+
+  @override
+  String get telegramLinkSuccess => 'Telegram account linked successfully.';
+
+  @override
+  String get telegramLinkAlreadyLinked =>
+      'This Telegram account is already linked.';
+
+  @override
+  String get telegramLinkInvalidId =>
+      'Telegram ID is invalid. Use 5–20 digits.';
+
+  @override
+  String get telegramLinkUnauthorized =>
+      'Session expired. Please sign in again, then retry linking.';
+
+  @override
+  String get telegramLinkNetworkError =>
+      'No network connection. Reconnect and try again.';
+
+  @override
+  String get telegramLinkServerError =>
+      'Server error. Please try again shortly.';
+
+  @override
+  String get telegramLinkUnknownError => 'Unexpected error. Please try again.';
 }

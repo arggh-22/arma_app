@@ -1291,6 +1291,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unknown'**
   String get defaultServersStatusUnknown;
+
+  /// No description provided for @telegramLinkFabLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Link'**
+  String get telegramLinkFabLabel;
+
+  /// No description provided for @telegramLinkScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Link Telegram'**
+  String get telegramLinkScreenTitle;
+
+  /// No description provided for @telegramLinkOpenBot.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Telegram Bot'**
+  String get telegramLinkOpenBot;
+
+  /// No description provided for @telegramLinkStepStartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap Start in Telegram bot'**
+  String get telegramLinkStepStartTitle;
+
+  /// No description provided for @telegramLinkStepStartBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Open @devarmabot and tap Start.'**
+  String get telegramLinkStepStartBody;
+
+  /// No description provided for @telegramLinkStepGetIdTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get your Telegram ID'**
+  String get telegramLinkStepGetIdTitle;
+
+  /// No description provided for @telegramLinkStepGetIdBody.
+  ///
+  /// In en, this message translates to:
+  /// **'In bot menu commands tap Get Telegram ID, or send /my_id.'**
+  String get telegramLinkStepGetIdBody;
+
+  /// No description provided for @telegramLinkIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Telegram ID'**
+  String get telegramLinkIdLabel;
+
+  /// No description provided for @telegramLinkIdHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste numeric Telegram ID'**
+  String get telegramLinkIdHint;
+
+  /// No description provided for @telegramLinkPasteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste'**
+  String get telegramLinkPasteAction;
+
+  /// No description provided for @telegramLinkSubmitAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Link'**
+  String get telegramLinkSubmitAction;
+
+  /// No description provided for @telegramLinkOpenBotFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t open Telegram bot. Try again.'**
+  String get telegramLinkOpenBotFailed;
+
+  /// No description provided for @telegramLinkPasteEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Clipboard is empty.'**
+  String get telegramLinkPasteEmpty;
+
+  /// No description provided for @telegramLinkSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Telegram account linked successfully.'**
+  String get telegramLinkSuccess;
+
+  /// No description provided for @telegramLinkAlreadyLinked.
+  ///
+  /// In en, this message translates to:
+  /// **'This Telegram account is already linked.'**
+  String get telegramLinkAlreadyLinked;
+
+  /// No description provided for @telegramLinkInvalidId.
+  ///
+  /// In en, this message translates to:
+  /// **'Telegram ID is invalid. Use 5–20 digits.'**
+  String get telegramLinkInvalidId;
+
+  /// No description provided for @telegramLinkUnauthorized.
+  ///
+  /// In en, this message translates to:
+  /// **'Session expired. Please sign in again, then retry linking.'**
+  String get telegramLinkUnauthorized;
+
+  /// No description provided for @telegramLinkNetworkError.
+  ///
+  /// In en, this message translates to:
+  /// **'No network connection. Reconnect and try again.'**
+  String get telegramLinkNetworkError;
+
+  /// No description provided for @telegramLinkServerError.
+  ///
+  /// In en, this message translates to:
+  /// **'Server error. Please try again shortly.'**
+  String get telegramLinkServerError;
+
+  /// No description provided for @telegramLinkUnknownError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unexpected error. Please try again.'**
+  String get telegramLinkUnknownError;
 }
 
 class _AppLocalizationsDelegate

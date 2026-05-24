@@ -139,8 +139,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 12-01-PLAN.md — Dashboard Link FAB entry (Telegram icon), scroll-hide behavior, and route wiring
-- [ ] 12-02-PLAN.md — Guided Telegram screen steps, paste/link controls, and outcome-driven feedback/navigation
+- [x] 12-01-PLAN.md — Dashboard Link FAB entry (Telegram icon), scroll-hide behavior, and route wiring
+- [x] 12-02-PLAN.md — Guided Telegram screen steps, paste/link controls, and outcome-driven feedback/navigation
 **UI hint**: yes
 
 ### Phase 7: Feature Parity & Dual-Engine Safety
@@ -157,8 +157,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 12-01-PLAN.md — Dashboard Link FAB entry, scroll hide/show behavior, and `/telegram-link` route wiring
-- [ ] 12-02-PLAN.md — Telegram guide screen flow (bot CTA, steps, paste/link submit, outcome UX + tests)
+- [x] 12-01-PLAN.md — Dashboard Link FAB entry, scroll hide/show behavior, and `/telegram-link` route wiring
+- [x] 12-02-PLAN.md — Telegram guide screen flow (bot CTA, steps, paste/link submit, outcome UX + tests)
 
 ## Progress
 
@@ -179,7 +179,7 @@ v1.1: 5 → 6 → 7
 | 9. Default Servers Home Screen Display | v1.2 | 0/? | Not started | — |
 | 10. Settings & Auto-Update Configuration | v1.2 | 5/5 | Complete   | 2026-05-24 |
 | 11. Telegram Link API Integration | v1.3 | 2/2 | Complete    | 2026-05-24 |
-| 12. Telegram Link UI & Guided Flow | v1.3 | 0/? | Not started | — |
+| 12. Telegram Link UI & Guided Flow | v1.3 | 2/2 | Complete   | 2026-05-24 |
 | 13. Telegram Link UX Hardening & Validation | v1.3 | 0/? | Not started | — |
 
 ---
@@ -197,7 +197,11 @@ v1.1: 5 → 6 → 7
   4. Auth errors are handled gracefully with retry logic
   5. Device HWID persists across app updates and reinstalls
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [x] 12-01-PLAN.md — Dashboard Link FAB entry, scroll hide/show behavior, and `/telegram-link` route wiring
+- [x] 12-02-PLAN.md — Telegram guide screen flow (bot CTA, steps, paste/link submit, outcome UX + tests)
 
 ### Phase 9: Default Servers Home Screen Display
 **Goal**: Display default servers in home screen bottom half with UI controls.

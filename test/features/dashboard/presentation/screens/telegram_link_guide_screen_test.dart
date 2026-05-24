@@ -1,0 +1,135 @@
+import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
+import 'package:arma_proxy_vpn_client/features/api/domain/entities/telegram_link_outcome.dart';
+import 'package:arma_proxy_vpn_client/features/api/domain/repositories/telegram_link_repository.dart';
+import 'package:arma_proxy_vpn_client/features/api/presentation/providers/auth_provider.dart';
+import 'package:arma_proxy_vpn_client/features/dashboard/presentation/screens/telegram_link_guide_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  testWidgets('renders required guided steps and actions', (tester) async {
+    final repository = _FakeTelegramLinkRepository();
+    await _pumpGuide(tester, repository: repository);
+
+    expect(find.text('Open Telegram Bot'), findsOneWidget);
+    expect(find.text('Tap Start in Telegram bot'), findsOneWidget);
+    expect(find.text('Get your Telegram ID'), findsOneWidget);
+    expect(find.byKey(const Key('telegram-id-input')), findsOneWidget);
+    expect(find.byKey(const Key('telegram-paste-button')), findsOneWidget);
+    expect(
+      find.byKey(const Key('telegram-link-submit-button')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('paste action fills input from clipboard', (tester) async {
+    final repository = _FakeTelegramLinkRepository();
+    await _pumpGuide(tester, repository: repository, clipboardText: '12345678');
+
+    await tester.tap(find.byKey(const Key('telegram-paste-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('12345678'), findsOneWidget);
+  });
+
+  testWidgets('linked outcome pops back to previous screen', (tester) async {
+    final repository = _FakeTelegramLinkRepository(
+      outcome: const TelegramLinkOutcome(type: TelegramLinkOutcomeType.linked),
+    );
+    await _pumpGuide(tester, repository: repository);
+
+    await tester.enterText(
+      find.byKey(const Key('telegram-id-input')),
+      '123456',
+    );
+    await tester.tap(find.byKey(const Key('telegram-link-submit-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Open Guide'), findsOneWidget);
+    expect(find.byType(TelegramLinkGuideScreen), findsNothing);
+  });
+
+  testWidgets('unauthorized outcome stays on guide and shows feedback', (
+    tester,
+  ) async {
+    final repository = _FakeTelegramLinkRepository(
+      outcome: const TelegramLinkOutcome(
+        type: TelegramLinkOutcomeType.unauthorized,
+      ),
+    );
+    await _pumpGuide(tester, repository: repository);
+
+    await tester.enterText(
+      find.byKey(const Key('telegram-id-input')),
+      '123456',
+    );
+    await tester.tap(find.byKey(const Key('telegram-link-submit-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TelegramLinkGuideScreen), findsOneWidget);
+    expect(
+      find.text('Session expired. Please sign in again, then retry linking.'),
+      findsOneWidget,
+    );
+  });
+}
+
+Future<void> _pumpGuide(
+  WidgetTester tester, {
+  required _FakeTelegramLinkRepository repository,
+  String? clipboardText,
+}) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        telegramLinkRepositoryProvider.overrideWithValue(repository),
+        telegramUrlLauncherProvider.overrideWithValue((_) async => true),
+        telegramClipboardReaderProvider.overrideWithValue(
+          () async => clipboardText,
+        ),
+      ],
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Builder(
+          builder: (context) {
+            return Scaffold(
+              body: Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const TelegramLinkGuideScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text('Open Guide'),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    ),
+  );
+
+  await tester.tap(find.text('Open Guide'));
+  await tester.pumpAndSettle();
+}
+
+class _FakeTelegramLinkRepository implements TelegramLinkRepository {
+  _FakeTelegramLinkRepository({TelegramLinkOutcome? outcome})
+    : _outcome =
+          outcome ??
+          const TelegramLinkOutcome(
+            type: TelegramLinkOutcomeType.alreadyLinked,
+          );
+
+  final TelegramLinkOutcome _outcome;
+
+  @override
+  Future<TelegramLinkOutcome> linkTelegram(String telegramId) async {
+    return _outcome;
+  }
+}
