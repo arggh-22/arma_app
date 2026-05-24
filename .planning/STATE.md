@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Dashboard Layout Refresh + Servers Screen Defaults
-status: phase_planned
-stopped_at: Phase 16 planning complete
-last_updated: "2026-05-25T00:45:00+04:00"
-last_activity: 2026-05-25 -- Phase 16 plan created and checker-verified
+status: executing
+stopped_at: Completed 16-01-PLAN.md
+last_updated: "2026-05-24T21:07:00.685Z"
+last_activity: 2026-05-24
 progress:
   total_phases: 2
-  completed_phases: 0
-  total_plans: 2
-  completed_plans: 0
-  percent: 0
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
+  percent: 100
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-05-24)
 ## Current Position
 
 Phase: 16 (Servers Screen Defaults Integration) — NOT STARTED
-Plan: 0 of 1
-Status: Phase 16 plan ready for execution
-Last activity: 2026-05-25 -- Phase 16 plan created and checker-verified
+Plan: 1 of 1
+Status: Ready to execute
+Last activity: 2026-05-24
 
 Progress: [----------] 0%
 
@@ -73,6 +73,7 @@ Progress: [----------] 0%
 | Phase 10-settings-auto-update-configuration P05 | 187 | 2 tasks | 13 files |
 | Phase 11 P01 | 143 | 2 tasks | 7 files |
 | Phase 11 P02 | 198 | 2 tasks | 3 files |
+| Phase 16 P01 | 254 | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -115,6 +116,9 @@ Progress: [----------] 0%
 - [Phase 11]: Kept Telegram link execution strictly behind AuthRepository.executeWithAuthRetry.
 - [Phase 11]: Used a dedicated keep-alive telegramLinkRepositoryProvider in auth_provider.dart instead of introducing alternate auth/token paths.
 - [Phase 11]: Returned the existing in-flight Future from submit() to suppress duplicate taps without launching duplicate requests.
+- [Phase 16]: Hide defaults section in multi-select mode via existing isMultiSelectActive gate.
+- [Phase 16]: Implement default-row tap parity as select first, then conditional disconnect/connect when target differs.
+- [Phase 16]: Use deterministic server-group header keys to make imported regression tests stable.
 
 ### Roadmap Evolution
 
@@ -133,6 +137,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-24T16:48:44.472Z
-Stopped at: Milestone v1.5 started
-Resume file: .planning/PROJECT.md
+Last session: 2026-05-24T21:07:00.681Z
+Stopped at: Completed 16-01-PLAN.md
+Resume file: None

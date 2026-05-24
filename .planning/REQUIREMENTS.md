@@ -16,10 +16,10 @@ Requirements for dashboard visual redesign and default-servers integration in Se
 
 ### Servers Screen Defaults
 
-- [ ] **SRVD-01**: User sees a dedicated default-servers section above imported/custom servers.
-- [ ] **SRVD-02**: User can collapse/expand the default-servers section.
-- [ ] **SRVD-03**: User can tap a default-server card and get the same select/connect behavior as existing servers flow.
-- [ ] **SRVD-04**: Existing collapsible imported-server group behavior remains unchanged.
+- [x] **SRVD-01**: User sees a dedicated default-servers section above imported/custom servers.
+- [x] **SRVD-02**: User can collapse/expand the default-servers section.
+- [x] **SRVD-03**: User can tap a default-server card and get the same select/connect behavior as existing servers flow.
+- [x] **SRVD-04**: Existing collapsible imported-server group behavior remains unchanged.
 
 ## Future Requirements
 
@@ -48,10 +48,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DLAY-02 | Phase 17 | Pending |
 | DLAY-03 | Phase 17 | Pending |
 | DLAY-04 | Phase 17 | Pending |
-| SRVD-01 | Phase 16 | Pending |
-| SRVD-02 | Phase 16 | Pending |
-| SRVD-03 | Phase 16 | Pending |
-| SRVD-04 | Phase 16 | Pending |
+| SRVD-01 | Phase 16 | Complete |
+| SRVD-02 | Phase 16 | Complete |
+| SRVD-03 | Phase 16 | Complete |
+| SRVD-04 | Phase 16 | Complete |
 
 **Coverage:**
 - v1.5 requirements: 8 total
