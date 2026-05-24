@@ -4,19 +4,23 @@ import 'dart:io';
 import 'package:arma_proxy_vpn_client/features/api/data/datasources/api_client.dart';
 import 'package:arma_proxy_vpn_client/features/api/data/datasources/default_server_cache_datasource.dart';
 import 'package:arma_proxy_vpn_client/features/api/data/models/default_server_cache_model.dart';
+import 'package:arma_proxy_vpn_client/features/api/data/services/default_server_refresh_service.dart';
 import 'package:arma_proxy_vpn_client/features/api/domain/entities/default_server_key.dart';
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/default_server_cache_provider.dart';
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/default_server_keys_provider.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_servers_provider.dart';
+import 'package:arma_proxy_vpn_client/features/settings/data/datasources/settings_local_datasource.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive_ce.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   group('defaultServersProvider', () {
     late Directory hiveDir;
     late Box<dynamic> cacheBox;
     late DefaultServerCacheDatasource cacheDatasource;
+    late SettingsLocalDatasource settingsDatasource;
 
     setUp(() async {
       hiveDir = await Directory.systemTemp.createTemp(
@@ -25,6 +29,9 @@ void main() {
       Hive.init(hiveDir.path);
       cacheBox = await Hive.openBox<dynamic>(DefaultServerCacheDatasource.boxName);
       cacheDatasource = DefaultServerCacheDatasource(cacheBox);
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final prefs = await SharedPreferences.getInstance();
+      settingsDatasource = SettingsLocalDatasource(prefs);
     });
 
     tearDown(() async {
@@ -41,7 +48,14 @@ void main() {
       final apiKeys = [_sampleKey()];
       final container = ProviderContainer(
         overrides: [
-          defaultServerKeysProvider.overrideWith((ref) async => apiKeys),
+          defaultServerRefreshServiceProvider.overrideWithValue(
+            _service(
+              cacheDatasource: cacheDatasource,
+              settingsDatasource: settingsDatasource,
+              fetchKeys: () async => apiKeys,
+            ),
+          ),
+          defaultServerKeysProvider.overrideWith((ref) => _legacyPathGuard()),
           defaultServerCacheDatasourceProvider.overrideWithValue(cacheDatasource),
         ],
       );
@@ -73,12 +87,17 @@ void main() {
       );
       final container = ProviderContainer(
         overrides: [
-          defaultServerKeysProvider.overrideWith(
-            (ref) async => throw const ApiClientException(
-              type: ApiClientErrorType.network,
-              message: 'offline',
+          defaultServerRefreshServiceProvider.overrideWithValue(
+            _service(
+              cacheDatasource: cacheDatasource,
+              settingsDatasource: settingsDatasource,
+              fetchKeys: () async => throw const ApiClientException(
+                type: ApiClientErrorType.network,
+                message: 'offline',
+              ),
             ),
           ),
+          defaultServerKeysProvider.overrideWith((ref) => _legacyPathGuard()),
           defaultServerCacheDatasourceProvider.overrideWithValue(cacheDatasource),
         ],
       );
@@ -101,13 +120,20 @@ void main() {
       var call = 0;
       final container = ProviderContainer(
         overrides: [
-          defaultServerKeysProvider.overrideWith((ref) async {
-            call++;
-            if (call == 1) {
-              return [_sampleKey(id: 1)];
-            }
-            return refreshCompleter.future;
-          }),
+          defaultServerRefreshServiceProvider.overrideWithValue(
+            _service(
+              cacheDatasource: cacheDatasource,
+              settingsDatasource: settingsDatasource,
+              fetchKeys: () async {
+                call++;
+                if (call == 1) {
+                  return [_sampleKey(id: 1)];
+                }
+                return refreshCompleter.future;
+              },
+            ),
+          ),
+          defaultServerKeysProvider.overrideWith((ref) => _legacyPathGuard()),
           defaultServerCacheDatasourceProvider.overrideWithValue(cacheDatasource),
         ],
       );
@@ -135,12 +161,17 @@ void main() {
     test('surfaces unauthorized after silent retry exhaustion', () async {
       final container = ProviderContainer(
         overrides: [
-          defaultServerKeysProvider.overrideWith(
-            (ref) async => throw const ApiClientException(
-              type: ApiClientErrorType.unauthorized,
-              message: 'unauthorized',
+          defaultServerRefreshServiceProvider.overrideWithValue(
+            _service(
+              cacheDatasource: cacheDatasource,
+              settingsDatasource: settingsDatasource,
+              fetchKeys: () async => throw const ApiClientException(
+                type: ApiClientErrorType.unauthorized,
+                message: 'unauthorized',
+              ),
             ),
           ),
+          defaultServerKeysProvider.overrideWith((ref) => _legacyPathGuard()),
           defaultServerCacheDatasourceProvider.overrideWithValue(cacheDatasource),
         ],
       );
@@ -190,16 +221,23 @@ void main() {
       var call = 0;
       final container = ProviderContainer(
         overrides: [
-          defaultServerKeysProvider.overrideWith((ref) async {
-            call++;
-            if (call == 1) {
-              return [_sampleKey(id: 1)];
-            }
-            throw const ApiClientException(
-              type: ApiClientErrorType.network,
-              message: 'offline',
-            );
-          }),
+          defaultServerRefreshServiceProvider.overrideWithValue(
+            _service(
+              cacheDatasource: cacheDatasource,
+              settingsDatasource: settingsDatasource,
+              fetchKeys: () async {
+                call++;
+                if (call == 1) {
+                  return [_sampleKey(id: 1)];
+                }
+                throw const ApiClientException(
+                  type: ApiClientErrorType.network,
+                  message: 'offline',
+                );
+              },
+            ),
+          ),
+          defaultServerKeysProvider.overrideWith((ref) => _legacyPathGuard()),
           defaultServerCacheDatasourceProvider.overrideWithValue(cacheDatasource),
           defaultServersRetryDelayProvider.overrideWithValue((duration) async {
             observedDelays.add(duration);
@@ -244,5 +282,21 @@ DefaultServerKey _sampleKey({int id = 42, String name = 'Default 42'}) {
     status: 'active',
     usedTraffic: 1024,
     dataLimit: 4096,
+  );
+}
+
+Future<List<DefaultServerKey>> _legacyPathGuard() async {
+  throw StateError('defaultServerKeysProvider should not be called directly');
+}
+
+DefaultServerRefreshService _service({
+  required DefaultServerCacheDatasource cacheDatasource,
+  required SettingsLocalDatasource settingsDatasource,
+  required Future<List<DefaultServerKey>> Function() fetchKeys,
+}) {
+  return DefaultServerRefreshService(
+    fetchKeys: fetchKeys,
+    cacheDatasource: cacheDatasource,
+    settingsDatasource: settingsDatasource,
   );
 }
