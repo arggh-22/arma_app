@@ -122,6 +122,40 @@ void main() {
     );
   });
 
+  testWidgets('matching active server tile gets selected visual highlight', (
+    tester,
+  ) async {
+    final selectedServer = _serverConfig(id: 'sel', name: 'Selected');
+    final notifier = TestDefaultServersNotifier(
+      DefaultServersState(
+        items: [
+          _item(id: 'sel', name: 'Selected', serverConfig: selectedServer),
+          _item(id: 'other', name: 'Other'),
+        ],
+        isRefreshing: false,
+        isOfflineData: false,
+        lastFailureType: null,
+        hasPendingRetry: false,
+        retryAttempt: 0,
+      ),
+    );
+
+    await _pumpSection(
+      tester,
+      defaultServersNotifier: notifier,
+      activeServerNotifier: TestActiveServerNotifier(initialServer: selectedServer),
+    );
+
+    final selectedMaterial = _tileMaterialForName(tester, 'Selected');
+    final otherMaterial = _tileMaterialForName(tester, 'Other');
+    final theme = Theme.of(tester.element(find.byType(DefaultServersSection)));
+
+    expect(selectedMaterial.shape, isA<RoundedRectangleBorder>());
+    expect(selectedMaterial.color, isNot(theme.colorScheme.surfaceContainerLow));
+    expect(otherMaterial.shape, isNull);
+    expect(otherMaterial.color, theme.colorScheme.surfaceContainerLow);
+  });
+
   testWidgets('disconnected tap selects active server only', (tester) async {
     final defaultNotifier = TestDefaultServersNotifier(
       DefaultServersState(
@@ -252,6 +286,17 @@ Future<void> _pumpSection(
     ),
   );
   await tester.pump();
+}
+
+Material _tileMaterialForName(WidgetTester tester, String name) {
+  final candidate = find.ancestor(of: find.text(name), matching: find.byType(Material));
+  for (final element in candidate.evaluate()) {
+    final material = element.widget as Material;
+    if (material.borderRadius == BorderRadius.circular(12)) {
+      return material;
+    }
+  }
+  throw StateError('No tile material found for "$name"');
 }
 
 class TestDefaultServersNotifier extends DefaultServersNotifier {
