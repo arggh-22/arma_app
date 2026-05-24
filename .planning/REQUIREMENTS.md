@@ -164,13 +164,13 @@ Requirements for integrating your VPN server API to display default servers in h
 
 ### Home Screen Display
 
-- [ ] **UI-01**: Default servers section in home screen
+- [x] **UI-01**: Default servers section in home screen
   - Show in bottom half of home screen (below connection stats)
   - Display server list with: name, status badge (active/expired/limited), traffic info
   - Allow users to tap a server to connect (use existing connection logic)
   - Show loading state while fetching from API
 
-- [ ] **UI-02**: Manual refresh button
+- [x] **UI-02**: Manual refresh button
   - Add refresh button in default servers section
   - Trigger re-fetch from API
   - Show loading spinner during fetch

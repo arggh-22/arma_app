@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: sing-box Engine Migration
-status: executing
-stopped_at: Completed 09-02-PLAN.md
-last_updated: "2026-05-24T11:06:36.458Z"
+status: verifying
+stopped_at: Completed 09-03-PLAN.md
+last_updated: "2026-05-24T11:12:59.136Z"
 last_activity: 2026-05-24
 progress:
   total_phases: 3
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-05-24)
 
 Phase: 09 (default-servers-home-screen-display) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-05-24
 
 Progress: [░░░░░░░░░░] 0%
@@ -62,6 +62,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 08 P05 | 191 | 2 tasks | 5 files |
 | Phase 09-default-servers-home-screen-display P01 | 105 | 2 tasks | 8 files |
 | Phase 09-default-servers-home-screen-display P02 | 296 | 2 tasks | 3 files |
+| Phase 09-default-servers-home-screen-display P03 | 172 | 2 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 09]: Default server mapping normalizes IDs as default-api-{id} while preserving API metadata unchanged.
 - [Phase 09]: Default server dashboard state modeled as keepAlive notifier state (items/refresh/offline/failure) instead of AsyncValue wrapper-driven UI.
 - [Phase 09]: Manual refresh retries are foreground-only and bounded to 1s/2s/4s exponential delays via injectable timing providers.
+- [Phase 09-default-servers-home-screen-display]: Dashboard default servers remain inline and scrollable with top-3 preview plus show-all sheet.
+- [Phase 09-default-servers-home-screen-display]: Tap flow selects via activeServerProvider first, then reconnects only when already connected to a different server.
 
 ### Pending Todos
 
@@ -100,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-24T11:06:36.454Z
-Stopped at: Completed 09-02-PLAN.md
+Last session: 2026-05-24T11:12:59.132Z
+Stopped at: Completed 09-03-PLAN.md
 Resume file: None
