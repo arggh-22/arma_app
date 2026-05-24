@@ -1,15 +1,24 @@
 # Milestones
 
-## v1.4 Telegram Link Status & Dashboard Announcements (Active)
+## v1.4 Telegram Link Status & Dashboard Announcements (Shipped: 2026-05-24)
 
-**Phase numbering:** reset for clean milestone restart (Phase 1+).
-**Roadmap:** `.planning/ROADMAP.md` (v1.4 section)
+**Phases completed:** 3 phases, 4 plans, 9 tasks
+**Archive:** `.planning/milestones/v1.4-ROADMAP.md`, `.planning/milestones/v1.4-REQUIREMENTS.md`, `.planning/milestones/v1.4-MILESTONE-AUDIT.md`
+**Phase artifacts:** `.planning/milestones/v1.4-phases/`
 
-**Scope requirements:**
-- TGSTAT-01, TGSTAT-02
-- TGCTA-01, TGCTA-02
-- TGVER-01
-- TGANN-01, TGANN-02
+**Key accomplishments:**
+
+- Added Telegram Link Step 3 status refresh using `/auth/device/` with shared Settings app-version source.
+- Hardened Step 3 feedback UX with loading/success/failure states and immediate retry behavior.
+- Implemented role-aware dashboard CTA: guest Link CTA vs linked-user Telegram bot CTA.
+- Added conditional dashboard announcement section with read-more bottom sheet behavior.
+- Closed announcement freshness gap by forcing app-open bootstrap refresh via `authStatusRefreshProvider`.
+- Completed UAT/security/validation artifacts for Phase 03 and locked bootstrap regression tests.
+
+### Known Gaps Accepted at Archive Time
+
+- Milestone audit status `gaps_found` due to missing per-phase `VERIFICATION.md` artifacts (requirements marked orphaned by audit gate).
+- Nyquist backfill still pending for Phase 2 (`03` compliant, `01` partial, `02` missing in audit discovery).
 
 ---
 

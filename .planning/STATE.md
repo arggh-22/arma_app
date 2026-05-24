@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Telegram Link Status & Dashboard Announcements
-status: phase_complete
-stopped_at: Phase 03 gap closure executed
-last_updated: "2026-05-24T19:31:00Z"
-last_activity: 2026-05-24 -- Milestone v1.4 audit completed (gaps_found: missing VERIFICATION.md)
+status: milestone_complete
+stopped_at: Milestone v1.4 archived
+last_updated: "2026-05-24T20:35:00Z"
+last_activity: 2026-05-24 -- Archived milestone v1.4 with accepted audit debt
 progress:
   total_phases: 3
   completed_phases: 3
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
-**Current focus:** Milestone v1.4 completion
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 03 (Dashboard Telegram CTA & Announcements) — COMPLETE
-Plan: 1 of 1
-Status: Milestone audit found blockers (missing phase VERIFICATION.md artifacts)
-Last activity: 2026-05-24 -- Milestone v1.4 audit completed (gaps_found: missing VERIFICATION.md)
+Phase: Archived (v1.4 complete)
+Plan: n/a
+Status: Milestone v1.4 archived; audit debt accepted for missing phase VERIFICATION artifacts
+Last activity: 2026-05-24 -- Archived milestone v1.4 with accepted audit debt
 
 Progress: [██████████] 100%
 
@@ -134,5 +134,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-05-24T16:48:44.472Z
-Stopped at: Phase 03 gap closure executed
-Resume file: .planning/ROADMAP.md
+Stopped at: Milestone v1.4 archived
+Resume file: .planning/MILESTONES.md
