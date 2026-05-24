@@ -304,7 +304,7 @@ Plans:
   2. TGUI-01 and TGUI-02 are marked verified with concrete code/test references.
   3. Milestone re-audit no longer flags Phase 12 as unverified.
 
-**Plans**: 0 plans
+**Plans**: 2 plans
 
 Plans:
 - [ ] 14-01-PLAN.md — Reconstruct and verify Phase 12 requirement evidence into 12-VERIFICATION.md
