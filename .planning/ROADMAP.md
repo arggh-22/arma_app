@@ -5,6 +5,7 @@
 - ✅ **v1.0 MVP** — Phases 1–4 (shipped 2026-04-06)
 - 🚧 **v1.1 sing-box Engine Migration** — Phases 5–7 (in progress)
 - 📋 **v1.2 Default VPN Servers Integration** — Phases 8–10 (planning)
+- 📋 **v1.3 Telegram Account Linking** — Phases 11–13 (planning)
 
 ## Phases
 
@@ -169,6 +170,9 @@ v1.1: 5 → 6 → 7
 | 8. API Client & Device Authentication | v1.2 | 0/? | Not started | — |
 | 9. Default Servers Home Screen Display | v1.2 | 0/? | Not started | — |
 | 10. Settings & Auto-Update Configuration | v1.2 | 5/5 | Complete   | 2026-05-24 |
+| 11. Telegram Link API Integration | v1.3 | 0/? | Not started | — |
+| 12. Telegram Link UI & Guided Flow | v1.3 | 0/? | Not started | — |
+| 13. Telegram Link UX Hardening & Validation | v1.3 | 0/? | Not started | — |
 
 ---
 
@@ -226,3 +230,40 @@ Plans:
 - [x] 10-03-PLAN.md — Scheduler + fallback overdue refresh orchestration
 - [x] 10-04-PLAN.md — Settings UI radio controls + localization wiring
 - [x] 10-05-PLAN.md — Gap closure: subtle updated-state indicator after overdue fallback refresh
+
+---
+
+## v1.3 Phases (Planning)
+
+### Phase 11: Telegram Link API Integration
+**Goal**: Implement Telegram link API contract and domain integration using existing auth lifecycle.
+**Depends on**: Phase 10
+**Requirements**: TGAPI-01, TGAPI-02, TGCOMP-01
+**Success Criteria** (what must be TRUE):
+  1. App can submit Telegram ID to `POST /auth/telegram/link/` with bearer token and receive typed success/failure results
+  2. Input validation blocks invalid Telegram IDs and prevents duplicate submit requests
+  3. Unauthorized and transient failures follow existing API/auth recovery patterns without crashes
+
+**Plans**: TBD
+
+### Phase 12: Telegram Link UI & Guided Flow
+**Goal**: Add home-screen Link entry and full step-by-step Telegram guide screen.
+**Depends on**: Phase 11
+**Requirements**: TGUI-01, TGUI-02
+**Success Criteria** (what must be TRUE):
+  1. Home screen displays a `Link` action with Telegram icon and opens Telegram linking screen
+  2. Linking screen shows the full guided steps including bot link `https://t.me/devarmabot`, Start action, ID retrieval command, paste-and-link action
+  3. User can complete navigation and input flow with clear actionable controls
+
+**Plans**: TBD
+
+### Phase 13: Telegram Link UX Hardening & Validation
+**Goal**: Finalize result states, reliability, and test coverage for Telegram linking.
+**Depends on**: Phase 12
+**Requirements**: TGUI-03, TGREL-01
+**Success Criteria** (what must be TRUE):
+  1. Linking flow shows loading/success/error states with retry path
+  2. UI and API layer tests cover happy path and key failure scenarios
+  3. Feature is validated against milestone requirements and ready for rollout
+
+**Plans**: TBD

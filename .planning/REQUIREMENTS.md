@@ -227,3 +227,58 @@ Requirements for integrating your VPN server API to display default servers in h
 ---
 *Requirements defined: 2026-05-24*
 *Last updated: 2026-05-24 before roadmap creation (v1.2)*
+
+## v1.3 Requirements
+
+Requirements for Telegram account linking from the app.
+
+### Telegram Linking API
+
+- [ ] **TGAPI-01**: App links Telegram account using `POST /auth/telegram/link/`
+  - Uses existing stored auth token as Bearer token
+  - Sends JSON body `{ "telegram_id": "<id>" }`
+  - Handles success and non-2xx responses with typed errors
+
+- [ ] **TGAPI-02**: App validates and submits Telegram ID safely
+  - Rejects empty/invalid IDs before API call
+  - Prevents duplicate in-flight submit taps
+  - Preserves API diagnostics redaction for sensitive headers/token
+
+### Telegram Linking UX
+
+- [ ] **TGUI-01**: Home screen shows `Link` button with Telegram icon
+  - Visible in dashboard/home flow
+  - Opens Telegram linking screen on tap
+
+- [ ] **TGUI-02**: Linking screen provides full guided steps
+  - Step to open bot link `https://t.me/devarmabot`
+  - Step to tap Start in Telegram bot
+  - Step to run `Get Telegram ID` (or `/my_id`)
+  - Step to paste Telegram ID into app and tap Link
+
+- [ ] **TGUI-03**: Linking screen shows clear result states
+  - Loading state during submit
+  - Success confirmation when linked
+  - User-friendly error/retry state when linking fails
+
+### Compatibility & Reliability
+
+- [ ] **TGCOMP-01**: Telegram linking integrates with existing auth lifecycle
+  - Reuses current auth token providers/repository
+  - Handles unauthorized responses consistently with existing re-auth behavior
+
+- [ ] **TGREL-01**: Linking flow is resilient and test-covered
+  - Unit tests for API client/linking repository behavior
+  - Widget tests for key UI flow states and navigation
+
+## Traceability (v1.3)
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| TGAPI-01 | Phase 11 | Pending |
+| TGAPI-02 | Phase 11 | Pending |
+| TGUI-01 | Phase 12 | Pending |
+| TGUI-02 | Phase 12 | Pending |
+| TGUI-03 | Phase 13 | Pending |
+| TGCOMP-01 | Phase 11 | Pending |
+| TGREL-01 | Phase 13 | Pending |
