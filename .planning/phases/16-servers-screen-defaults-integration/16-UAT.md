@@ -44,7 +44,16 @@ skipped: 0
 - truth: "On Servers screen in normal mode, a dedicated default-servers section is visible above imported/custom server groups. When multi-select mode is activated, the default-servers section is hidden."
   status: failed
   reason: "User reported: default-servers only visible when i have custom server, and default server showing only key(sub link group) its not showing servers list for sub link"
+  root_cause: "ServerListScreen returns EmptyServerState when imported list is empty, and default-server mapping/rendering is one-row-per-key without sub-link server expansion."
   severity: major
   test: 1
-  artifacts: []
-  missing: []
+  artifacts:
+    - "lib/features/server/presentation/screens/server_list_screen.dart:L77-L82 — early EmptyServerState return when imported server list is empty."
+    - "lib/features/server/presentation/screens/server_list_screen.dart:L228-L233 — defaults section only added inside _buildGroupedList path."
+    - "lib/features/dashboard/data/mappers/default_server_item_mapper.dart:L11-L19 — keyBody parsed as single share link and row label bound to key.name."
+    - "lib/features/server/presentation/widgets/server_list_default_servers_section.dart:L82-L86,L170 — one row per mapped item, displaying item.name only (no sub-link server expansion)."
+    - "test/features/server/presentation/screens/server_list_screen_defaults_test.dart:L20-L26 — visibility test only covers scenario with imported server present."
+  missing:
+    - "UI path that shows defaults when imported/custom server list is empty."
+    - "Default-server mapping/rendering path that expands sub-link payload into per-server list."
+    - "Regression test for empty imported list + non-empty defaults."
