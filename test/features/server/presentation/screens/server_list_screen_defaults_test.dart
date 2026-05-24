@@ -26,7 +26,7 @@ void main() {
       );
 
       final defaultTop = tester.getTopLeft(find.text('Default 1')).dy;
-      final importedTop = tester.getTopLeft(find.textContaining('Imported')).dy;
+      final importedTop = tester.getTopLeft(find.text('Imported (1)')).dy;
 
       expect(defaultTop, lessThan(importedTop));
       expect(
@@ -39,6 +39,9 @@ void main() {
   testWidgets('hides defaults section when multi-select mode is active', (
     tester,
   ) async {
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+
     await _pumpScreen(
       tester,
       servers: [_server(id: 'imported-1', name: 'Imported 1')],
@@ -70,12 +73,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Default 1'), findsNothing);
 
-    await _pumpScreen(
-      tester,
-      servers: [_server(id: 'imported-1', name: 'Imported 1')],
-      defaults: [_item(id: 'default-1', name: 'Default 1')],
+    await tester.tap(
+      find.byKey(const ValueKey('server-list-default-servers-toggle')),
     );
-
+    await tester.pumpAndSettle();
     expect(find.text('Default 1'), findsOneWidget);
   });
 

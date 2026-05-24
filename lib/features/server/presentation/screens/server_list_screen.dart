@@ -20,6 +20,7 @@ import 'package:arma_proxy_vpn_client/features/server/presentation/providers/sub
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/empty_server_state.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/import_fab.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/server_card.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/server_list_default_servers_section.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/server_group_header.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/sort_filter_bar.dart';
 
@@ -224,6 +225,17 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
 
     // Build flat list of widgets: headers + cards with spacing
     final items = <Widget>[];
+    if (!isMultiSelectActive) {
+      items.add(
+        ServerListDefaultServersSection(
+          onServerTap: (_) async {},
+        ),
+      );
+      if (groupEntries.isNotEmpty) {
+        items.add(const Gap(8));
+      }
+    }
+
     for (var i = 0; i < groupEntries.length; i++) {
       if (i > 0) {
         items.add(const Gap(24));
