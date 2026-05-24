@@ -576,6 +576,25 @@ class AppLocalizationsHy extends AppLocalizations {
       'Չհաջողվեց թարմացնել կանոնները։ Ստուգեք ինտերնետ կապը։';
 
   @override
+  String get armaVpnSettingsSection => 'Arma VPN կարգավորումներ';
+
+  @override
+  String get defaultServerAutoUpdateLabel =>
+      'Լռելյայն սերվերների ինքնաթարմացման միջակայք';
+
+  @override
+  String get defaultServerAutoUpdateDisabled => 'Անջատված';
+
+  @override
+  String get defaultServerAutoUpdateEvery12Hours => 'Ամեն 12 ժամը մեկ';
+
+  @override
+  String get defaultServerAutoUpdateEvery24Hours => 'Ամեն 24 ժամը մեկ';
+
+  @override
+  String get defaultServerAutoUpdateEvery7Days => 'Ամեն 7 օրը մեկ';
+
+  @override
   String get defaultServersTitle => 'Լռելյայն սերվերներ';
 
   @override

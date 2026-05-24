@@ -575,6 +575,25 @@ class AppLocalizationsFa extends AppLocalizations {
       'به‌روزرسانی قوانین ناموفق بود. اتصال خود را بررسی کنید.';
 
   @override
+  String get armaVpnSettingsSection => 'تنظیمات Arma VPN';
+
+  @override
+  String get defaultServerAutoUpdateLabel =>
+      'بازه بروزرسانی خودکار سرورهای پیش‌فرض';
+
+  @override
+  String get defaultServerAutoUpdateDisabled => 'غیرفعال';
+
+  @override
+  String get defaultServerAutoUpdateEvery12Hours => 'هر ۱۲ ساعت';
+
+  @override
+  String get defaultServerAutoUpdateEvery24Hours => 'هر ۲۴ ساعت';
+
+  @override
+  String get defaultServerAutoUpdateEvery7Days => 'هر ۷ روز';
+
+  @override
   String get defaultServersTitle => 'سرورهای پیش‌فرض';
 
   @override

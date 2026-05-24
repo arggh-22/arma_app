@@ -23,14 +23,20 @@ void main() {
       fakeScheduler: fakeScheduler,
     );
 
-    expect(find.text('Arma VPN settings'), findsOneWidget);
-    expect(find.text('Disabled'), findsOneWidget);
-    expect(find.text('Every 12 Hours'), findsOneWidget);
-    expect(find.text('Every 24 Hours'), findsOneWidget);
-    expect(find.text('Every 7 Days'), findsOneWidget);
+    final context = tester.element(find.byType(SettingsScreen));
+    final l10n = AppLocalizations.of(context)!;
+    expect(find.text(l10n.armaVpnSettingsSection), findsOneWidget);
+    expect(find.text(l10n.defaultServerAutoUpdateDisabled), findsOneWidget);
+    expect(find.text(l10n.defaultServerAutoUpdateEvery12Hours), findsOneWidget);
+    expect(find.text(l10n.defaultServerAutoUpdateEvery24Hours), findsOneWidget);
+    expect(find.text(l10n.defaultServerAutoUpdateEvery7Days), findsOneWidget);
 
-    final armaHeaderTop = tester.getTopLeft(find.text('Arma VPN settings')).dy;
-    final generalHeaderTop = tester.getTopLeft(find.text('General')).dy;
+    final armaHeaderTop = tester
+        .getTopLeft(find.text(l10n.armaVpnSettingsSection))
+        .dy;
+    final generalHeaderTop = tester
+        .getTopLeft(find.text(l10n.generalSection))
+        .dy;
     expect(armaHeaderTop, lessThan(generalHeaderTop));
 
     final disabledRadio = tester
@@ -64,12 +70,32 @@ void main() {
       );
     },
   );
+
+  testWidgets('renders localized labels when locale is Russian', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues(<String, Object>{'locale': 'ru'});
+    final prefs = await SharedPreferences.getInstance();
+    final fakeScheduler = _FakeSchedulerClient();
+
+    await _pumpSettingsScreen(
+      tester,
+      prefs: prefs,
+      fakeScheduler: fakeScheduler,
+      locale: const Locale('ru'),
+    );
+
+    expect(find.text('Настройки Arma VPN'), findsOneWidget);
+    expect(find.text('Отключено'), findsOneWidget);
+    expect(find.text('Каждые 12 часов'), findsOneWidget);
+  });
 }
 
 Future<void> _pumpSettingsScreen(
   WidgetTester tester, {
   required SharedPreferences prefs,
   required _FakeSchedulerClient fakeScheduler,
+  Locale? locale,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
@@ -81,6 +107,7 @@ Future<void> _pumpSettingsScreen(
         xrayVersionProvider.overrideWith((ref) async => '1.0.0'),
       ],
       child: MaterialApp(
+        locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: const SettingsScreen(),

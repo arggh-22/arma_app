@@ -558,6 +558,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get couldntUpdateRules => '无法更新规则。请检查网络连接后重试。';
 
   @override
+  String get armaVpnSettingsSection => 'Arma VPN 设置';
+
+  @override
+  String get defaultServerAutoUpdateLabel => '默认服务器自动更新间隔';
+
+  @override
+  String get defaultServerAutoUpdateDisabled => '已禁用';
+
+  @override
+  String get defaultServerAutoUpdateEvery12Hours => '每 12 小时';
+
+  @override
+  String get defaultServerAutoUpdateEvery24Hours => '每 24 小时';
+
+  @override
+  String get defaultServerAutoUpdateEvery7Days => '每 7 天';
+
+  @override
   String get defaultServersTitle => '默认服务器';
 
   @override

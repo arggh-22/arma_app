@@ -1142,6 +1142,42 @@ abstract class AppLocalizations {
   /// **'Couldn\'t update rules. Check your connection and try again.'**
   String get couldntUpdateRules;
 
+  /// No description provided for @armaVpnSettingsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Arma VPN settings'**
+  String get armaVpnSettingsSection;
+
+  /// No description provided for @defaultServerAutoUpdateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Default server auto-update interval'**
+  String get defaultServerAutoUpdateLabel;
+
+  /// No description provided for @defaultServerAutoUpdateDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Disabled'**
+  String get defaultServerAutoUpdateDisabled;
+
+  /// No description provided for @defaultServerAutoUpdateEvery12Hours.
+  ///
+  /// In en, this message translates to:
+  /// **'Every 12 Hours'**
+  String get defaultServerAutoUpdateEvery12Hours;
+
+  /// No description provided for @defaultServerAutoUpdateEvery24Hours.
+  ///
+  /// In en, this message translates to:
+  /// **'Every 24 Hours'**
+  String get defaultServerAutoUpdateEvery24Hours;
+
+  /// No description provided for @defaultServerAutoUpdateEvery7Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Every 7 Days'**
+  String get defaultServerAutoUpdateEvery7Days;
+
   /// No description provided for @defaultServersTitle.
   ///
   /// In en, this message translates to:

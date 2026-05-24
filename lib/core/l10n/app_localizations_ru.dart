@@ -578,6 +578,25 @@ class AppLocalizationsRu extends AppLocalizations {
       'Не удалось обновить правила. Проверьте подключение.';
 
   @override
+  String get armaVpnSettingsSection => 'Настройки Arma VPN';
+
+  @override
+  String get defaultServerAutoUpdateLabel =>
+      'Интервал автообновления серверов по умолчанию';
+
+  @override
+  String get defaultServerAutoUpdateDisabled => 'Отключено';
+
+  @override
+  String get defaultServerAutoUpdateEvery12Hours => 'Каждые 12 часов';
+
+  @override
+  String get defaultServerAutoUpdateEvery24Hours => 'Каждые 24 часа';
+
+  @override
+  String get defaultServerAutoUpdateEvery7Days => 'Каждые 7 дней';
+
+  @override
   String get defaultServersTitle => 'Серверы по умолчанию';
 
   @override

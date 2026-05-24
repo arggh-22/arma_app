@@ -50,10 +50,17 @@ class SettingsScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Text(
-              'Arma VPN settings',
+              l10n.armaVpnSettingsSection,
               style: theme.textTheme.labelLarge?.copyWith(
                 color: colorScheme.primary,
               ),
+            ),
+          ),
+
+          ListTile(
+            title: Text(
+              l10n.defaultServerAutoUpdateLabel,
+              style: theme.textTheme.titleMedium,
             ),
           ),
 
@@ -61,7 +68,7 @@ class SettingsScreen extends ConsumerWidget {
             key: const Key('default-server-auto-update-disabled'),
             value: DefaultServerAutoUpdateInterval.disabled,
             groupValue: autoUpdateInterval,
-            title: const Text('Disabled'),
+            title: Text(l10n.defaultServerAutoUpdateDisabled),
             onChanged: (value) async {
               if (value != null) {
                 await ref
@@ -74,7 +81,7 @@ class SettingsScreen extends ConsumerWidget {
             key: const Key('default-server-auto-update-12h'),
             value: DefaultServerAutoUpdateInterval.every12Hours,
             groupValue: autoUpdateInterval,
-            title: const Text('Every 12 Hours'),
+            title: Text(l10n.defaultServerAutoUpdateEvery12Hours),
             onChanged: (value) async {
               if (value != null) {
                 await ref
@@ -87,7 +94,7 @@ class SettingsScreen extends ConsumerWidget {
             key: const Key('default-server-auto-update-24h'),
             value: DefaultServerAutoUpdateInterval.every24Hours,
             groupValue: autoUpdateInterval,
-            title: const Text('Every 24 Hours'),
+            title: Text(l10n.defaultServerAutoUpdateEvery24Hours),
             onChanged: (value) async {
               if (value != null) {
                 await ref
@@ -100,7 +107,7 @@ class SettingsScreen extends ConsumerWidget {
             key: const Key('default-server-auto-update-7d'),
             value: DefaultServerAutoUpdateInterval.every7Days,
             groupValue: autoUpdateInterval,
-            title: const Text('Every 7 Days'),
+            title: Text(l10n.defaultServerAutoUpdateEvery7Days),
             onChanged: (value) async {
               if (value != null) {
                 await ref

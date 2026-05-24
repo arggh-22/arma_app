@@ -573,6 +573,25 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t update rules. Check your connection and try again.';
 
   @override
+  String get armaVpnSettingsSection => 'Arma VPN settings';
+
+  @override
+  String get defaultServerAutoUpdateLabel =>
+      'Default server auto-update interval';
+
+  @override
+  String get defaultServerAutoUpdateDisabled => 'Disabled';
+
+  @override
+  String get defaultServerAutoUpdateEvery12Hours => 'Every 12 Hours';
+
+  @override
+  String get defaultServerAutoUpdateEvery24Hours => 'Every 24 Hours';
+
+  @override
+  String get defaultServerAutoUpdateEvery7Days => 'Every 7 Days';
+
+  @override
   String get defaultServersTitle => 'Default servers';
 
   @override
