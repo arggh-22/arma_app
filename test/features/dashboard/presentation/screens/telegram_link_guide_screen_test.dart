@@ -210,10 +210,14 @@ void main() {
   ) async {
     final repository = _FakeTelegramLinkRepository();
     final statusCompleter = Completer<AuthState>();
+    var calls = 0;
     await _pumpGuide(
       tester,
       repository: repository,
-      statusChecker: () => statusCompleter.future,
+      statusChecker: () {
+        calls++;
+        return statusCompleter.future;
+      },
     );
 
     await tester.tap(find.byKey(const Key('telegram-check-status-button')));
@@ -228,6 +232,11 @@ void main() {
       isNull,
     );
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(calls, 1);
+
+    await tester.tap(find.byKey(const Key('telegram-check-status-button')));
+    await tester.pump();
+    expect(calls, 1);
 
     statusCompleter.complete(
       const AuthState(
@@ -290,6 +299,12 @@ void main() {
       find.byKey(const Key('telegram-check-status-button')),
     );
     expect(button.onPressed, isNotNull);
+
+    await tester.tap(find.byKey(const Key('telegram-check-status-button')));
+    await tester.pumpAndSettle();
+
+    expect(calls, 2);
+    expect(find.byType(TelegramLinkGuideScreen), findsOneWidget);
   });
 
   testWidgets('invalid Telegram ID is blocked and does not call repository', (

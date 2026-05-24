@@ -14,7 +14,7 @@ Milestone v1.4 uses fresh numbering and does not depend on legacy phase chains.
 ## Phases
 
 - [x] **Phase 1: Telegram Link Status Refresh** - Users can run Step 3 status checks using the correct app-version payload source.
-- [ ] **Phase 2: Link Status Feedback & Retry UX** - Users get clear loading/success/failure outcomes with in-flow retry.
+- [x] **Phase 2: Link Status Feedback & Retry UX** - Users get clear loading/success/failure outcomes with in-flow retry.
 - [ ] **Phase 3: Dashboard Telegram CTA & Announcements** - Dashboard adapts CTA by guest status and shows conditional announcements with read-more.
 
 ## Phase Details
@@ -42,7 +42,7 @@ Plans:
   3. User sees a clear failure state when status check fails and can retry directly from the same screen.
 **Plans**: 1 plan
 Plans:
-- [ ] 02-01-PLAN.md — Harden and verify Step 3 loading/success/failure + immediate retry UX against locked Phase 1 defaults
+- [x] 02-01-PLAN.md — Harden and verify Step 3 loading/success/failure + immediate retry UX against locked Phase 1 defaults
 **UI hint**: yes
 
 ### Phase 3: Dashboard Telegram CTA & Announcements
@@ -62,5 +62,5 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Telegram Link Status Refresh | 1/1 | Complete | 2026-05-24 |
-| 2. Link Status Feedback & Retry UX | 0/1 | Planned | - |
+| 2. Link Status Feedback & Retry UX | 1/1 | Complete | 2026-05-24 |
 | 3. Dashboard Telegram CTA & Announcements | 0/0 | Not started | - |

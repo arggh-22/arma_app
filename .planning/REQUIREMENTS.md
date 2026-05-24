@@ -10,7 +10,7 @@ Requirements for Telegram link-status visibility and dashboard announcement UX.
 ### Telegram Link Status
 
 - [x] **TGSTAT-01**: User can tap Step 3 **Check Link Status** in Telegram link screen and trigger `/auth/device/` refresh.
-- [ ] **TGSTAT-02**: User sees clear status-check feedback states (loading/success/failure with retry).
+- [x] **TGSTAT-02**: User sees clear status-check feedback states (loading/success/failure with retry).
 
 ### Dashboard CTA Behavior
 
@@ -47,7 +47,7 @@ Deferred to future milestones.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | TGSTAT-01 | Phase 1 | Complete |
-| TGSTAT-02 | Phase 2 | Pending |
+| TGSTAT-02 | Phase 2 | Complete |
 | TGCTA-01 | Phase 3 | Pending |
 | TGCTA-02 | Phase 3 | Pending |
 | TGVER-01 | Phase 1 | Complete |
