@@ -1,15 +1,19 @@
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
+import 'package:arma_proxy_vpn_client/core/router/app_router.dart';
+import 'package:arma_proxy_vpn_client/features/api/domain/entities/telegram_link_outcome.dart';
+import 'package:arma_proxy_vpn_client/features/api/domain/repositories/telegram_link_repository.dart';
+import 'package:arma_proxy_vpn_client/features/api/presentation/providers/auth_provider.dart';
 import 'package:arma_proxy_vpn_client/features/connection/domain/entities/connection_status.dart';
 import 'package:arma_proxy_vpn_client/features/connection/presentation/providers/connection_provider.dart';
-import 'package:arma_proxy_vpn_client/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_servers_provider.dart';
+import 'package:arma_proxy_vpn_client/features/dashboard/presentation/screens/telegram_link_guide_screen.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/active_server_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/ui_preferences_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 void main() {
   testWidgets('shows Link FAB and opens Telegram guide route', (tester) async {
@@ -17,11 +21,19 @@ void main() {
 
     final fabFinder = find.byKey(const Key('dashboard-telegram-link-fab'));
     expect(fabFinder, findsOneWidget);
+    expect(find.text('Link'), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is FaIcon && widget.icon == FontAwesomeIcons.telegram,
+      ),
+      findsOneWidget,
+    );
 
     await tester.tap(fabFinder);
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('telegram-guide-screen')), findsOneWidget);
+    expect(find.byType(TelegramLinkGuideScreen), findsOneWidget);
   });
 
   testWidgets('hides FAB on down-scroll and shows it on up-scroll', (
@@ -57,21 +69,7 @@ void main() {
 }
 
 Future<void> _pumpDashboard(WidgetTester tester) async {
-  final router = GoRouter(
-    initialLocation: '/dashboard',
-    routes: [
-      GoRoute(
-        path: '/dashboard',
-        builder: (context, state) => const DashboardScreen(),
-      ),
-      GoRoute(
-        path: '/telegram-link',
-        builder: (context, state) => const Scaffold(
-          body: Center(key: Key('telegram-guide-screen'), child: Text('guide')),
-        ),
-      ),
-    ],
-  );
+  goRouter.go('/dashboard');
 
   await tester.pumpWidget(
     ProviderScope(
@@ -82,11 +80,14 @@ Future<void> _pumpDashboard(WidgetTester tester) async {
         defaultServersProvider.overrideWith(
           () => _TestDefaultServersNotifier(),
         ),
+        telegramLinkRepositoryProvider.overrideWithValue(
+          _TestTelegramLinkRepository(),
+        ),
       ],
       child: MaterialApp.router(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        routerConfig: router,
+        routerConfig: goRouter,
       ),
     ),
   );
@@ -123,4 +124,11 @@ class _TestDefaultServersNotifier extends DefaultServersNotifier {
 
   @override
   Future<void> refresh() async {}
+}
+
+class _TestTelegramLinkRepository implements TelegramLinkRepository {
+  @override
+  Future<TelegramLinkOutcome> linkTelegram(String telegramId) async {
+    return const TelegramLinkOutcome(type: TelegramLinkOutcomeType.alreadyLinked);
+  }
 }

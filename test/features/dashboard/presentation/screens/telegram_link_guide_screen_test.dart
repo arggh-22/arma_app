@@ -33,6 +33,40 @@ void main() {
     expect(find.text('12345678'), findsOneWidget);
   });
 
+  testWidgets('open bot button calls launcher with fixed Telegram URL', (
+    tester,
+  ) async {
+    final repository = _FakeTelegramLinkRepository();
+    Uri? launchedUri;
+    await _pumpGuide(
+      tester,
+      repository: repository,
+      launcher: (uri) async {
+        launchedUri = uri;
+        return true;
+      },
+    );
+
+    await tester.tap(find.byKey(const Key('telegram-open-bot-button')));
+    await tester.pumpAndSettle();
+
+    expect(launchedUri.toString(), 'https://t.me/devarmabot');
+  });
+
+  testWidgets('shows feedback when Telegram bot launch fails', (tester) async {
+    final repository = _FakeTelegramLinkRepository();
+    await _pumpGuide(
+      tester,
+      repository: repository,
+      launcher: (_) async => false,
+    );
+
+    await tester.tap(find.byKey(const Key('telegram-open-bot-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Couldn’t open Telegram bot. Try again.'), findsOneWidget);
+  });
+
   testWidgets('linked outcome pops back to previous screen', (tester) async {
     final repository = _FakeTelegramLinkRepository(
       outcome: const TelegramLinkOutcome(type: TelegramLinkOutcomeType.linked),
@@ -79,12 +113,15 @@ Future<void> _pumpGuide(
   WidgetTester tester, {
   required _FakeTelegramLinkRepository repository,
   String? clipboardText,
+  TelegramUrlLauncher? launcher,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         telegramLinkRepositoryProvider.overrideWithValue(repository),
-        telegramUrlLauncherProvider.overrideWithValue((_) async => true),
+        telegramUrlLauncherProvider.overrideWithValue(
+          launcher ?? (_) async => true,
+        ),
         telegramClipboardReaderProvider.overrideWithValue(
           () async => clipboardText,
         ),
