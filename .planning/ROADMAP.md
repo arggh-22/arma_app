@@ -170,7 +170,7 @@ v1.1: 5 → 6 → 7
 | 8. API Client & Device Authentication | v1.2 | 0/? | Not started | — |
 | 9. Default Servers Home Screen Display | v1.2 | 0/? | Not started | — |
 | 10. Settings & Auto-Update Configuration | v1.2 | 5/5 | Complete   | 2026-05-24 |
-| 11. Telegram Link API Integration | v1.3 | 1/2 | In Progress|  |
+| 11. Telegram Link API Integration | v1.3 | 2/2 | Complete   | 2026-05-24 |
 | 12. Telegram Link UI & Guided Flow | v1.3 | 0/? | Not started | — |
 | 13. Telegram Link UX Hardening & Validation | v1.3 | 0/? | Not started | — |
 
@@ -248,7 +248,7 @@ Plans:
 
 Plans:
 - [x] 11-01-PLAN.md — Telegram link endpoint + auth-retry repository + typed outcome mapping
-- [ ] 11-02-PLAN.md — Telegram link provider submit flow with validation and duplicate in-flight guard
+- [x] 11-02-PLAN.md — Telegram link provider submit flow with validation and duplicate in-flight guard
 
 ### Phase 12: Telegram Link UI & Guided Flow
 **Goal**: Add home-screen Link entry and full step-by-step Telegram guide screen.

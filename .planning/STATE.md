@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: sing-box Engine Migration
-status: executing
-stopped_at: Completed 11-01-PLAN.md
-last_updated: "2026-05-24T14:42:36.544Z"
+status: verifying
+stopped_at: Completed 11-02-PLAN.md
+last_updated: "2026-05-24T14:47:04.424Z"
 last_activity: 2026-05-24
 progress:
   total_phases: 3
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-05-24)
 
 Phase: 11 (telegram-link-api-integration) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-05-24
 
 Progress: [░░░░░░░░░░] 0%
@@ -71,6 +71,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 10 P04 | 2 | 2 tasks | 13 files |
 | Phase 10-settings-auto-update-configuration P05 | 187 | 2 tasks | 13 files |
 | Phase 11 P01 | 143 | 2 tasks | 7 files |
+| Phase 11 P02 | 198 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 10]: Used MaterialLocalizations compact date/time plus ARB placeholder microcopy for overdue refresh timestamp text.
 - [Phase 11]: Mapped client 400 to invalidId and client 409 to alreadyLinked to preserve locked outcome set.
 - [Phase 11]: Kept Telegram link execution strictly behind AuthRepository.executeWithAuthRetry.
+- [Phase 11]: Used a dedicated keep-alive telegramLinkRepositoryProvider in auth_provider.dart instead of introducing alternate auth/token paths.
+- [Phase 11]: Returned the existing in-flight Future from submit() to suppress duplicate taps without launching duplicate requests.
 
 ### Pending Todos
 
@@ -125,6 +128,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-24T14:42:36.540Z
-Stopped at: Completed 11-01-PLAN.md
+Last session: 2026-05-24T14:47:04.420Z
+Stopped at: Completed 11-02-PLAN.md
 Resume file: None

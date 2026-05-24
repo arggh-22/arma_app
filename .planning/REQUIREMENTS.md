@@ -239,7 +239,7 @@ Requirements for Telegram account linking from the app.
   - Sends JSON body `{ "telegram_id": "<id>" }`
   - Handles success and non-2xx responses with typed errors
 
-- [ ] **TGAPI-02**: App validates and submits Telegram ID safely
+- [x] **TGAPI-02**: App validates and submits Telegram ID safely
   - Rejects empty/invalid IDs before API call
   - Prevents duplicate in-flight submit taps
   - Preserves API diagnostics redaction for sensitive headers/token
@@ -276,7 +276,7 @@ Requirements for Telegram account linking from the app.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | TGAPI-01 | Phase 11 | Complete |
-| TGAPI-02 | Phase 11 | Pending |
+| TGAPI-02 | Phase 11 | Complete |
 | TGUI-01 | Phase 12 | Pending |
 | TGUI-02 | Phase 12 | Pending |
 | TGUI-03 | Phase 13 | Pending |
