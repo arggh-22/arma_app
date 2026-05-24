@@ -15,7 +15,7 @@ Milestone v1.5 is a visual/layout milestone: keep existing behavior while redesi
 ## Phases
 
 - [x] **Phase 16: Servers Screen Defaults Integration** - Show default servers as a dedicated collapsible section with existing server interaction behavior. (gap closure in progress) (completed 2026-05-24)
-- [ ] **Phase 17: Dashboard 35/65 Layout Refresh** - Apply 35/65 dashboard composition and selected-server parked visual state while preserving logic. (gap closure in progress)
+- [x] **Phase 17: Dashboard 35/65 Layout Refresh** - Apply 35/65 dashboard composition and selected-server parked visual state while preserving logic. (gap closure in progress) (completed 2026-05-24)
 
 ## Phase Details
 
@@ -47,7 +47,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [x] 17-01-PLAN.md — Implement dashboard layout split and selected-server parked visual state
-- [ ] 17-02-PLAN.md — Close UAT gap for selected highlight parity in default servers list
+- [x] 17-02-PLAN.md — Close UAT gap for selected highlight parity in default servers list
 **UI hint**: yes
 
 ## Progress
@@ -55,4 +55,4 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 16. Servers Screen Defaults Integration | 3/3 | Complete   | 2026-05-24 |
-| 17. Dashboard 35/65 Layout Refresh | 1/2 | In progress | - |
+| 17. Dashboard 35/65 Layout Refresh | 2/2 | Complete   | 2026-05-24 |

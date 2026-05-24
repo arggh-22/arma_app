@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Dashboard Layout Refresh + Servers Screen Defaults
-status: phase_planned
-stopped_at: Phase 17 gap plan 17-02 ready
-last_updated: "2026-05-25T02:33:00+04:00"
-last_activity: 2026-05-25 -- Phase 17 UAT found selected-highlight parity gap; 17-02 planned
+status: executing
+stopped_at: Completed 17-02-PLAN.md
+last_updated: "2026-05-24T22:41:27.760Z"
+last_activity: 2026-05-24
 progress:
   total_phases: 2
   completed_phases: 2
   total_plans: 5
-  completed_plans: 4
-  percent: 80
+  completed_plans: 5
+  percent: 100
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
-**Current focus:** Closing Phase 17 UAT gap
+**Current focus:** Milestone v1.5 complete
 
 ## Current Position
 
-Phase: 17 (Dashboard 35/65 Layout Refresh) — IN PROGRESS (gap closure)
-Plan: 1 of 2
-Status: Gap plan 17-02 ready for execution (`--gaps-only`)
-Last activity: 2026-05-25 -- Phase 17 UAT found selected-highlight parity gap; 17-02 planned
+Phase: 17 (Dashboard 35/65 Layout Refresh) — COMPLETE
+Plan: 2 of 2
+Status: Completed 17-02 plan and closed UAT parity gap
+Last activity: 2026-05-24
 
-Progress: [████████--] 80%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -77,6 +77,7 @@ Progress: [████████--] 80%
 | Phase 16 P02 | 97 | 3 tasks | 5 files |
 | Phase 16 P03 | 422 | 3 tasks | 6 files |
 | Phase 17 P01 | 183 | 3 tasks | 6 files |
+| Phase 17 P02 | 109 | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -129,6 +130,8 @@ Progress: [████████--] 80%
 - [Phase 16]: Keep default-row tap parity unchanged: select first, then disconnect/connect only when connected to another target.
 - [Phase 17]: Kept SingleChildScrollView root and implemented 35/65 as visual top/bottom grouping with stable test keys.
 - [Phase 17]: Bound parked selected-server styling strictly to activeServerProvider selected state while preserving navigation and tap behavior.
+- [Phase 17]: Derived default-tile selected highlight from activeServerProvider by serverConfig.id equality.
+- [Phase 17]: Preserved default-server tap/connect flow unchanged while adding styling-only selected branch.
 
 ### Roadmap Evolution
 
@@ -147,6 +150,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-24T22:25:45.938Z
-Stopped at: Completed 17-01-PLAN.md
+Last session: 2026-05-24T22:41:27.756Z
+Stopped at: Completed 17-02-PLAN.md
 Resume file: None
