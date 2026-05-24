@@ -23,6 +23,7 @@ import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/serve
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/server_list_default_servers_section.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/server_group_header.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/sort_filter_bar.dart';
+import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_servers_provider.dart';
 
 /// Server list screen — full integration of Phase 3 features.
 ///
@@ -49,6 +50,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     final serversAsync = ref.watch(serverListProvider);
     final activeServer = ref.watch(activeServerProvider);
     final multiSelect = ref.watch(multiSelectProvider);
+    final defaultServersState = ref.watch(defaultServersProvider);
     final isMultiSelectActive = multiSelect.isNotEmpty;
 
     return Scaffold(
@@ -75,7 +77,9 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
           ),
         ),
         data: (servers) {
-          if (servers.isEmpty) {
+          final hasVisibleDefaults =
+              !isMultiSelectActive && defaultServersState.items.isNotEmpty;
+          if (servers.isEmpty && !hasVisibleDefaults) {
             return EmptyServerState(
               onImportTap: () => _importFromClipboard(context, ref),
             );
@@ -118,10 +122,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     final hasLatencyData = latencyMap.values.any((v) => v > 0);
 
     return AppBar(
-      title: Text(
-        l10n.servers,
-        style: Theme.of(context).textTheme.titleLarge,
-      ),
+      title: Text(l10n.servers, style: Theme.of(context).textTheme.titleLarge),
       actions: [
         // Best Server button
         IconButton(
@@ -129,12 +130,12 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
             Icons.auto_awesome,
             color: hasLatencyData
                 ? null
-                : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                : Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
           ),
           tooltip: l10n.bestServer,
-          onPressed: hasLatencyData
-              ? () => _onBestServer(serversAsync)
-              : null,
+          onPressed: hasLatencyData ? () => _onBestServer(serversAsync) : null,
         ),
 
         // Test All button
@@ -210,10 +211,18 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     final subscriptions = ref.watch(subscriptionProvider);
 
     // Apply filter
-    final filteredServers = _applyFilter(servers, sortFilter.filter, latencyMap);
+    final filteredServers = _applyFilter(
+      servers,
+      sortFilter.filter,
+      latencyMap,
+    );
 
     // Apply sort
-    final sortedServers = _applySort(filteredServers, sortFilter.sort, latencyMap);
+    final sortedServers = _applySort(
+      filteredServers,
+      sortFilter.sort,
+      latencyMap,
+    );
 
     // Group servers by groupName
     final groups = <String, List<ServerConfig>>{};
@@ -257,10 +266,10 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
           subscription: subscription,
           serverCount: groupServers.length,
           isCollapsed: isCollapsed,
-          isRefreshing:
-              _refreshingSubscriptions.contains(firstServer.subscriptionId),
-          isPinging:
-              _pingingSubscriptions.contains(firstServer.subscriptionId),
+          isRefreshing: _refreshingSubscriptions.contains(
+            firstServer.subscriptionId,
+          ),
+          isPinging: _pingingSubscriptions.contains(firstServer.subscriptionId),
           onToggleCollapse: () {
             setState(() {
               if (isCollapsed) {
@@ -273,11 +282,13 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
           onRefresh: subscription != null
               ? () => _onRefreshSubscription(subscription!.id)
               : null,
-          onPing: () => _onPingGroup(
-              context, subscription?.id, groupServers),
+          onPing: () => _onPingGroup(context, subscription?.id, groupServers),
           onDeleteAll: subscription != null
               ? () => _onDeleteAllInSubscription(
-                    context, subscription!.id, groupServers)
+                  context,
+                  subscription!.id,
+                  groupServers,
+                )
               : null,
         ),
       );
@@ -305,11 +316,11 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
                           .selectServer(server);
                     },
                     onLongPress: () {},
-                    onLatencyTap: () => ref
-                        .read(latencyProvider.notifier)
-                        .testServer(server),
-                    onToggleSelect: () =>
-                        ref.read(multiSelectProvider.notifier).toggle(server.id),
+                    onLatencyTap: () =>
+                        ref.read(latencyProvider.notifier).testServer(server),
+                    onToggleSelect: () => ref
+                        .read(multiSelectProvider.notifier)
+                        .toggle(server.id),
                   )
                 : Dismissible(
                     key: ValueKey('dismiss-${server.id}'),
@@ -321,10 +332,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
                         color: Theme.of(context).colorScheme.error,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(
-                        Icons.delete,
-                        color: Colors.white,
-                      ),
+                      child: const Icon(Icons.delete, color: Colors.white),
                     ),
                     confirmDismiss: (_) async => true,
                     onDismissed: (_) {
@@ -346,9 +354,8 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
                             .read(multiSelectProvider.notifier)
                             .enterSelectionMode(server.id);
                       },
-                      onLatencyTap: () => ref
-                          .read(latencyProvider.notifier)
-                          .testServer(server),
+                      onLatencyTap: () =>
+                          ref.read(latencyProvider.notifier).testServer(server),
                     ),
                   ),
           ),
@@ -598,10 +605,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     );
   }
 
-  Future<void> _importFromClipboard(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
+  Future<void> _importFromClipboard(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     final text = await ClipboardHelper.getText();
@@ -640,11 +644,9 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
       );
 
       try {
-        final importedCount = await ref.read(subscriptionProvider.notifier).addSubscription(
-              url: trimmed,
-              name: '',
-              userAgent: 'arma',
-            );
+        final importedCount = await ref
+            .read(subscriptionProvider.notifier)
+            .addSubscription(url: trimmed, name: '', userAgent: 'arma');
         if (!context.mounted) return;
         messenger.clearSnackBars();
 
@@ -758,10 +760,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
         content: Text('${l10n.importSuccess} — ${config.name}'),
         duration: AppConstants.snackBarDurationDefault,
         backgroundColor: Colors.green.shade700,
-        action: SnackBarAction(
-          label: l10n.viewAction,
-          onPressed: () {},
-        ),
+        action: SnackBarAction(label: l10n.viewAction, onPressed: () {}),
       ),
     );
   }

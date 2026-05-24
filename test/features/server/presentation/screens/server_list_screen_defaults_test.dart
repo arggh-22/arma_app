@@ -17,25 +17,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets(
-    'renders defaults section above imported groups in normal mode',
-    (tester) async {
-      await _pumpScreen(
-        tester,
-        servers: [_server(id: 'imported-1', name: 'Imported 1')],
-        defaults: [_item(id: 'default-1', name: 'Default 1')],
-      );
+  testWidgets('renders defaults section above imported groups in normal mode', (
+    tester,
+  ) async {
+    await _pumpScreen(
+      tester,
+      servers: [_server(id: 'imported-1', name: 'Imported 1')],
+      defaults: [_item(id: 'default-1', name: 'Default 1')],
+    );
 
-      final defaultTop = tester.getTopLeft(find.text('Default 1')).dy;
-      final importedTop = tester.getTopLeft(find.text('Imported (1)')).dy;
+    final defaultTop = tester.getTopLeft(find.text('Default 1')).dy;
+    final importedTop = tester.getTopLeft(find.text('Imported (1)')).dy;
 
-      expect(defaultTop, lessThan(importedTop));
-      expect(
-        find.byKey(const ValueKey('server-list-default-servers-section')),
-        findsOneWidget,
-      );
-    },
-  );
+    expect(defaultTop, lessThan(importedTop));
+    expect(
+      find.byKey(const ValueKey('server-list-default-servers-section')),
+      findsOneWidget,
+    );
+  });
 
   testWidgets(
     'renders defaults section when imported list is empty but defaults exist',
@@ -58,11 +57,7 @@ void main() {
   testWidgets(
     'shows empty state only when imported list and defaults are both empty',
     (tester) async {
-      await _pumpScreen(
-        tester,
-        servers: const [],
-        defaults: const [],
-      );
+      await _pumpScreen(tester, servers: const [], defaults: const []);
 
       expect(find.byType(EmptyServerState), findsOneWidget);
       expect(
@@ -128,7 +123,9 @@ void main() {
     );
 
     expect(
-      find.byKey(const ValueKey('server-list-default-server-selected-default-1')),
+      find.byKey(
+        const ValueKey('server-list-default-server-selected-default-1'),
+      ),
       findsOneWidget,
     );
   });
