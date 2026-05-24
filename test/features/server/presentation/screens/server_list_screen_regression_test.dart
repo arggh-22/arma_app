@@ -16,42 +16,49 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('imported groups still collapse and expand with defaults visible', (
-    tester,
-  ) async {
-    await _pumpScreen(
-      tester,
-      servers: [
-        _server(id: 'imported-1', name: 'Imported 1'),
-        _server(id: 'imported-2', name: 'Imported 2'),
-      ],
-      defaults: [_item(id: 'default-1', name: 'Default 1')],
-    );
+  testWidgets(
+    'imported groups still collapse and expand with defaults visible',
+    (tester) async {
+      await _pumpScreen(
+        tester,
+        servers: [
+          _server(id: 'imported-1', name: 'Imported 1'),
+          _server(id: 'imported-2', name: 'Imported 2'),
+        ],
+        defaults: [_item(id: 'default-1', name: 'Default 1')],
+      );
 
-    expect(find.text('Default 1'), findsOneWidget);
-    expect(find.text('Imported 1'), findsOneWidget);
-    expect(find.text('Imported 2'), findsOneWidget);
+      expect(find.text('Default 1'), findsOneWidget);
+      expect(find.text('Imported 1'), findsOneWidget);
+      expect(find.text('Imported 2'), findsOneWidget);
 
-    final importedHeader = find.byKey(
-      const ValueKey('server-group-header-Imported'),
-    );
-    await tester.tap(
-      find.descendant(of: importedHeader, matching: find.byIcon(Icons.expand_less)),
-    );
-    await tester.pumpAndSettle();
+      final importedHeader = find.byKey(
+        const ValueKey('server-group-header-Imported'),
+      );
+      await tester.tap(
+        find.descendant(
+          of: importedHeader,
+          matching: find.byIcon(Icons.expand_less),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.text('Imported 1'), findsNothing);
-    expect(find.text('Imported 2'), findsNothing);
-    expect(find.text('Default 1'), findsOneWidget);
+      expect(find.text('Imported 1'), findsNothing);
+      expect(find.text('Imported 2'), findsNothing);
+      expect(find.text('Default 1'), findsOneWidget);
 
-    await tester.tap(
-      find.descendant(of: importedHeader, matching: find.byIcon(Icons.expand_more)),
-    );
-    await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: importedHeader,
+          matching: find.byIcon(Icons.expand_more),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.text('Imported 1'), findsOneWidget);
-    expect(find.text('Imported 2'), findsOneWidget);
-  });
+      expect(find.text('Imported 1'), findsOneWidget);
+      expect(find.text('Imported 2'), findsOneWidget);
+    },
+  );
 
   testWidgets(
     'imported groups stay interactive while grouped defaults are visible',
@@ -63,8 +70,18 @@ void main() {
           _server(id: 'imported-2', name: 'Imported 2'),
         ],
         defaults: [
-          _item(id: 'default-1', name: 'Default 1'),
-          _item(id: 'default-2', name: 'Default 2'),
+          _item(
+            id: 'default-1',
+            name: 'Default 1',
+            subscriptionUrl: 'https://example.com/default-group-a',
+            groupName: 'Default Group A',
+          ),
+          _item(
+            id: 'default-2',
+            name: 'Default 2',
+            subscriptionUrl: 'https://example.com/default-group-a',
+            groupName: 'Default Group A',
+          ),
         ],
       );
 
@@ -210,21 +227,30 @@ class TestDefaultServersNotifier extends DefaultServersNotifier {
   DefaultServersState build() => initialState;
 }
 
-DefaultServerItem _item({required String id, required String name}) {
+DefaultServerItem _item({
+  required String id,
+  required String name,
+  String? subscriptionUrl,
+  String groupName = 'Default Group',
+}) {
   return DefaultServerItem(
     id: id,
     name: name,
     status: 'active',
     usedTraffic: 128,
     dataLimit: 1024,
-    subscriptionUrl: 'https://example.com/$id',
+    subscriptionUrl: subscriptionUrl ?? 'https://example.com/$id',
     expireDate: DateTime.utc(2027, 1, 1),
     isActive: true,
-    serverConfig: _server(id: id, name: name),
+    serverConfig: _server(id: id, name: name, groupName: groupName),
   );
 }
 
-ServerConfig _server({required String id, required String name}) {
+ServerConfig _server({
+  required String id,
+  required String name,
+  String groupName = 'Imported',
+}) {
   return ServerConfig(
     id: id,
     name: name,
@@ -232,6 +258,6 @@ ServerConfig _server({required String id, required String name}) {
     address: 'example.com',
     port: 443,
     addedAt: DateTime.utc(2026, 1, 1),
-    groupName: 'Imported',
+    groupName: groupName,
   );
 }

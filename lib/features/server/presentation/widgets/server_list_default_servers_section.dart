@@ -131,7 +131,7 @@ class _ServerListDefaultServersSectionState
         continue;
       }
 
-      for (final item in groupItems)
+      for (final item in groupItems) {
         widgets.add(
           _DefaultServerRow(
             key: ValueKey('server-list-default-server-row-${item.id}'),
@@ -149,6 +149,7 @@ class _ServerListDefaultServersSectionState
             },
           ),
         );
+      }
     }
 
     return widgets;
