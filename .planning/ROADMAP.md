@@ -325,3 +325,18 @@ Plans:
 Plans:
 - [x] 15-01-PLAN.md — Reconstruct and verify Phase 13 requirement evidence into 13-VERIFICATION.md
 - [x] 15-02-PLAN.md — Re-run milestone traceability checks to confirm Phase 13 gap closure
+
+### Phase 15.1: Fix TGAPI-01 bearer authorization regression (INSERTED)
+
+**Goal:** Restore TGAPI-01 contract compliance by fixing Telegram link authorization header to `Bearer` and re-syncing milestone audit evidence.
+**Requirements**: TGAPI-01
+**Depends on:** Phase 15
+**Plans:** 1 plan
+
+**Success Criteria** (what must be TRUE):
+  1. `ApiClient.linkTelegram` sends `Authorization: Bearer <token>` for `POST /auth/telegram/link/`.
+  2. Existing `/keys/` contract remains unchanged (`Authorization: Token <token>`).
+  3. Targeted Telegram-link automated suites pass and milestone audit no longer reports the TGAPI-01 header regression.
+
+Plans:
+- [ ] 15.1-01-PLAN.md — Fix Bearer header regression, harden contract tests, and sync v1.3 audit status
