@@ -53,10 +53,7 @@ void main() {
         container.read(defaultServerAutoUpdateProvider),
         DefaultServerAutoUpdateInterval.every12Hours,
       );
-      expect(
-        prefs.getString('default_server_auto_update_interval'),
-        '12h',
-      );
+      expect(prefs.getString('default_server_auto_update_interval'), '12h');
     });
   });
 }
