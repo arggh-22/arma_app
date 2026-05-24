@@ -53,6 +53,40 @@ void main() {
     expect(find.text('Imported 2'), findsOneWidget);
   });
 
+  testWidgets(
+    'imported groups stay interactive while grouped defaults are visible',
+    (tester) async {
+      await _pumpScreen(
+        tester,
+        servers: [
+          _server(id: 'imported-1', name: 'Imported 1'),
+          _server(id: 'imported-2', name: 'Imported 2'),
+        ],
+        defaults: [
+          _item(id: 'default-1', name: 'Default 1'),
+          _item(id: 'default-2', name: 'Default 2'),
+        ],
+      );
+
+      expect(find.text('Default Group A (2)'), findsOneWidget);
+
+      final importedHeader = find.byKey(
+        const ValueKey('server-group-header-Imported'),
+      );
+      await tester.tap(
+        find.descendant(
+          of: importedHeader,
+          matching: find.byIcon(Icons.expand_less),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Imported 1'), findsNothing);
+      expect(find.text('Imported 2'), findsNothing);
+      expect(find.text('Default Group A (2)'), findsOneWidget);
+    },
+  );
+
   testWidgets('multi-select keeps imported affordances while hiding defaults', (
     tester,
   ) async {
