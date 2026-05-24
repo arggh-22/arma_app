@@ -28,7 +28,7 @@ Milestone v1.5 is a visual/layout milestone: keep existing behavior while redesi
   2. Default-servers section supports collapse/expand.
   3. Tapping a default-server card follows existing server select/connect behavior.
   4. Existing imported-server collapsible group behavior remains unchanged.
-**Plans**: 0 plans
+**Plans**: 1 plan
 Plans:
 - [ ] 16-01-PLAN.md — Implement default-servers section in Servers screen with collapsible behavior parity
 **UI hint**: yes

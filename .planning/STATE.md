@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Dashboard Layout Refresh + Servers Screen Defaults
-status: roadmap_ready
-stopped_at: Roadmap created for milestone v1.5
-last_updated: "2026-05-25T00:33:00+04:00"
-last_activity: 2026-05-25 -- Milestone v1.5 roadmap created (phases 16-17)
+status: phase_planned
+stopped_at: Phase 16 planning complete
+last_updated: "2026-05-25T00:45:00+04:00"
+last_activity: 2026-05-25 -- Phase 16 plan created and checker-verified
 progress:
   total_phases: 2
   completed_phases: 0
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-05-24)
 
 Phase: 16 (Servers Screen Defaults Integration) — NOT STARTED
 Plan: 0 of 1
-Status: Roadmap ready; phase planning can begin
-Last activity: 2026-05-25 -- Milestone v1.5 roadmap created (phases 16-17)
+Status: Phase 16 plan ready for execution
+Last activity: 2026-05-25 -- Phase 16 plan created and checker-verified
 
 Progress: [----------] 0%
 
