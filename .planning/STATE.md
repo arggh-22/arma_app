@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: sing-box Engine Migration
 status: executing
-stopped_at: Completed 08-05-PLAN.md
-last_updated: "2026-05-24T10:53:28.275Z"
-last_activity: 2026-05-24 -- Phase 9 planning complete
+stopped_at: Completed 09-01-PLAN.md
+last_updated: "2026-05-24T10:58:08.498Z"
+last_activity: 2026-05-24
 progress:
   total_phases: 3
   completed_phases: 0
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
-**Current focus:** Phase 08 — api-client-device-auth
+**Current focus:** Phase 09 — default-servers-home-screen-display
 
 ## Current Position
 
-Phase: 08
-Plan: Not started
+Phase: 09 (default-servers-home-screen-display) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-05-24 -- Phase 9 planning complete
+Last activity: 2026-05-24
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -60,6 +60,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 08-api-client-device-auth P03 | 25min | 3 tasks | 10 files |
 | Phase 08-api-client-device-auth P04 | 492 | 2 tasks | 4 files |
 | Phase 08 P05 | 191 | 2 tasks | 5 files |
+| Phase 09-default-servers-home-screen-display P01 | 105 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 08]: authBootstrapProvider is refreshable for explicit reruns while staying idempotent across repeated reads.
 - [Phase 08]: Use android_id for stable Android identifier resolution because device_info_plus removed androidId.
 - [Phase 08]: Migrate persisted legacy IDs to stable platform IDs when available; UUID fallback remains unavailable-ID only.
+- [Phase 09]: Cache reads degrade to null on missing/corrupt payloads to preserve offline/no-cache distinction.
+- [Phase 09]: Default server mapping normalizes IDs as default-api-{id} while preserving API metadata unchanged.
 
 ### Pending Todos
 
@@ -94,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-23T23:53:09.200Z
-Stopped at: Completed 08-05-PLAN.md
+Last session: 2026-05-24T10:58:08.495Z
+Stopped at: Completed 09-01-PLAN.md
 Resume file: None

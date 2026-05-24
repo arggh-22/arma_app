@@ -150,7 +150,7 @@ Requirements for integrating your VPN server API to display default servers in h
   - Send device_id, os_type, app_version to API
   - Store and refresh authentication token securely
 
-- [ ] **API-02**: Fetch user's VPN keys from API (`GET /keys/`)
+- [x] **API-02**: Fetch user's VPN keys from API (`GET /keys/`)
   - Use stored token from device auth
   - Parse response: id, name, key_body, subscription_url, expire_date, status, used_traffic, data_limit
   - Handle 401 Unauthorized by requesting new device auth
@@ -214,7 +214,7 @@ Requirements for integrating your VPN server API to display default servers in h
   - Store API token securely (encrypted in Hive)
   - Never log tokens or HWID in plain text
 
-- [ ] **REL-01**: Offline support
+- [x] **REL-01**: Offline support
   - Display cached default servers even when offline
   - Queue refresh requests when network is unavailable
   - Auto-retry failed fetches with exponential backoff
