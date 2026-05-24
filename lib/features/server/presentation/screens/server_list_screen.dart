@@ -252,6 +252,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
 
       items.add(
         ServerGroupHeader(
+          key: ValueKey('server-group-header-${entry.key}'),
           groupName: entry.key,
           subscription: subscription,
           serverCount: groupServers.length,
