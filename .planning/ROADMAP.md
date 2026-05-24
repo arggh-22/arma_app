@@ -181,7 +181,7 @@ v1.1: 5 → 6 → 7
 | 11. Telegram Link API Integration | v1.3 | 2/2 | Complete    | 2026-05-24 |
 | 12. Telegram Link UI & Guided Flow | v1.3 | 2/2 | Complete   | 2026-05-24 |
 | 13. Telegram Link UX Hardening & Validation | v1.3 | 2/2 | Complete   | 2026-05-24 |
-| 14. Telegram UI Verification Backfill | v1.3 | 0/2 | Not started | — |
+| 14. Telegram UI Verification Backfill | v1.3 | 2/2 | Complete | 2026-05-24 |
 | 15. Telegram Reliability Verification Backfill | v1.3 | 0/2 | Not started | — |
 
 ---
@@ -307,8 +307,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 14-01-PLAN.md — Reconstruct and verify Phase 12 requirement evidence into 12-VERIFICATION.md
-- [ ] 14-02-PLAN.md — Re-run milestone traceability checks to confirm Phase 12 gap closure
+- [x] 14-01-PLAN.md — Reconstruct and verify Phase 12 requirement evidence into 12-VERIFICATION.md
+- [x] 14-02-PLAN.md — Re-run milestone traceability checks to confirm Phase 12 gap closure
 
 ### Phase 15: Telegram Reliability Verification Backfill
 **Goal**: Close milestone audit gaps by producing explicit phase verification evidence for Telegram UX hardening and reliability requirements.
