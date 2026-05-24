@@ -132,10 +132,9 @@ void main() {
       await notifier.checkAndRunOverdueRefresh();
 
       expect(refreshCalls, 1);
-      expect(
-        container.read(defaultServerRefreshSchedulerProvider).lastOverdueRefreshAt,
-        now,
-      );
+      final state = container.read(defaultServerRefreshSchedulerProvider);
+      expect(state.lastOverdueRefreshAt, now);
+      expect(state.hasRecentOverdueRefresh, isTrue);
     });
   });
 }
