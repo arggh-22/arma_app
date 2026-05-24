@@ -40,7 +40,9 @@ Plans:
   1. User sees a loading state while link-status check is in progress.
   2. User sees a clear success state when status check completes successfully.
   3. User sees a clear failure state when status check fails and can retry directly from the same screen.
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 02-01-PLAN.md — Harden and verify Step 3 loading/success/failure + immediate retry UX against locked Phase 1 defaults
 **UI hint**: yes
 
 ### Phase 3: Dashboard Telegram CTA & Announcements
@@ -60,5 +62,5 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Telegram Link Status Refresh | 1/1 | Complete | 2026-05-24 |
-| 2. Link Status Feedback & Retry UX | 0/0 | Not started | - |
+| 2. Link Status Feedback & Retry UX | 0/1 | Planned | - |
 | 3. Dashboard Telegram CTA & Announcements | 0/0 | Not started | - |
