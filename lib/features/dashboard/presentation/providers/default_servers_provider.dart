@@ -48,7 +48,8 @@ final defaultServersRetryScheduleProvider = Provider<List<Duration>>(
 );
 
 final defaultServersRetryDelayProvider = Provider<DefaultServersRetryDelay>(
-  (ref) => (duration) => Future<void>.delayed(duration),
+  (ref) =>
+      (duration) => Future<void>.delayed(duration),
 );
 
 class DefaultServersState {
@@ -110,16 +111,12 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
 
   Future<void> refresh() async {
     state = state.copyWith(isRefreshing: true);
-    await _load(
-      triggerRetryQueue: true,
-    );
+    await _load(triggerRetryQueue: true);
   }
 
   Future<void> _initialLoad() => _load();
 
-  Future<void> _load({
-    bool triggerRetryQueue = false,
-  }) async {
+  Future<void> _load({bool triggerRetryQueue = false}) async {
     try {
       final refreshResult = await ref
           .read(defaultServerRefreshServiceProvider)
@@ -136,7 +133,9 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
     } on Object catch (error) {
       final failureType = _toFailureType(error);
       final cache = await ref.read(defaultServerCacheDatasourceProvider).read();
-      final cachedItems = cache == null ? const <DefaultServerItem>[] : _mapItems(cache.keys);
+      final cachedItems = cache == null
+          ? const <DefaultServerItem>[]
+          : _mapItems(cache.keys);
 
       state = state.copyWith(
         items: cachedItems,
@@ -158,7 +157,7 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
   }
 
   List<DefaultServerItem> _mapItems(List<DefaultServerKey> keys) {
-    return keys.map(DefaultServerItemMapper.map).toList(growable: false);
+    return keys.expand(DefaultServerItemMapper.mapAll).toList(growable: false);
   }
 
   bool _isRetryEligible(
@@ -209,9 +208,7 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
         isRefreshing: true,
       );
 
-      await _load(
-        triggerRetryQueue: false,
-      );
+      await _load(triggerRetryQueue: false);
       if (!ref.mounted) {
         return;
       }
