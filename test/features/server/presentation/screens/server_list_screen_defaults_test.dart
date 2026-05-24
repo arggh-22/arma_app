@@ -370,7 +370,7 @@ DefaultServerItem _item({
   required String name,
   ServerConfig? config,
   String? subscriptionUrl,
-  String groupName = 'Imported',
+  String groupName = 'Default Group',
 }) {
   return DefaultServerItem(
     id: id,

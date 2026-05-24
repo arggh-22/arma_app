@@ -9,10 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 
 class ServerListDefaultServersSection extends ConsumerStatefulWidget {
-  const ServerListDefaultServersSection({
-    super.key,
-    this.onServerTap,
-  });
+  const ServerListDefaultServersSection({super.key, this.onServerTap});
 
   final Future<void> Function(DefaultServerItem item)? onServerTap;
 
@@ -24,6 +21,7 @@ class ServerListDefaultServersSection extends ConsumerStatefulWidget {
 class _ServerListDefaultServersSectionState
     extends ConsumerState<ServerListDefaultServersSection> {
   bool _isExpanded = true;
+  final Set<String> _collapsedSubgroups = <String>{};
 
   @override
   Widget build(BuildContext context) {
@@ -79,27 +77,90 @@ class _ServerListDefaultServersSectionState
                 ),
               )
             else
-              for (final item in defaultServersState.items)
-                _DefaultServerRow(
-                  key: ValueKey('server-list-default-server-row-${item.id}'),
-                  item: item,
-                  isSelected: activeServer?.id == item.serverConfig?.id,
-                  onTap: () async {
-                    if (!item.isConnectable) {
-                      return;
-                    }
-                    if (widget.onServerTap case final onTap?) {
-                      await onTap(item);
-                      return;
-                    }
-                    await _onTapDefaultServer(item);
-                  },
-                ),
+              ..._buildGroupedRows(
+                items: defaultServersState.items,
+                activeServerId: activeServer?.id,
+              ),
             const Gap(8),
           ],
         ],
       ),
     );
+  }
+
+  List<Widget> _buildGroupedRows({
+    required List<DefaultServerItem> items,
+    required String? activeServerId,
+  }) {
+    final grouped = <String, List<DefaultServerItem>>{};
+    for (final item in items) {
+      grouped
+          .putIfAbsent(item.subscriptionUrl, () => <DefaultServerItem>[])
+          .add(item);
+    }
+
+    final widgets = <Widget>[];
+    for (final entry in grouped.entries) {
+      final subscriptionUrl = entry.key;
+      final groupItems = entry.value;
+      final isCollapsed = _collapsedSubgroups.contains(subscriptionUrl);
+      final title = _groupTitle(groupItems);
+
+      widgets.add(
+        _DefaultSubgroupHeader(
+          key: ValueKey('server-list-default-subgroup-header-$subscriptionUrl'),
+          title: title,
+          count: groupItems.length,
+          isCollapsed: isCollapsed,
+          onTap: () {
+            setState(() {
+              if (isCollapsed) {
+                _collapsedSubgroups.remove(subscriptionUrl);
+              } else {
+                _collapsedSubgroups.add(subscriptionUrl);
+              }
+            });
+          },
+          toggleKey: ValueKey(
+            'server-list-default-subgroup-toggle-$subscriptionUrl',
+          ),
+        ),
+      );
+
+      if (isCollapsed) {
+        continue;
+      }
+
+      for (final item in groupItems)
+        widgets.add(
+          _DefaultServerRow(
+            key: ValueKey('server-list-default-server-row-${item.id}'),
+            item: item,
+            isSelected: activeServerId == item.serverConfig?.id,
+            onTap: () async {
+              if (!item.isConnectable) {
+                return;
+              }
+              if (widget.onServerTap case final onTap?) {
+                await onTap(item);
+                return;
+              }
+              await _onTapDefaultServer(item);
+            },
+          ),
+        );
+    }
+
+    return widgets;
+  }
+
+  String _groupTitle(List<DefaultServerItem> groupItems) {
+    final first = groupItems.first;
+    final sourceName = first.serverConfig?.groupName.trim();
+    if (sourceName != null && sourceName.isNotEmpty && sourceName != 'Manual') {
+      return sourceName;
+    }
+    return first.name;
   }
 
   Future<void> _onTapDefaultServer(DefaultServerItem item) async {
@@ -117,6 +178,55 @@ class _ServerListDefaultServersSectionState
       await connectionNotifier.disconnect();
       await connectionNotifier.connect(target);
     }
+  }
+}
+
+class _DefaultSubgroupHeader extends StatelessWidget {
+  const _DefaultSubgroupHeader({
+    super.key,
+    required this.title,
+    required this.count,
+    required this.isCollapsed,
+    required this.onTap,
+    required this.toggleKey,
+  });
+
+  final String title;
+  final int count;
+  final bool isCollapsed;
+  final VoidCallback onTap;
+  final Key toggleKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      child: Row(
+        children: [
+          IconButton(
+            key: toggleKey,
+            onPressed: onTap,
+            icon: Icon(
+              isCollapsed ? Icons.expand_more : Icons.expand_less,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            visualDensity: VisualDensity.compact,
+          ),
+          Expanded(
+            child: Text(
+              '$title ($count)',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(color: colorScheme.primary),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
