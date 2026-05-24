@@ -123,7 +123,7 @@ class ApiClient {
         method: 'POST',
         path: '/auth/telegram/link/',
         headers: {
-          DeviceAuthApiFields.authorization: 'Bearer $token',
+          DeviceAuthApiFields.authorization: 'Token $token',
           'content-type': 'application/json',
         },
         body: <String, dynamic>{'telegram_id': telegramId},

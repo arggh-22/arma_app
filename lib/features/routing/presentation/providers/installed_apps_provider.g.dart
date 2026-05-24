@@ -61,4 +61,4 @@ final class InstalledAppsProvider
   }
 }
 
-String _$installedAppsHash() => r'02e37efee5003a0207a61439c4da71599cb51413';
+String _$installedAppsHash() => r'c9b9df487497aaec87d128d517c756f0af4ca4cf';

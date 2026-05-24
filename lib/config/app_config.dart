@@ -2,7 +2,7 @@
 class AppConfig {
   AppConfig._();
 
-  static const apiBaseUrl = 'https://your-domain.com/api/v1';
+  static const apiBaseUrl = 'https://dev.arma-web.org/api/v1';
 
   static const apiKeyHeaderName = 'X-API-Key';
   static const apiKeyHeaderValue = 'secret_app_key_123';

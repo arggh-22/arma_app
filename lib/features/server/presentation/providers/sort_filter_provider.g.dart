@@ -54,7 +54,7 @@ final class SortFilterNotifierProvider
 }
 
 String _$sortFilterNotifierHash() =>
-    r'3112631cdfd3c417473dd21b29913b90000dde5a';
+    r'32d585414e41c62378681bdc224b0b0039886eac';
 
 /// Manages sort and filter state for the server list.
 

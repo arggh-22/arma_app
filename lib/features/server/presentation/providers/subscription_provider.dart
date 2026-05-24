@@ -101,6 +101,7 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
     }
 
     ref.invalidateSelf();
+    ref.invalidate(serverListProvider);
     return result.servers.length;
   }
 

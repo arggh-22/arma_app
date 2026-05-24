@@ -42,7 +42,7 @@ final class DnsSettingsNotifierProvider
 }
 
 String _$dnsSettingsNotifierHash() =>
-    r'abd3a4dba05fc038148dc20203bfef290c4615cd';
+    r'0ab6f3e03d2d3d7646767047f0786c9117532c97';
 
 abstract class _$DnsSettingsNotifier extends $Notifier<DnsSettings> {
   DnsSettings build();

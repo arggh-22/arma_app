@@ -78,7 +78,7 @@ final class ConnectionNotifierProvider
 }
 
 String _$connectionNotifierHash() =>
-    r'3fac5e11523dae5ff99474e76b3f34e2fdd5fc69';
+    r'3f39514561ec67f4518243cb0bfc04fa848fabee';
 
 /// Riverpod notifier managing the VPN connection state machine.
 ///

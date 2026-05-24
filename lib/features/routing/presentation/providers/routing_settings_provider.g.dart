@@ -54,7 +54,7 @@ final class RoutingSettingsNotifierProvider
 }
 
 String _$routingSettingsNotifierHash() =>
-    r'fde6ab373e74f09d2417bbe981ac1dbb7c262052';
+    r'16ec8f387fa0c849dd2b6d6edfdabe4772edbded';
 
 /// Riverpod notifier managing all routing settings with persistence.
 ///

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/auth_bootstrap_provider.dart';
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/default_server_refresh_scheduler_provider.dart';
+import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_server_startup_selection_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -32,6 +33,7 @@ class _ArmaAppState extends ConsumerState<ArmaApp> with WidgetsBindingObserver {
   bool _autoRefreshTriggered = false;
   bool _authBootstrapTriggered = false;
   bool _autoUpdateRecoveryTriggered = false;
+  bool _randomDefaultServerSelectionTriggered = false;
 
   @override
   void initState() {
@@ -52,6 +54,10 @@ class _ArmaAppState extends ConsumerState<ArmaApp> with WidgetsBindingObserver {
       if (!_autoUpdateRecoveryTriggered) {
         _autoUpdateRecoveryTriggered = true;
         _triggerDefaultServerAutoUpdateRecovery();
+      }
+      if (!_randomDefaultServerSelectionTriggered) {
+        _randomDefaultServerSelectionTriggered = true;
+        _triggerRandomDefaultServerSelection();
       }
     });
   }
@@ -77,6 +83,16 @@ class _ArmaAppState extends ConsumerState<ArmaApp> with WidgetsBindingObserver {
     final scheduler = ref.read(defaultServerRefreshSchedulerProvider.notifier);
     await scheduler.applyPersistedInterval();
     await scheduler.checkAndRunOverdueRefresh();
+  }
+
+  void _triggerRandomDefaultServerSelection() {
+    unawaited(_runRandomDefaultServerSelection());
+  }
+
+  Future<void> _runRandomDefaultServerSelection() async {
+    await ref
+        .read(defaultServerStartupSelectionProvider)
+        .autoSelectRandomServer();
   }
 
   Future<void> _requestNotificationPermission() async {

@@ -60,7 +60,7 @@ final class TrafficStatsNotifierProvider
 }
 
 String _$trafficStatsNotifierHash() =>
-    r'849764d6ed1a294f4b9fafe576d4bfcda0272441';
+    r'7c07ecee56f180875792b4ef4adfa80118b7022d';
 
 /// Riverpod notifier streaming real-time traffic statistics from the VPN engine.
 ///
