@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Dashboard Layout Refresh + Servers Screen Defaults
-status: phase_discussed
-stopped_at: Phase 17 context captured
-last_updated: "2026-05-25T01:45:00+04:00"
+status: planning
+stopped_at: Phase 17 UI-SPEC approved
+last_updated: "2026-05-24T22:09:59.971Z"
 last_activity: 2026-05-25 -- Phase 17 discussion complete; context ready
 progress:
   total_phases: 2
   completed_phases: 1
-  total_plans: 4
+  total_plans: 3
   completed_plans: 3
-  percent: 75
+  percent: 100
 ---
 
 # Project State
@@ -144,6 +144,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-24T21:55:48.328Z
-Stopped at: Completed 16-03-PLAN.md
-Resume file: None
+Last session: 2026-05-24T22:09:59.961Z
+Stopped at: Phase 17 UI-SPEC approved
+Resume file: .planning/phases/17-dashboard-35-65-layout-refresh/17-UI-SPEC.md
