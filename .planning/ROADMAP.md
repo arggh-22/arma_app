@@ -168,7 +168,7 @@ v1.1: 5 → 6 → 7
 | 7. Feature Parity & Dual-Engine Safety | v1.1 | 0/? | Not started | — |
 | 8. API Client & Device Authentication | v1.2 | 0/? | Not started | — |
 | 9. Default Servers Home Screen Display | v1.2 | 0/? | Not started | — |
-| 10. Settings & Auto-Update Configuration | v1.2 | 0/? | Not started | — |
+| 10. Settings & Auto-Update Configuration | v1.2 | 1/4 | In Progress|  |
 
 ---
 

@@ -184,7 +184,7 @@ Requirements for integrating your VPN server API to display default servers in h
   - Cache servers locally in Hive
   - Display cached servers immediately
 
-- [ ] **DATA-02**: Auto-update functionality
+- [x] **DATA-02**: Auto-update functionality
   - Support user-configurable update intervals (Disabled, 12h, 24h, 7 days)
   - Implement background task to refresh servers at configured interval
   - Update cached servers without requiring manual refresh
@@ -202,7 +202,7 @@ Requirements for integrating your VPN server API to display default servers in h
   - Use key_body string as server config (same as user-added servers)
   - Support all existing protocols (VLESS, VMess, Trojan, SS, Hysteria2)
 
-- [ ] **COMPAT-02**: Settings integration
+- [x] **COMPAT-02**: Settings integration
   - Add "Default Servers Auto-Update" setting to settings screen
   - Options: Disabled, Every 12 Hours, Every 24 Hours, Every 7 Days
   - Persist setting in Hive
