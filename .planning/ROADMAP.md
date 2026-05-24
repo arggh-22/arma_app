@@ -202,9 +202,9 @@ v1.1: 5 → 6 → 7
 **Plans**: 3 plans
 
 Plans:
-- [ ] 09-01-PLAN.md — Default-server cache + mapping contracts for offline-ready data foundation
-- [ ] 09-02-PLAN.md — Default-server provider state machine with typed errors and queued retry/backoff
-- [ ] 09-03-PLAN.md — Dashboard section UI, show-all sheet, refresh UX, and tap-to-connect wiring
+- [x] 09-01-PLAN.md — Default-server cache + mapping contracts for offline-ready data foundation
+- [x] 09-02-PLAN.md — Default-server provider state machine with typed errors and queued retry/backoff
+- [x] 09-03-PLAN.md — Dashboard section UI, show-all sheet, refresh UX, and tap-to-connect wiring
 
 ### Phase 10: Settings & Auto-Update Configuration
 **Goal**: Add user settings for auto-update and implement periodic refresh background task.
