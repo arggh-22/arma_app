@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Dashboard Layout Refresh + Servers Screen Defaults
-status: executing
-stopped_at: Completed 16-01-PLAN.md
-last_updated: "2026-05-24T21:07:00.685Z"
+status: verifying
+stopped_at: Completed 16-02-PLAN.md
+last_updated: "2026-05-24T21:26:13.876Z"
 last_activity: 2026-05-24
 progress:
   total_phases: 2
   completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
+  total_plans: 2
+  completed_plans: 2
   percent: 100
 ---
 
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-05-24)
 ## Current Position
 
 Phase: 16 (Servers Screen Defaults Integration) — COMPLETE
-Plan: 1 of 1
-Status: Phase 16 delivered; ready for Phase 17 planning/execution
+Plan: 2 of 2
+Status: Gap plan complete — ready for Phase 17 planning/execution
 Last activity: 2026-05-24
 
 Progress: [██████████] 100%
@@ -74,6 +74,7 @@ Progress: [██████████] 100%
 | Phase 11 P01 | 143 | 2 tasks | 7 files |
 | Phase 11 P02 | 198 | 2 tasks | 3 files |
 | Phase 16 P01 | 254 | 3 tasks | 5 files |
+| Phase 16 P02 | 97 | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -119,6 +120,8 @@ Progress: [██████████] 100%
 - [Phase 16]: Hide defaults section in multi-select mode via existing isMultiSelectActive gate.
 - [Phase 16]: Implement default-row tap parity as select first, then conditional disconnect/connect when target differs.
 - [Phase 16]: Use deterministic server-group header keys to make imported regression tests stable.
+- [Phase 16]: Use SubscriptionParser parseBody + deterministic default-api-{keyId}-{index} IDs for multi-link default rows while preserving single-link compatibility.
+- [Phase 16]: Gate ServerList empty state on imported and defaults availability so defaults remain reachable when imported list is empty in normal mode.
 
 ### Roadmap Evolution
 
@@ -137,6 +140,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-24T21:07:00.681Z
-Stopped at: Completed 16-01-PLAN.md
+Last session: 2026-05-24T21:26:13.872Z
+Stopped at: Completed 16-02-PLAN.md
 Resume file: None
