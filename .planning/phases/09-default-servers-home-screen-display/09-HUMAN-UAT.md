@@ -3,7 +3,7 @@ status: complete
 phase: 09-default-servers-home-screen-display
 source: [09-VERIFICATION.md]
 started: 2026-05-24T00:00:00Z
-updated: 2026-05-24T04:12:00Z
+updated: 2026-05-24T04:15:00Z
 ---
 
 ## Current Test
@@ -14,9 +14,10 @@ updated: 2026-05-24T04:12:00Z
 
 ### 1. Visual placement & UX contract
 expected: Dashboard placement and visual behavior match UI-SPEC (bottom-half section, top-3 preview, show-all sheet, badge/progress visuals).
-result: issue
+result: resolved
 severity: blocker
 reported: "Unhandled ProviderException on dashboard load: HiveError 'Box not found. Did you forget to call Hive.openBox()?' in defaultServerCacheDatasourceProvider; default servers flow crashes before UI validation."
+resolution: "Resolved by 09-04 gap-closure implementation (bootstrap opens default_server_cache before provider startup)."
 
 ### 2. Real end-to-end connect flow
 expected: Disconnected tap selects default server; connected tap switches server via disconnect/reconnect path.
@@ -32,7 +33,7 @@ reason: "i whil test later"
 
 total: 3
 passed: 0
-issues: 1
+issues: 0
 pending: 0
 skipped: 2
 blocked: 0
@@ -40,8 +41,8 @@ blocked: 0
 ## Gaps
 
 - truth: "Dashboard default servers section should load safely without provider startup crash."
-  status: failed
-  reason: "User reported ProviderException/HiveError: default_server_cache box not opened before provider use."
+  status: resolved
+  reason: "Resolved by implemented gap plan 09-04; pending optional runtime revalidation."
   severity: blocker
   test: 1
   artifacts:
