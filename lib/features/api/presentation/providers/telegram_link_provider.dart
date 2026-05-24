@@ -36,6 +36,7 @@ final telegramLinkProvider =
 
 class TelegramLinkNotifier extends Notifier<TelegramLinkState> {
   late final TelegramLinkRepository _repository;
+  Future<TelegramLinkOutcome>? _activeSubmit;
 
   @override
   TelegramLinkState build() {
@@ -44,13 +45,61 @@ class TelegramLinkNotifier extends Notifier<TelegramLinkState> {
   }
 
   Future<TelegramLinkOutcome> submit(String telegramId) async {
-    state = state.copyWith(isSubmitting: true);
-    final outcome = await _repository.linkTelegram(telegramId);
+    final inFlight = _activeSubmit;
+    if (inFlight != null) {
+      return inFlight;
+    }
+
+    final normalizedId = telegramId.trim();
+    final validationFailure = _validate(normalizedId);
+    if (validationFailure != null) {
+      state = state.copyWith(
+        isSubmitting: false,
+        lastOutcome: validationFailure,
+        lastSubmittedId: normalizedId,
+      );
+      return validationFailure;
+    }
+
     state = state.copyWith(
-      isSubmitting: false,
-      lastOutcome: outcome,
-      lastSubmittedId: telegramId,
+      isSubmitting: true,
+      lastSubmittedId: normalizedId,
     );
-    return outcome;
+    final submit = _submitValidated(normalizedId);
+    _activeSubmit = submit;
+    return submit;
+  }
+
+  Future<TelegramLinkOutcome> _submitValidated(String normalizedId) async {
+    try {
+      final outcome = await _repository.linkTelegram(normalizedId);
+      state = state.copyWith(
+        isSubmitting: false,
+        lastOutcome: outcome,
+        lastSubmittedId: normalizedId,
+      );
+      return outcome;
+    } catch (_) {
+      const fallback = TelegramLinkOutcome(type: TelegramLinkOutcomeType.unknown);
+      state = state.copyWith(
+        isSubmitting: false,
+        lastOutcome: fallback,
+        lastSubmittedId: normalizedId,
+      );
+      return fallback;
+    } finally {
+      _activeSubmit = null;
+    }
+  }
+
+  TelegramLinkOutcome? _validate(String telegramId) {
+    if (telegramId.length < 5 || telegramId.length > 20) {
+      return const TelegramLinkOutcome(type: TelegramLinkOutcomeType.invalidId);
+    }
+    final digitsOnly = RegExp(r'^\d+$');
+    if (!digitsOnly.hasMatch(telegramId)) {
+      return const TelegramLinkOutcome(type: TelegramLinkOutcomeType.invalidId);
+    }
+    return null;
   }
 }
