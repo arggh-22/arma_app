@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Telegram Account Linking
-status: verifying
-stopped_at: Phase 15 execution complete
-last_updated: "2026-05-24T16:48:44.481Z"
+status: active
+stopped_at: Milestone v1.3 archived (known gap accepted)
+last_updated: "2026-05-24T17:36:47.394Z"
 last_activity: 2026-05-24
 progress:
   total_phases: 13
-  completed_phases: 9
-  total_plans: 24
-  completed_plans: 24
-  percent: 100
+  completed_phases: 12
+  total_plans: 26
+  completed_plans: 25
+  percent: 96
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
-**Current focus:** Milestone v1.3 blocker closure (TGAPI-01)
+**Current focus:** Post-v1.3 follow-up (execute Phase 15.1, then start new milestone)
 
 ## Current Position
 
-Phase: 15
-Plan: Complete
-Status: Phase 15 complete — ready for milestone re-audit
+Phase: 15.1
+Plan: 01
+Status: v1.3 archived with accepted TGAPI-01 gap; urgent fix remains planned
 Last activity: 2026-05-24
 
 Progress: [░░░░░░░░░░] 0%
@@ -115,6 +115,10 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 11]: Kept Telegram link execution strictly behind AuthRepository.executeWithAuthRetry.
 - [Phase 11]: Used a dedicated keep-alive telegramLinkRepositoryProvider in auth_provider.dart instead of introducing alternate auth/token paths.
 - [Phase 11]: Returned the existing in-flight Future from submit() to suppress duplicate taps without launching duplicate requests.
+
+### Roadmap Evolution
+
+- Phase 15.1 inserted after Phase 15: Fix TGAPI-01 bearer authorization regression (URGENT)
 
 ### Pending Todos
 
