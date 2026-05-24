@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.4
-milestone_name: Telegram Link Status & Dashboard Announcements
-status: milestone_complete
-stopped_at: Milestone v1.4 archived
-last_updated: "2026-05-24T20:35:00Z"
-last_activity: 2026-05-24 -- Archived milestone v1.4 with accepted audit debt
+milestone: v1.5
+milestone_name: Dashboard Layout Refresh + Servers Screen Defaults
+status: defining_requirements
+stopped_at: Milestone v1.5 started
+last_updated: "2026-05-25T00:27:00+04:00"
+last_activity: 2026-05-25 -- Milestone v1.5 started
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 4
-  completed_plans: 4
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
-**Current focus:** Planning next milestone
+**Current focus:** Defining requirements for milestone v1.5
 
 ## Current Position
 
-Phase: Archived (v1.4 complete)
-Plan: n/a
-Status: Milestone v1.4 archived; audit debt accepted for missing phase VERIFICATION artifacts
-Last activity: 2026-05-24 -- Archived milestone v1.4 with accepted audit debt
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements for milestone v1.5
+Last activity: 2026-05-25 -- Milestone v1.5 started
 
-Progress: [██████████] 100%
+Progress: [----------] 0%
 
 ## Performance Metrics
 
@@ -134,5 +134,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-05-24T16:48:44.472Z
-Stopped at: Milestone v1.4 archived
-Resume file: .planning/MILESTONES.md
+Stopped at: Milestone v1.5 started
+Resume file: .planning/PROJECT.md
