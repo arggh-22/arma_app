@@ -195,6 +195,21 @@ void main() {
     expect(repository.calls, 2);
     expect(find.byType(TelegramLinkGuideScreen), findsNothing);
   });
+
+  testWidgets('invalid Telegram ID is blocked and does not call repository', (
+    tester,
+  ) async {
+    final repository = _FakeTelegramLinkRepository();
+    await _pumpGuide(tester, repository: repository);
+
+    await tester.enterText(find.byKey(const Key('telegram-id-input')), '12ab');
+    await tester.tap(find.byKey(const Key('telegram-link-submit-button')));
+    await tester.pumpAndSettle();
+
+    expect(repository.calls, 0);
+    expect(find.byType(TelegramLinkGuideScreen), findsOneWidget);
+    expect(find.text('Telegram ID is invalid. Use 5–20 digits.'), findsOneWidget);
+  });
 }
 
 Future<void> _pumpGuide(
