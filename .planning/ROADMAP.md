@@ -199,7 +199,12 @@ v1.1: 5 → 6 → 7
   5. Cached servers display when offline or API is unreachable
   6. Network errors and timeouts show user-friendly error messages
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 09-01-PLAN.md — Default-server cache + mapping contracts for offline-ready data foundation
+- [ ] 09-02-PLAN.md — Default-server provider state machine with typed errors and queued retry/backoff
+- [ ] 09-03-PLAN.md — Dashboard section UI, show-all sheet, refresh UX, and tap-to-connect wiring
 
 ### Phase 10: Settings & Auto-Update Configuration
 **Goal**: Add user settings for auto-update and implement periodic refresh background task.
