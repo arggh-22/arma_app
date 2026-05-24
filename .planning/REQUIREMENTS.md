@@ -44,20 +44,20 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DLAY-01 | TBD | Pending |
-| DLAY-02 | TBD | Pending |
-| DLAY-03 | TBD | Pending |
-| DLAY-04 | TBD | Pending |
-| SRVD-01 | TBD | Pending |
-| SRVD-02 | TBD | Pending |
-| SRVD-03 | TBD | Pending |
-| SRVD-04 | TBD | Pending |
+| DLAY-01 | Phase 17 | Pending |
+| DLAY-02 | Phase 17 | Pending |
+| DLAY-03 | Phase 17 | Pending |
+| DLAY-04 | Phase 17 | Pending |
+| SRVD-01 | Phase 16 | Pending |
+| SRVD-02 | Phase 16 | Pending |
+| SRVD-03 | Phase 16 | Pending |
+| SRVD-04 | Phase 16 | Pending |
 
 **Coverage:**
 - v1.5 requirements: 8 total
-- Mapped to phases: 0
-- Unmapped: 8 ⚠️
+- Mapped to phases: 8 ✅
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-05-25*
-*Last updated: 2026-05-25 after milestone v1.5 definition*
+*Last updated: 2026-05-25 after roadmap mapping*

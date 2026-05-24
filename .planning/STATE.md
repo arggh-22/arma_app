@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Dashboard Layout Refresh + Servers Screen Defaults
-status: defining_requirements
-stopped_at: Milestone v1.5 started
-last_updated: "2026-05-25T00:27:00+04:00"
-last_activity: 2026-05-25 -- Milestone v1.5 started
+status: roadmap_ready
+stopped_at: Roadmap created for milestone v1.5
+last_updated: "2026-05-25T00:33:00+04:00"
+last_activity: 2026-05-25 -- Milestone v1.5 roadmap created (phases 16-17)
 progress:
-  total_phases: 0
+  total_phases: 2
   completed_phases: 0
-  total_plans: 0
+  total_plans: 2
   completed_plans: 0
   percent: 0
 ---
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
-**Current focus:** Defining requirements for milestone v1.5
+**Current focus:** Planning and executing Phase 16
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements for milestone v1.5
-Last activity: 2026-05-25 -- Milestone v1.5 started
+Phase: 16 (Servers Screen Defaults Integration) — NOT STARTED
+Plan: 0 of 1
+Status: Roadmap ready; phase planning can begin
+Last activity: 2026-05-25 -- Milestone v1.5 roadmap created (phases 16-17)
 
 Progress: [----------] 0%
 
