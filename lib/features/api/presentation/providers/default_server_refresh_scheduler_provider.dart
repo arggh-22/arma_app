@@ -9,7 +9,8 @@ import 'package:workmanager/workmanager.dart';
 const defaultServerPeriodicRefreshWorkUniqueName =
     'default-server-refresh-periodic';
 const defaultServerPeriodicRefreshTaskName = 'default_server_refresh_periodic';
-const defaultServerRetryRefreshWorkUniquePrefix = 'default-server-refresh-retry';
+const defaultServerRetryRefreshWorkUniquePrefix =
+    'default-server-refresh-retry';
 const defaultServerRetryRefreshTaskName = 'default_server_refresh_retry';
 const defaultServerRetryStepInputKey = 'retryStep';
 
@@ -63,9 +64,7 @@ class WorkmanagerDefaultServerBackgroundSchedulerClient
       initialDelay: initialDelay,
       inputData: inputData,
       existingWorkPolicy: ExistingWorkPolicy.replace,
-      constraints: Constraints(
-        networkType: NetworkType.connected,
-      ),
+      constraints: Constraints(networkType: NetworkType.connected),
     );
   }
 
@@ -80,9 +79,7 @@ class WorkmanagerDefaultServerBackgroundSchedulerClient
       taskName,
       frequency: frequency,
       existingWorkPolicy: ExistingPeriodicWorkPolicy.update,
-      constraints: Constraints(
-        networkType: NetworkType.connected,
-      ),
+      constraints: Constraints(networkType: NetworkType.connected),
     );
   }
 }
@@ -96,29 +93,33 @@ final defaultServerSchedulerNowProvider = Provider<DefaultServerSchedulerNow>(
   (ref) => DateTime.now,
 );
 
-final defaultServerRefreshInvokerProvider = Provider<DefaultServerRefreshInvoker>(
-  (ref) {
-    return () async {
-      await ref.read(defaultServerRefreshServiceProvider).refreshNow();
-    };
-  },
-);
+final defaultServerRefreshInvokerProvider =
+    Provider<DefaultServerRefreshInvoker>((ref) {
+      return () async {
+        await ref.read(defaultServerRefreshServiceProvider).refreshNow();
+      };
+    });
 
 class DefaultServerRefreshSchedulerState {
   const DefaultServerRefreshSchedulerState({
     this.lastOverdueRefreshAt,
+    this.hasRecentOverdueRefresh = false,
   });
 
   final DateTime? lastOverdueRefreshAt;
+  final bool hasRecentOverdueRefresh;
 
   DefaultServerRefreshSchedulerState copyWith({
     DateTime? lastOverdueRefreshAt,
     bool clearLastOverdueRefreshAt = false,
+    bool? hasRecentOverdueRefresh,
   }) {
     return DefaultServerRefreshSchedulerState(
       lastOverdueRefreshAt: clearLastOverdueRefreshAt
           ? null
           : lastOverdueRefreshAt ?? this.lastOverdueRefreshAt,
+      hasRecentOverdueRefresh:
+          hasRecentOverdueRefresh ?? this.hasRecentOverdueRefresh,
     );
   }
 }
@@ -141,15 +142,19 @@ class DefaultServerRefreshSchedulerNotifier
       return;
     }
 
-    await ref.read(defaultServerBackgroundSchedulerClientProvider).registerPeriodic(
-      uniqueName: defaultServerPeriodicRefreshWorkUniqueName,
-      taskName: defaultServerPeriodicRefreshTaskName,
-      frequency: interval.duration,
-    );
+    await ref
+        .read(defaultServerBackgroundSchedulerClientProvider)
+        .registerPeriodic(
+          uniqueName: defaultServerPeriodicRefreshWorkUniqueName,
+          taskName: defaultServerPeriodicRefreshTaskName,
+          frequency: interval.duration,
+        );
   }
 
   Future<void> applyPersistedInterval() async {
-    await applyInterval(_settingsDatasource.getDefaultServerAutoUpdateInterval());
+    await applyInterval(
+      _settingsDatasource.getDefaultServerAutoUpdateInterval(),
+    );
   }
 
   Future<void> checkAndRunOverdueRefresh() async {
@@ -159,16 +164,23 @@ class DefaultServerRefreshSchedulerNotifier
     }
 
     final now = ref.read(defaultServerSchedulerNowProvider)().toUtc();
-    final lastSuccess = _settingsDatasource.getDefaultServerAutoUpdateLastSuccessAt();
-    final isOverdue = lastSuccess == null ||
+    final lastSuccess = _settingsDatasource
+        .getDefaultServerAutoUpdateLastSuccessAt();
+    final isOverdue =
+        lastSuccess == null ||
         now.difference(lastSuccess.toUtc()) >= interval.duration;
     if (!isOverdue) {
       return;
     }
 
-    final refreshed = await _refreshAndScheduleRetryIfNeeded(currentRetryStep: -1);
+    final refreshed = await _refreshAndScheduleRetryIfNeeded(
+      currentRetryStep: -1,
+    );
     if (refreshed) {
-      state = state.copyWith(lastOverdueRefreshAt: now);
+      state = state.copyWith(
+        lastOverdueRefreshAt: now,
+        hasRecentOverdueRefresh: true,
+      );
     }
   }
 
@@ -214,12 +226,15 @@ class DefaultServerRefreshSchedulerNotifier
       }
 
       final delay = _retrySchedule[nextRetryStep];
-      await ref.read(defaultServerBackgroundSchedulerClientProvider).registerOneOff(
-        uniqueName: '$defaultServerRetryRefreshWorkUniquePrefix-$nextRetryStep',
-        taskName: defaultServerRetryRefreshTaskName,
-        initialDelay: delay,
-        inputData: {defaultServerRetryStepInputKey: nextRetryStep},
-      );
+      await ref
+          .read(defaultServerBackgroundSchedulerClientProvider)
+          .registerOneOff(
+            uniqueName:
+                '$defaultServerRetryRefreshWorkUniquePrefix-$nextRetryStep',
+            taskName: defaultServerRetryRefreshTaskName,
+            initialDelay: delay,
+            inputData: {defaultServerRetryStepInputKey: nextRetryStep},
+          );
       return false;
     }
   }
@@ -252,10 +267,11 @@ class DefaultServerRefreshSchedulerNotifier
   }
 }
 
-final defaultServerRefreshSchedulerProvider = NotifierProvider<
-  DefaultServerRefreshSchedulerNotifier,
-  DefaultServerRefreshSchedulerState
->(DefaultServerRefreshSchedulerNotifier.new);
+final defaultServerRefreshSchedulerProvider =
+    NotifierProvider<
+      DefaultServerRefreshSchedulerNotifier,
+      DefaultServerRefreshSchedulerState
+    >(DefaultServerRefreshSchedulerNotifier.new);
 
 extension on DefaultServerAutoUpdateInterval {
   Duration get duration {

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/auth_bootstrap_provider.dart';
+import 'package:arma_proxy_vpn_client/features/api/presentation/providers/default_server_refresh_scheduler_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -27,13 +28,15 @@ class ArmaApp extends ConsumerStatefulWidget {
   ConsumerState<ArmaApp> createState() => _ArmaAppState();
 }
 
-class _ArmaAppState extends ConsumerState<ArmaApp> {
+class _ArmaAppState extends ConsumerState<ArmaApp> with WidgetsBindingObserver {
   bool _autoRefreshTriggered = false;
   bool _authBootstrapTriggered = false;
+  bool _autoUpdateRecoveryTriggered = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Request notification permission on first app open (Android 13+)
     _requestNotificationPermission();
     // Trigger auto-refresh once after first frame (D-04, CONF-07).
@@ -46,7 +49,34 @@ class _ArmaAppState extends ConsumerState<ArmaApp> {
         _autoRefreshTriggered = true;
         ref.read(subscriptionProvider.notifier).refreshAllAutoUpdate();
       }
+      if (!_autoUpdateRecoveryTriggered) {
+        _autoUpdateRecoveryTriggered = true;
+        _triggerDefaultServerAutoUpdateRecovery();
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _triggerDefaultServerAutoUpdateRecovery();
+    }
+  }
+
+  void _triggerDefaultServerAutoUpdateRecovery() {
+    unawaited(_runDefaultServerAutoUpdateRecovery());
+  }
+
+  Future<void> _runDefaultServerAutoUpdateRecovery() async {
+    final scheduler = ref.read(defaultServerRefreshSchedulerProvider.notifier);
+    await scheduler.applyPersistedInterval();
+    await scheduler.checkAndRunOverdueRefresh();
   }
 
   Future<void> _requestNotificationPermission() async {
