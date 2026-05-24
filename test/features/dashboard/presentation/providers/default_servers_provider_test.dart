@@ -184,6 +184,46 @@ void main() {
         DefaultServersFailureType.unauthorized,
       );
     });
+
+    test('queues bounded exponential retries for offline refresh failures', () async {
+      final observedDelays = <Duration>[];
+      var call = 0;
+      final container = ProviderContainer(
+        overrides: [
+          defaultServerKeysProvider.overrideWith((ref) async {
+            call++;
+            if (call == 1) {
+              return [_sampleKey(id: 1)];
+            }
+            throw const ApiClientException(
+              type: ApiClientErrorType.network,
+              message: 'offline',
+            );
+          }),
+          defaultServerCacheDatasourceProvider.overrideWithValue(cacheDatasource),
+          defaultServersRetryDelayProvider.overrideWithValue((duration) async {
+            observedDelays.add(duration);
+          }),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.read(defaultServersProvider);
+      await _settle();
+
+      await container.read(defaultServersProvider.notifier).refresh();
+      await _settle();
+
+      final state = container.read(defaultServersProvider);
+      expect(observedDelays, const [
+        Duration(seconds: 1),
+        Duration(seconds: 2),
+        Duration(seconds: 4),
+      ]);
+      expect(state.hasPendingRetry, isFalse);
+      expect(state.retryAttempt, 3);
+      expect(state.lastFailureType, DefaultServersFailureType.offline);
+    });
   });
 }
 
