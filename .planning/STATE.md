@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: sing-box Engine Migration
 status: executing
-stopped_at: Completed 09-01-PLAN.md
-last_updated: "2026-05-24T10:58:08.498Z"
+stopped_at: Completed 09-02-PLAN.md
+last_updated: "2026-05-24T11:06:36.458Z"
 last_activity: 2026-05-24
 progress:
   total_phases: 3
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-24)
 ## Current Position
 
 Phase: 09 (default-servers-home-screen-display) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-05-24
 
@@ -61,6 +61,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 08-api-client-device-auth P04 | 492 | 2 tasks | 4 files |
 | Phase 08 P05 | 191 | 2 tasks | 5 files |
 | Phase 09-default-servers-home-screen-display P01 | 105 | 2 tasks | 8 files |
+| Phase 09-default-servers-home-screen-display P02 | 296 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 08]: Migrate persisted legacy IDs to stable platform IDs when available; UUID fallback remains unavailable-ID only.
 - [Phase 09]: Cache reads degrade to null on missing/corrupt payloads to preserve offline/no-cache distinction.
 - [Phase 09]: Default server mapping normalizes IDs as default-api-{id} while preserving API metadata unchanged.
+- [Phase 09]: Default server dashboard state modeled as keepAlive notifier state (items/refresh/offline/failure) instead of AsyncValue wrapper-driven UI.
+- [Phase 09]: Manual refresh retries are foreground-only and bounded to 1s/2s/4s exponential delays via injectable timing providers.
 
 ### Pending Todos
 
@@ -97,6 +100,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-24T10:58:08.495Z
-Stopped at: Completed 09-01-PLAN.md
+Last session: 2026-05-24T11:06:36.454Z
+Stopped at: Completed 09-02-PLAN.md
 Resume file: None

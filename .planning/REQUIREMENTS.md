@@ -156,7 +156,7 @@ Requirements for integrating your VPN server API to display default servers in h
   - Handle 401 Unauthorized by requesting new device auth
   - Handle network errors gracefully
 
-- [ ] **API-03**: Error handling for API calls
+- [x] **API-03**: Error handling for API calls
   - Gracefully handle offline state (show cached servers or placeholder)
   - Handle timeout errors (5-second timeout, show retry button)
   - Handle 4xx/5xx errors with user-friendly messages
