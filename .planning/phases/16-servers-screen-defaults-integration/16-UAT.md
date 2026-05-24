@@ -3,8 +3,9 @@ status: complete
 phase: 16-servers-screen-defaults-integration
 source:
   - .planning/phases/16-servers-screen-defaults-integration/16-01-SUMMARY.md
-started: "2026-05-25T00:55:00+04:00"
-updated: "2026-05-25T01:15:09+04:00"
+  - .planning/phases/16-servers-screen-defaults-integration/16-02-SUMMARY.md
+started: "2026-05-25T01:16:00+04:00"
+updated: "2026-05-25T01:38:30+04:00"
 ---
 
 ## Current Test
@@ -15,13 +16,13 @@ updated: "2026-05-25T01:15:09+04:00"
 
 ### 1. Defaults section visibility and order
 expected: On Servers screen in normal mode, a dedicated default-servers section is visible above imported/custom server groups. When multi-select mode is activated, the default-servers section is hidden.
-result: issue
-reported: "default-servers only visible when i have custom server, and default server showing only key(sub link group) its not showing servers list for sub link"
-severity: major
+result: pass
 
 ### 2. Defaults section collapse behavior
 expected: Default-servers section starts expanded each time the screen is opened and can be collapsed/expanded with its toggle.
-result: pass
+result: issue
+reported: 'endpoint /keys/ returns data like [ { "id": 15, "name": "Пробный (Приложение) #1", "key_body": "vless://...", "subscription_url": "https://your-domain.com/sub/user_42_abcdef", "expire_date": "2026-05-24T18:30:00Z", "is_active": true, "status": "active", "used_traffic": 104857600, "data_limit": 5368709120 } ] each item of array one sub link(its have more then one vpn server(for example different zones)) the item have subscription_url json key please using that url request and get servers list and show servers under her sub-link(this logic implemented in custom servers(when i tap import server after Clipboard its using subscription_url shows sublink colapsible group with server list)) i want the same for default servers section in "servers" screen'
+severity: major
 
 ### 3. Default-row tap parity
 expected: Tapping a default server selects it; if currently connected to a different server, the app disconnects then reconnects to the tapped one. If already selected/same target, no redundant reconnect occurs.
@@ -41,19 +42,10 @@ skipped: 0
 
 ## Gaps
 
-- truth: "On Servers screen in normal mode, a dedicated default-servers section is visible above imported/custom server groups. When multi-select mode is activated, the default-servers section is hidden."
+- truth: "Default-servers section starts expanded each time the screen is opened and can be collapsed/expanded with its toggle."
   status: failed
-  reason: "User reported: default-servers only visible when i have custom server, and default server showing only key(sub link group) its not showing servers list for sub link"
-  root_cause: "ServerListScreen returns EmptyServerState when imported list is empty, and default-server mapping/rendering is one-row-per-key without sub-link server expansion."
+  reason: 'User reported: endpoint /keys/ returns data like [ { "id": 15, "name": "Пробный (Приложение) #1", "key_body": "vless://...", "subscription_url": "https://your-domain.com/sub/user_42_abcdef", "expire_date": "2026-05-24T18:30:00Z", "is_active": true, "status": "active", "used_traffic": 104857600, "data_limit": 5368709120 } ] each item of array one sub link(its have more then one vpn server(for example different zones)) the item have subscription_url json key please using that url request and get servers list and show servers under her sub-link(this logic implemented in custom servers(when i tap import server after Clipboard its using subscription_url shows sublink colapsible group with server list)) i want the same for default servers section in "servers" screen'
   severity: major
-  test: 1
-  artifacts:
-    - "lib/features/server/presentation/screens/server_list_screen.dart:L77-L82 — early EmptyServerState return when imported server list is empty."
-    - "lib/features/server/presentation/screens/server_list_screen.dart:L228-L233 — defaults section only added inside _buildGroupedList path."
-    - "lib/features/dashboard/data/mappers/default_server_item_mapper.dart:L11-L19 — keyBody parsed as single share link and row label bound to key.name."
-    - "lib/features/server/presentation/widgets/server_list_default_servers_section.dart:L82-L86,L170 — one row per mapped item, displaying item.name only (no sub-link server expansion)."
-    - "test/features/server/presentation/screens/server_list_screen_defaults_test.dart:L20-L26 — visibility test only covers scenario with imported server present."
-  missing:
-    - "UI path that shows defaults when imported/custom server list is empty."
-    - "Default-server mapping/rendering path that expands sub-link payload into per-server list."
-    - "Regression test for empty imported list + non-empty defaults."
+  test: 2
+  artifacts: []
+  missing: []
