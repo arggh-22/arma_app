@@ -218,4 +218,11 @@ Plans:
   5. Expired servers (compare expire_date from API) are automatically removed from cache
   6. User preference persists across app sessions
 
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [x] 10-01-PLAN.md — Typed auto-update interval persistence and provider state
+- [x] 10-02-PLAN.md — Shared refresh service with prune-before-write cache sync
+- [x] 10-03-PLAN.md — Scheduler + fallback overdue refresh orchestration
+- [x] 10-04-PLAN.md — Settings UI radio controls + localization wiring
+- [ ] 10-05-PLAN.md — Gap closure: subtle updated-state indicator after overdue fallback refresh
