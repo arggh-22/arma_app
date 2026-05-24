@@ -45,7 +45,15 @@ skipped: 0
 - truth: "Default-servers section starts expanded each time the screen is opened and can be collapsed/expanded with its toggle."
   status: failed
   reason: 'User reported: endpoint /keys/ returns data like [ { "id": 15, "name": "Пробный (Приложение) #1", "key_body": "vless://...", "subscription_url": "https://your-domain.com/sub/user_42_abcdef", "expire_date": "2026-05-24T18:30:00Z", "is_active": true, "status": "active", "used_traffic": 104857600, "data_limit": 5368709120 } ] each item of array one sub link(its have more then one vpn server(for example different zones)) the item have subscription_url json key please using that url request and get servers list and show servers under her sub-link(this logic implemented in custom servers(when i tap import server after Clipboard its using subscription_url shows sublink colapsible group with server list)) i want the same for default servers section in "servers" screen'
+  root_cause: "Default servers use a flat mapping pipeline from keyBody and never fetch each key.subscription_url, so grouped collapsible sub-link server lists cannot be rendered."
   severity: major
   test: 2
-  artifacts: []
-  missing: []
+  artifacts:
+    - "lib/features/dashboard/presentation/providers/default_servers_provider.dart:_mapItems uses keys.expand(DefaultServerItemMapper.mapAll) -> flat list"
+    - "lib/features/dashboard/data/mappers/default_server_item_mapper.dart:mapAll parses keyBody into flat DefaultServerItem rows only"
+    - "lib/features/server/presentation/widgets/server_list_default_servers_section.dart:flat row render loop; no collapsible subgroup widget"
+    - "lib/features/server/data/services/subscription_service.dart + lib/features/server/presentation/screens/server_list_screen.dart:custom import flow uses subscriptionId/groupName and collapsible ServerGroupHeader"
+  missing:
+    - "Default servers pipeline does not fetch each key.subscription_url to resolve grouped server lists"
+    - "No grouped default-section state model (sub-link parent with child servers)"
+    - "No collapsible subgroup UI for defaults equivalent to custom import subscription groups"

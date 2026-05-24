@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Dashboard Layout Refresh + Servers Screen Defaults
-status: verifying
-stopped_at: Completed 16-02-PLAN.md
-last_updated: "2026-05-24T21:26:13.876Z"
-last_activity: 2026-05-24
+status: phase_planned
+stopped_at: Phase 16 gap plan 16-03 ready
+last_updated: "2026-05-25T01:39:00+04:00"
+last_activity: 2026-05-25 -- UAT rerun found subscription_url grouping gap; 16-03 planned
 progress:
   total_phases: 2
   completed_phases: 1
-  total_plans: 2
+  total_plans: 3
   completed_plans: 2
-  percent: 100
+  percent: 67
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
-**Current focus:** Planning and executing Phase 17
+**Current focus:** Closing Phase 16 UAT gaps
 
 ## Current Position
 
-Phase: 16 (Servers Screen Defaults Integration) — COMPLETE
-Plan: 2 of 2
-Status: Gap plan complete — ready for Phase 17 planning/execution
-Last activity: 2026-05-24
+Phase: 16 (Servers Screen Defaults Integration) — IN PROGRESS (gap closure)
+Plan: 2 of 3
+Status: Gap plan 16-03 ready for execution (`--gaps-only`)
+Last activity: 2026-05-25 -- UAT rerun found subscription_url grouping gap; 16-03 planned
 
-Progress: [██████████] 100%
+Progress: [███████---] 67%
 
 ## Performance Metrics
 
