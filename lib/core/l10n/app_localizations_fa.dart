@@ -573,4 +573,63 @@ class AppLocalizationsFa extends AppLocalizations {
   @override
   String get couldntUpdateRules =>
       'به‌روزرسانی قوانین ناموفق بود. اتصال خود را بررسی کنید.';
+
+  @override
+  String get defaultServersTitle => 'سرورهای پیش‌فرض';
+
+  @override
+  String get defaultServersShowAll => 'نمایش همه سرورها';
+
+  @override
+  String get defaultServersRefreshSemantics => 'تازه‌سازی سرورهای پیش‌فرض';
+
+  @override
+  String get defaultServersOfflineData => 'داده آفلاین';
+
+  @override
+  String get defaultServersEmptyTitle => 'سرور پیش‌فرضی موجود نیست';
+
+  @override
+  String get defaultServersEmptyBody =>
+      'برای دریافت سرورها، تازه‌سازی را بزنید.';
+
+  @override
+  String get defaultServersNoCacheOfflineBody =>
+      'اتصال ندارید و هنوز کشی موجود نیست. وقتی آنلاین شدید تازه‌سازی کنید.';
+
+  @override
+  String get defaultServersTimeoutError =>
+      'درخواست زمان‌بر شد. برای تلاش دوباره تازه‌سازی کنید.';
+
+  @override
+  String get defaultServersOfflineError =>
+      'شما آفلاین هستید. داده آفلاین نمایش داده می‌شود.';
+
+  @override
+  String get defaultServersUnauthorizedError =>
+      'نشست منقضی شد. دوباره احراز هویت را انجام دهید.';
+
+  @override
+  String get defaultServersServerError =>
+      'خطای سرور. کمی بعد دوباره تلاش کنید.';
+
+  @override
+  String get defaultServersClientError =>
+      'درخواست ناموفق بود. دوباره تلاش کنید.';
+
+  @override
+  String get defaultServersMalformedError =>
+      'پاسخ سرور نامعتبر بود. دوباره تازه‌سازی کنید.';
+
+  @override
+  String get defaultServersStatusActive => 'فعال';
+
+  @override
+  String get defaultServersStatusExpired => 'منقضی';
+
+  @override
+  String get defaultServersStatusLimited => 'محدود';
+
+  @override
+  String get defaultServersStatusUnknown => 'نامشخص';
 }

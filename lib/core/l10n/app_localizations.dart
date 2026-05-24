@@ -1141,6 +1141,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t update rules. Check your connection and try again.'**
   String get couldntUpdateRules;
+
+  /// No description provided for @defaultServersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Default servers'**
+  String get defaultServersTitle;
+
+  /// No description provided for @defaultServersShowAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all servers'**
+  String get defaultServersShowAll;
+
+  /// No description provided for @defaultServersRefreshSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh default servers'**
+  String get defaultServersRefreshSemantics;
+
+  /// No description provided for @defaultServersOfflineData.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline data'**
+  String get defaultServersOfflineData;
+
+  /// No description provided for @defaultServersEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No default servers available'**
+  String get defaultServersEmptyTitle;
+
+  /// No description provided for @defaultServersEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Pull latest servers with Refresh.'**
+  String get defaultServersEmptyBody;
+
+  /// No description provided for @defaultServersNoCacheOfflineBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No connection and no cached servers yet. Tap Refresh when online.'**
+  String get defaultServersNoCacheOfflineBody;
+
+  /// No description provided for @defaultServersTimeoutError.
+  ///
+  /// In en, this message translates to:
+  /// **'Request timed out. Tap Refresh to try again.'**
+  String get defaultServersTimeoutError;
+
+  /// No description provided for @defaultServersOfflineError.
+  ///
+  /// In en, this message translates to:
+  /// **'You’re offline. Showing offline data.'**
+  String get defaultServersOfflineError;
+
+  /// No description provided for @defaultServersUnauthorizedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Session expired. Please retry authentication.'**
+  String get defaultServersUnauthorizedError;
+
+  /// No description provided for @defaultServersServerError.
+  ///
+  /// In en, this message translates to:
+  /// **'Server error. Please try again shortly.'**
+  String get defaultServersServerError;
+
+  /// No description provided for @defaultServersClientError.
+  ///
+  /// In en, this message translates to:
+  /// **'Request failed. Please try again.'**
+  String get defaultServersClientError;
+
+  /// No description provided for @defaultServersMalformedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Server response was invalid. Please refresh again.'**
+  String get defaultServersMalformedError;
+
+  /// No description provided for @defaultServersStatusActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get defaultServersStatusActive;
+
+  /// No description provided for @defaultServersStatusExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get defaultServersStatusExpired;
+
+  /// No description provided for @defaultServersStatusLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Limited'**
+  String get defaultServersStatusLimited;
+
+  /// No description provided for @defaultServersStatusUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get defaultServersStatusUnknown;
 }
 
 class _AppLocalizationsDelegate

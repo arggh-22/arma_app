@@ -186,5 +186,22 @@
   "clearCacheConfirm": "Clear Cache",
   "keepData": "Keep Data",
   "cachedDataCleared": "Cached data cleared",
-  "couldntUpdateRules": "Couldn't update rules. Check your connection and try again."
+  "couldntUpdateRules": "Couldn't update rules. Check your connection and try again.",
+  "defaultServersTitle": "Default servers",
+  "defaultServersShowAll": "Show all servers",
+  "defaultServersRefreshSemantics": "Refresh default servers",
+  "defaultServersOfflineData": "Offline data",
+  "defaultServersEmptyTitle": "No default servers available",
+  "defaultServersEmptyBody": "Pull latest servers with Refresh.",
+  "defaultServersNoCacheOfflineBody": "No connection and no cached servers yet. Tap Refresh when online.",
+  "defaultServersTimeoutError": "Request timed out. Tap Refresh to try again.",
+  "defaultServersOfflineError": "You’re offline. Showing offline data.",
+  "defaultServersUnauthorizedError": "Session expired. Please retry authentication.",
+  "defaultServersServerError": "Server error. Please try again shortly.",
+  "defaultServersClientError": "Request failed. Please try again.",
+  "defaultServersMalformedError": "Server response was invalid. Please refresh again.",
+  "defaultServersStatusActive": "Active",
+  "defaultServersStatusExpired": "Expired",
+  "defaultServersStatusLimited": "Limited",
+  "defaultServersStatusUnknown": "Unknown"
 }

@@ -186,5 +186,22 @@
   "clearCacheConfirm": "Очистить",
   "keepData": "Оставить",
   "cachedDataCleared": "Кеш очищен",
-  "couldntUpdateRules": "Не удалось обновить правила. Проверьте подключение."
+  "couldntUpdateRules": "Не удалось обновить правила. Проверьте подключение.",
+  "defaultServersTitle": "Серверы по умолчанию",
+  "defaultServersShowAll": "Показать все серверы",
+  "defaultServersRefreshSemantics": "Обновить серверы по умолчанию",
+  "defaultServersOfflineData": "Офлайн-данные",
+  "defaultServersEmptyTitle": "Серверов по умолчанию нет",
+  "defaultServersEmptyBody": "Нажмите Обновить, чтобы получить серверы.",
+  "defaultServersNoCacheOfflineBody": "Нет сети и пока нет кеша серверов. Нажмите Обновить, когда будете онлайн.",
+  "defaultServersTimeoutError": "Время запроса истекло. Нажмите Обновить и попробуйте снова.",
+  "defaultServersOfflineError": "Вы офлайн. Показаны офлайн-данные.",
+  "defaultServersUnauthorizedError": "Сессия истекла. Повторите авторизацию.",
+  "defaultServersServerError": "Ошибка сервера. Повторите попытку позже.",
+  "defaultServersClientError": "Запрос не выполнен. Попробуйте снова.",
+  "defaultServersMalformedError": "Некорректный ответ сервера. Обновите ещё раз.",
+  "defaultServersStatusActive": "Активен",
+  "defaultServersStatusExpired": "Истёк",
+  "defaultServersStatusLimited": "Ограничен",
+  "defaultServersStatusUnknown": "Неизвестно"
 }

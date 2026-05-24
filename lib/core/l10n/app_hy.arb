@@ -186,5 +186,22 @@
   "clearCacheConfirm": "Մաքրել cache-ը",
   "keepData": "Պահել տվյալները",
   "cachedDataCleared": "Cache-ը մաքրվեց",
-  "couldntUpdateRules": "Չհաջողվեց թարմացնել կանոնները։ Ստուգեք ինտերնետ կապը։"
+  "couldntUpdateRules": "Չհաջողվեց թարմացնել կանոնները։ Ստուգեք ինտերնետ կապը։",
+  "defaultServersTitle": "Լռելյայն սերվերներ",
+  "defaultServersShowAll": "Ցուցադրել բոլոր սերվերները",
+  "defaultServersRefreshSemantics": "Թարմացնել լռելյայն սերվերները",
+  "defaultServersOfflineData": "Օֆլայն տվյալներ",
+  "defaultServersEmptyTitle": "Լռելյայն սերվերներ չկան",
+  "defaultServersEmptyBody": "Սեղմեք Թարմացնել՝ նոր սերվերներ ստանալու համար։",
+  "defaultServersNoCacheOfflineBody": "Կապ չկա և դեռ cache չկա։ Սեղմեք Թարմացնել, երբ առցանց լինեք։",
+  "defaultServersTimeoutError": "Հարցման ժամանակը սպառվեց։ Սեղմեք Թարմացնել՝ կրկին փորձելու համար։",
+  "defaultServersOfflineError": "Դուք օֆլայն եք։ Ցուցադրվում են օֆլայն տվյալները։",
+  "defaultServersUnauthorizedError": "Սեսիան ավարտվել է։ Կրկին անցեք նույնականացում։",
+  "defaultServersServerError": "Սերվերի սխալ։ Խնդրում ենք նորից փորձել քիչ անց։",
+  "defaultServersClientError": "Հարցումը չհաջողվեց։ Խնդրում ենք կրկին փորձել։",
+  "defaultServersMalformedError": "Սերվերի պատասխանը անվավեր էր։ Կրկին թարմացրեք։",
+  "defaultServersStatusActive": "Ակտիվ",
+  "defaultServersStatusExpired": "Ժամկետանց",
+  "defaultServersStatusLimited": "Սահմանափակ",
+  "defaultServersStatusUnknown": "Անհայտ"
 }

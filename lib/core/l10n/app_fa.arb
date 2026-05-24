@@ -186,5 +186,22 @@
   "clearCacheConfirm": "پاک‌سازی کش",
   "keepData": "نگه‌داشتن داده",
   "cachedDataCleared": "داده‌های کش پاک شد",
-  "couldntUpdateRules": "به‌روزرسانی قوانین ناموفق بود. اتصال خود را بررسی کنید."
+  "couldntUpdateRules": "به‌روزرسانی قوانین ناموفق بود. اتصال خود را بررسی کنید.",
+  "defaultServersTitle": "سرورهای پیش‌فرض",
+  "defaultServersShowAll": "نمایش همه سرورها",
+  "defaultServersRefreshSemantics": "تازه‌سازی سرورهای پیش‌فرض",
+  "defaultServersOfflineData": "داده آفلاین",
+  "defaultServersEmptyTitle": "سرور پیش‌فرضی موجود نیست",
+  "defaultServersEmptyBody": "برای دریافت سرورها، تازه‌سازی را بزنید.",
+  "defaultServersNoCacheOfflineBody": "اتصال ندارید و هنوز کشی موجود نیست. وقتی آنلاین شدید تازه‌سازی کنید.",
+  "defaultServersTimeoutError": "درخواست زمان‌بر شد. برای تلاش دوباره تازه‌سازی کنید.",
+  "defaultServersOfflineError": "شما آفلاین هستید. داده آفلاین نمایش داده می‌شود.",
+  "defaultServersUnauthorizedError": "نشست منقضی شد. دوباره احراز هویت را انجام دهید.",
+  "defaultServersServerError": "خطای سرور. کمی بعد دوباره تلاش کنید.",
+  "defaultServersClientError": "درخواست ناموفق بود. دوباره تلاش کنید.",
+  "defaultServersMalformedError": "پاسخ سرور نامعتبر بود. دوباره تازه‌سازی کنید.",
+  "defaultServersStatusActive": "فعال",
+  "defaultServersStatusExpired": "منقضی",
+  "defaultServersStatusLimited": "محدود",
+  "defaultServersStatusUnknown": "نامشخص"
 }

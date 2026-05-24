@@ -576,4 +576,62 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get couldntUpdateRules =>
       'Не удалось обновить правила. Проверьте подключение.';
+
+  @override
+  String get defaultServersTitle => 'Серверы по умолчанию';
+
+  @override
+  String get defaultServersShowAll => 'Показать все серверы';
+
+  @override
+  String get defaultServersRefreshSemantics => 'Обновить серверы по умолчанию';
+
+  @override
+  String get defaultServersOfflineData => 'Офлайн-данные';
+
+  @override
+  String get defaultServersEmptyTitle => 'Серверов по умолчанию нет';
+
+  @override
+  String get defaultServersEmptyBody =>
+      'Нажмите Обновить, чтобы получить серверы.';
+
+  @override
+  String get defaultServersNoCacheOfflineBody =>
+      'Нет сети и пока нет кеша серверов. Нажмите Обновить, когда будете онлайн.';
+
+  @override
+  String get defaultServersTimeoutError =>
+      'Время запроса истекло. Нажмите Обновить и попробуйте снова.';
+
+  @override
+  String get defaultServersOfflineError => 'Вы офлайн. Показаны офлайн-данные.';
+
+  @override
+  String get defaultServersUnauthorizedError =>
+      'Сессия истекла. Повторите авторизацию.';
+
+  @override
+  String get defaultServersServerError =>
+      'Ошибка сервера. Повторите попытку позже.';
+
+  @override
+  String get defaultServersClientError =>
+      'Запрос не выполнен. Попробуйте снова.';
+
+  @override
+  String get defaultServersMalformedError =>
+      'Некорректный ответ сервера. Обновите ещё раз.';
+
+  @override
+  String get defaultServersStatusActive => 'Активен';
+
+  @override
+  String get defaultServersStatusExpired => 'Истёк';
+
+  @override
+  String get defaultServersStatusLimited => 'Ограничен';
+
+  @override
+  String get defaultServersStatusUnknown => 'Неизвестно';
 }

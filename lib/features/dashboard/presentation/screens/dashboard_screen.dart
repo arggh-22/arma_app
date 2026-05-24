@@ -9,6 +9,7 @@ import 'package:arma_proxy_vpn_client/features/connection/presentation/widgets/c
 import 'package:arma_proxy_vpn_client/features/connection/presentation/widgets/traffic_stats_card.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/active_server_card.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/connect_button.dart';
+import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/default_servers_section.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/ui_preferences_provider.dart';
 
 /// Dashboard screen — home screen of the app.
@@ -48,9 +49,9 @@ class DashboardScreen extends ConsumerWidget {
           style: Theme.of(context).textTheme.titleLarge,
         ),
       ),
-      body: Center(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const ConnectButton(),
             const Gap(16),
@@ -63,17 +64,13 @@ class DashboardScreen extends ConsumerWidget {
             const Gap(8),
             const ConnectionTimer(),
             const Gap(24),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: ActiveServerCard(),
-            ),
+            const ActiveServerCard(),
             if (uiPreferences.showDashboardStatistics) ...[
               const Gap(16),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: TrafficStatsCard(),
-              ),
+              const TrafficStatsCard(),
             ],
+            const Gap(24),
+            const DefaultServersSection(),
           ],
         ),
       ),

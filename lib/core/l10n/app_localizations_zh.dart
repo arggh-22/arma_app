@@ -556,4 +556,55 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get couldntUpdateRules => '无法更新规则。请检查网络连接后重试。';
+
+  @override
+  String get defaultServersTitle => '默认服务器';
+
+  @override
+  String get defaultServersShowAll => '显示全部服务器';
+
+  @override
+  String get defaultServersRefreshSemantics => '刷新默认服务器';
+
+  @override
+  String get defaultServersOfflineData => '离线数据';
+
+  @override
+  String get defaultServersEmptyTitle => '暂无默认服务器';
+
+  @override
+  String get defaultServersEmptyBody => '点击刷新获取最新服务器。';
+
+  @override
+  String get defaultServersNoCacheOfflineBody => '当前离线且暂无缓存服务器。联网后请点击刷新。';
+
+  @override
+  String get defaultServersTimeoutError => '请求超时。点击刷新重试。';
+
+  @override
+  String get defaultServersOfflineError => '您当前离线，正在显示离线数据。';
+
+  @override
+  String get defaultServersUnauthorizedError => '会话已过期，请重新认证。';
+
+  @override
+  String get defaultServersServerError => '服务器错误，请稍后再试。';
+
+  @override
+  String get defaultServersClientError => '请求失败，请重试。';
+
+  @override
+  String get defaultServersMalformedError => '服务器响应无效，请再次刷新。';
+
+  @override
+  String get defaultServersStatusActive => '可用';
+
+  @override
+  String get defaultServersStatusExpired => '已过期';
+
+  @override
+  String get defaultServersStatusLimited => '受限';
+
+  @override
+  String get defaultServersStatusUnknown => '未知';
 }

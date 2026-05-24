@@ -61,7 +61,7 @@ void main() {
       );
 
       await _pumpSection(tester, defaultServersNotifier: notifier);
-      await tester.tap(find.bySemanticsLabel('Refresh default servers'));
+      await tester.tap(find.byIcon(Icons.refresh));
       await tester.pump();
 
       expect(find.text('Visible'), findsOneWidget);
@@ -94,7 +94,8 @@ void main() {
   });
 
   testWidgets('shows timeout failure snackbar on refresh failure', (tester) async {
-    final notifier = TestDefaultServersNotifier(
+    late TestDefaultServersNotifier notifier;
+    notifier = TestDefaultServersNotifier(
       DefaultServersState(
         items: [_item(id: '1', name: 'X')],
         isRefreshing: false,
@@ -104,21 +105,15 @@ void main() {
         retryAttempt: 0,
       ),
       onRefresh: () async {
-        notifierSetFailure?.call();
+        notifier.state = notifier.state.copyWith(
+          lastFailureType: DefaultServersFailureType.timeout,
+        );
       },
     );
 
-    void setFailure() {
-      notifier.state = notifier.state.copyWith(
-        lastFailureType: DefaultServersFailureType.timeout,
-      );
-    }
-
-    notifierSetFailure = setFailure;
-
     await _pumpSection(tester, defaultServersNotifier: notifier);
 
-    await tester.tap(find.bySemanticsLabel('Refresh default servers'));
+    await tester.tap(find.byIcon(Icons.refresh));
     await tester.pumpAndSettle();
 
     expect(
@@ -127,8 +122,6 @@ void main() {
     );
   });
 }
-
-void Function()? notifierSetFailure;
 
 Future<void> _pumpSection(
   WidgetTester tester, {

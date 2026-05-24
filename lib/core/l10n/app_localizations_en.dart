@@ -571,4 +571,61 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get couldntUpdateRules =>
       'Couldn\'t update rules. Check your connection and try again.';
+
+  @override
+  String get defaultServersTitle => 'Default servers';
+
+  @override
+  String get defaultServersShowAll => 'Show all servers';
+
+  @override
+  String get defaultServersRefreshSemantics => 'Refresh default servers';
+
+  @override
+  String get defaultServersOfflineData => 'Offline data';
+
+  @override
+  String get defaultServersEmptyTitle => 'No default servers available';
+
+  @override
+  String get defaultServersEmptyBody => 'Pull latest servers with Refresh.';
+
+  @override
+  String get defaultServersNoCacheOfflineBody =>
+      'No connection and no cached servers yet. Tap Refresh when online.';
+
+  @override
+  String get defaultServersTimeoutError =>
+      'Request timed out. Tap Refresh to try again.';
+
+  @override
+  String get defaultServersOfflineError =>
+      'You’re offline. Showing offline data.';
+
+  @override
+  String get defaultServersUnauthorizedError =>
+      'Session expired. Please retry authentication.';
+
+  @override
+  String get defaultServersServerError =>
+      'Server error. Please try again shortly.';
+
+  @override
+  String get defaultServersClientError => 'Request failed. Please try again.';
+
+  @override
+  String get defaultServersMalformedError =>
+      'Server response was invalid. Please refresh again.';
+
+  @override
+  String get defaultServersStatusActive => 'Active';
+
+  @override
+  String get defaultServersStatusExpired => 'Expired';
+
+  @override
+  String get defaultServersStatusLimited => 'Limited';
+
+  @override
+  String get defaultServersStatusUnknown => 'Unknown';
 }

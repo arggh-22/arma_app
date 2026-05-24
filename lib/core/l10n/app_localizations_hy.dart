@@ -574,4 +574,63 @@ class AppLocalizationsHy extends AppLocalizations {
   @override
   String get couldntUpdateRules =>
       'Չհաջողվեց թարմացնել կանոնները։ Ստուգեք ինտերնետ կապը։';
+
+  @override
+  String get defaultServersTitle => 'Լռելյայն սերվերներ';
+
+  @override
+  String get defaultServersShowAll => 'Ցուցադրել բոլոր սերվերները';
+
+  @override
+  String get defaultServersRefreshSemantics => 'Թարմացնել լռելյայն սերվերները';
+
+  @override
+  String get defaultServersOfflineData => 'Օֆլայն տվյալներ';
+
+  @override
+  String get defaultServersEmptyTitle => 'Լռելյայն սերվերներ չկան';
+
+  @override
+  String get defaultServersEmptyBody =>
+      'Սեղմեք Թարմացնել՝ նոր սերվերներ ստանալու համար։';
+
+  @override
+  String get defaultServersNoCacheOfflineBody =>
+      'Կապ չկա և դեռ cache չկա։ Սեղմեք Թարմացնել, երբ առցանց լինեք։';
+
+  @override
+  String get defaultServersTimeoutError =>
+      'Հարցման ժամանակը սպառվեց։ Սեղմեք Թարմացնել՝ կրկին փորձելու համար։';
+
+  @override
+  String get defaultServersOfflineError =>
+      'Դուք օֆլայն եք։ Ցուցադրվում են օֆլայն տվյալները։';
+
+  @override
+  String get defaultServersUnauthorizedError =>
+      'Սեսիան ավարտվել է։ Կրկին անցեք նույնականացում։';
+
+  @override
+  String get defaultServersServerError =>
+      'Սերվերի սխալ։ Խնդրում ենք նորից փորձել քիչ անց։';
+
+  @override
+  String get defaultServersClientError =>
+      'Հարցումը չհաջողվեց։ Խնդրում ենք կրկին փորձել։';
+
+  @override
+  String get defaultServersMalformedError =>
+      'Սերվերի պատասխանը անվավեր էր։ Կրկին թարմացրեք։';
+
+  @override
+  String get defaultServersStatusActive => 'Ակտիվ';
+
+  @override
+  String get defaultServersStatusExpired => 'Ժամկետանց';
+
+  @override
+  String get defaultServersStatusLimited => 'Սահմանափակ';
+
+  @override
+  String get defaultServersStatusUnknown => 'Անհայտ';
 }
