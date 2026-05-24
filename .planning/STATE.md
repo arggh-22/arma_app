@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Dashboard Layout Refresh + Servers Screen Defaults
-status: executing
-stopped_at: Completed 16-03-PLAN.md
-last_updated: "2026-05-24T21:55:48.332Z"
-last_activity: 2026-05-24
+status: phase_discussed
+stopped_at: Phase 17 context captured
+last_updated: "2026-05-25T01:45:00+04:00"
+last_activity: 2026-05-25 -- Phase 17 discussion complete; context ready
 progress:
   total_phases: 2
   completed_phases: 1
-  total_plans: 3
+  total_plans: 4
   completed_plans: 3
-  percent: 100
+  percent: 75
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
-**Current focus:** Closing Phase 16 UAT gaps
+**Current focus:** Planning Phase 17
 
 ## Current Position
 
-Phase: 16 (Servers Screen Defaults Integration) — IN PROGRESS (gap closure)
-Plan: 3 of 3
-Status: Ready to execute
-Last activity: 2026-05-24
+Phase: 17 (Dashboard 35/65 Layout Refresh) — DISCUSSED
+Plan: 0 of 1
+Status: Context captured; ready for planning
+Last activity: 2026-05-25 -- Phase 17 discussion complete; context ready
 
-Progress: [███████---] 67%
+Progress: [███████---] 75%
 
 ## Performance Metrics
 
