@@ -7,6 +7,7 @@ import 'package:arma_proxy_vpn_client/features/api/presentation/providers/defaul
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/default_server_keys_provider.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/data/mappers/default_server_item_mapper.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/domain/entities/default_server_item.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'default_servers_provider.g.dart';
@@ -36,6 +37,20 @@ DefaultServersFailureType mapDefaultServersFailureType(Object error) {
   }
   return DefaultServersFailureType.unknown;
 }
+
+typedef DefaultServersRetryDelay = Future<void> Function(Duration duration);
+
+final defaultServersRetryScheduleProvider = Provider<List<Duration>>(
+  (ref) => const [
+    Duration(seconds: 1),
+    Duration(seconds: 2),
+    Duration(seconds: 4),
+  ],
+);
+
+final defaultServersRetryDelayProvider = Provider<DefaultServersRetryDelay>(
+  (ref) => (duration) => Future<void>.delayed(duration),
+);
 
 class DefaultServersState {
   const DefaultServersState({
@@ -86,6 +101,8 @@ class DefaultServersState {
 
 @Riverpod(keepAlive: true)
 class DefaultServersNotifier extends _$DefaultServersNotifier {
+  bool _retryLoopRunning = false;
+
   @override
   DefaultServersState build() {
     Future<void>.microtask(_initialLoad);
@@ -94,14 +111,18 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
 
   Future<void> refresh() async {
     state = state.copyWith(isRefreshing: true);
-    await _load(useRefreshProvider: true);
+    await _load(
+      useRefreshProvider: true,
+      triggerRetryQueue: true,
+    );
   }
 
-  Future<void> _initialLoad() async {
-    await _load();
-  }
+  Future<void> _initialLoad() => _load();
 
-  Future<void> _load({bool useRefreshProvider = false}) async {
+  Future<void> _load({
+    bool useRefreshProvider = false,
+    bool triggerRetryQueue = false,
+  }) async {
     try {
       final keys = await _fetchKeys(useRefreshProvider: useRefreshProvider);
       await _persistCache(keys);
@@ -112,6 +133,7 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
         isRefreshing: false,
         isOfflineData: false,
         resetFailureType: true,
+        hasPendingRetry: false,
       );
     } on Object catch (error) {
       final failureType = _toFailureType(error);
@@ -124,6 +146,16 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
         isOfflineData: cache != null,
         lastFailureType: failureType,
       );
+
+      final shouldRetryQueue =
+          triggerRetryQueue &&
+          !_looksUnauthorized(error) &&
+          (_isRetryEligible(failureType, error: error) ||
+              (failureType == DefaultServersFailureType.unknown &&
+                  cache != null));
+      if (shouldRetryQueue) {
+        _startRetryQueue();
+      }
     }
   }
 
@@ -147,6 +179,79 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
 
   List<DefaultServerItem> _mapItems(List<DefaultServerKey> keys) {
     return keys.map(DefaultServerItemMapper.map).toList(growable: false);
+  }
+
+  bool _isRetryEligible(
+    DefaultServersFailureType failureType, {
+    Object? error,
+  }) {
+    if (failureType == DefaultServersFailureType.timeout ||
+        failureType == DefaultServersFailureType.offline) {
+      return true;
+    }
+
+    if (error != null) {
+      final raw = error.toString().toLowerCase();
+      return raw.contains('timeout') ||
+          raw.contains('network') ||
+          raw.contains('offline');
+    }
+
+    return false;
+  }
+
+  bool _looksUnauthorized(Object error) {
+    final raw = error.toString().toLowerCase();
+    return raw.contains('unauthorized') || raw.contains('401');
+  }
+
+  void _startRetryQueue() {
+    if (_retryLoopRunning) {
+      return;
+    }
+
+    _retryLoopRunning = true;
+    state = state.copyWith(hasPendingRetry: true, retryAttempt: 0);
+    Future<void>.microtask(_runRetryQueue);
+  }
+
+  Future<void> _runRetryQueue() async {
+    final delays = ref.read(defaultServersRetryScheduleProvider);
+    for (var attempt = 0; attempt < delays.length; attempt++) {
+      await ref.read(defaultServersRetryDelayProvider)(delays[attempt]);
+      if (!ref.mounted) {
+        return;
+      }
+
+      state = state.copyWith(
+        hasPendingRetry: true,
+        retryAttempt: attempt + 1,
+        isRefreshing: true,
+      );
+
+      await _load(
+        useRefreshProvider: true,
+        triggerRetryQueue: false,
+      );
+      if (!ref.mounted) {
+        return;
+      }
+
+      final failureType = state.lastFailureType;
+      final shouldContinue =
+          failureType != null &&
+          (_isRetryEligible(failureType) ||
+              (failureType == DefaultServersFailureType.unknown &&
+                  state.isOfflineData));
+      if (!shouldContinue) {
+        break;
+      }
+    }
+
+    if (ref.mounted) {
+      state = state.copyWith(hasPendingRetry: false);
+    }
+    _retryLoopRunning = false;
   }
 
   DefaultServersFailureType _toFailureType(Object error) {

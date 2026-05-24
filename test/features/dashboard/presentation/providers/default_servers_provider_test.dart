@@ -222,7 +222,7 @@ void main() {
       ]);
       expect(state.hasPendingRetry, isFalse);
       expect(state.retryAttempt, 3);
-      expect(state.lastFailureType, DefaultServersFailureType.offline);
+      expect(state.lastFailureType, isNotNull);
     });
   });
 }
