@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: sing-box Engine Migration
 status: verifying
-stopped_at: Completed 10-04-PLAN.md
-last_updated: "2026-05-24T12:49:22.174Z"
+stopped_at: Completed 10-05-PLAN.md
+last_updated: "2026-05-24T13:07:59.506Z"
 last_activity: 2026-05-24
 progress:
   total_phases: 3
@@ -69,6 +69,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 10 P02 | 150 | 2 tasks | 4 files |
 | Phase 10-settings-auto-update-configuration P03 | 191 | 2 tasks | 10 files |
 | Phase 10 P04 | 2 | 2 tasks | 13 files |
+| Phase 10-settings-auto-update-configuration P05 | 187 | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -105,6 +106,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 10]: ArmaApp triggers non-blocking auto-update recovery on first frame and resume via scheduler apply/check hooks.
 - [Phase 10]: Placed Arma VPN auto-update controls at top of Settings for highest visibility.
 - [Phase 10]: Reused defaultServerAutoUpdateProvider.setInterval to keep persistence and scheduler updates centralized.
+- [Phase 10]: Bound overdue-refresh indicator visibility directly to scheduler provider typed fields in Settings.
+- [Phase 10]: Used MaterialLocalizations compact date/time plus ARB placeholder microcopy for overdue refresh timestamp text.
 
 ### Pending Todos
 
@@ -119,6 +122,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-24T12:49:22.171Z
-Stopped at: Completed 10-04-PLAN.md
+Last session: 2026-05-24T13:07:59.502Z
+Stopped at: Completed 10-05-PLAN.md
 Resume file: None

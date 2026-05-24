@@ -168,7 +168,7 @@ v1.1: 5 → 6 → 7
 | 7. Feature Parity & Dual-Engine Safety | v1.1 | 0/? | Not started | — |
 | 8. API Client & Device Authentication | v1.2 | 0/? | Not started | — |
 | 9. Default Servers Home Screen Display | v1.2 | 0/? | Not started | — |
-| 10. Settings & Auto-Update Configuration | v1.2 | 4/4 | Complete   | 2026-05-24 |
+| 10. Settings & Auto-Update Configuration | v1.2 | 5/5 | Complete   | 2026-05-24 |
 
 ---
 
@@ -225,4 +225,4 @@ Plans:
 - [x] 10-02-PLAN.md — Shared refresh service with prune-before-write cache sync
 - [x] 10-03-PLAN.md — Scheduler + fallback overdue refresh orchestration
 - [x] 10-04-PLAN.md — Settings UI radio controls + localization wiring
-- [ ] 10-05-PLAN.md — Gap closure: subtle updated-state indicator after overdue fallback refresh
+- [x] 10-05-PLAN.md — Gap closure: subtle updated-state indicator after overdue fallback refresh
