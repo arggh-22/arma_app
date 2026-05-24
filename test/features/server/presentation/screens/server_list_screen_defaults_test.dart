@@ -11,6 +11,7 @@ import 'package:arma_proxy_vpn_client/features/server/presentation/providers/ser
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/sort_filter_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/subscription_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/screens/server_list_screen.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/empty_server_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -32,6 +33,41 @@ void main() {
       expect(
         find.byKey(const ValueKey('server-list-default-servers-section')),
         findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
+    'renders defaults section when imported list is empty but defaults exist',
+    (tester) async {
+      await _pumpScreen(
+        tester,
+        servers: const [],
+        defaults: [_item(id: 'default-1', name: 'Default 1')],
+      );
+
+      expect(
+        find.byKey(const ValueKey('server-list-default-servers-section')),
+        findsOneWidget,
+      );
+      expect(find.text('Default 1'), findsOneWidget);
+      expect(find.byType(EmptyServerState), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'shows empty state only when imported list and defaults are both empty',
+    (tester) async {
+      await _pumpScreen(
+        tester,
+        servers: const [],
+        defaults: const [],
+      );
+
+      expect(find.byType(EmptyServerState), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('server-list-default-servers-section')),
+        findsNothing,
       );
     },
   );
