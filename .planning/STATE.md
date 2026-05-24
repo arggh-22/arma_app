@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: sing-box Engine Migration
 status: executing
-stopped_at: Completed 10-02-PLAN.md
-last_updated: "2026-05-24T12:36:13.461Z"
+stopped_at: Completed 10-03-PLAN.md
+last_updated: "2026-05-24T12:44:21.698Z"
 last_activity: 2026-05-24
 progress:
   total_phases: 3
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-24)
 ## Current Position
 
 Phase: 10 (settings-auto-update-configuration) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-05-24
 
@@ -67,6 +67,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 09-default-servers-home-screen-display P04 | 3 | 2 tasks | 4 files |
 | Phase 10 P01 | 193 | 2 tasks | 5 files |
 | Phase 10 P02 | 150 | 2 tasks | 4 files |
+| Phase 10-settings-auto-update-configuration P03 | 191 | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -99,6 +100,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 10]: Use keep-alive NotifierProvider as canonical default-server auto-update preference state.
 - [Phase 10]: Centralized default-server fetch/prune/write in DefaultServerRefreshService with prune-before-write guarantees.
 - [Phase 10]: DefaultServersNotifier now routes refresh/load through shared service while keeping existing retry and offline fallback behavior.
+- [Phase 10]: Scheduler wraps Workmanager behind an injectable client so interval/retry policy is unit-testable.
+- [Phase 10]: ArmaApp triggers non-blocking auto-update recovery on first frame and resume via scheduler apply/check hooks.
 
 ### Pending Todos
 
@@ -113,6 +116,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-24T12:36:13.457Z
-Stopped at: Completed 10-02-PLAN.md
+Last session: 2026-05-24T12:44:21.695Z
+Stopped at: Completed 10-03-PLAN.md
 Resume file: None

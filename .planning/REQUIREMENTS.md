@@ -178,7 +178,7 @@ Requirements for integrating your VPN server API to display default servers in h
 
 ### Data Management
 
-- [ ] **DATA-01**: Fetch on first launch
+- [x] **DATA-01**: Fetch on first launch
   - Trigger device auth on first app open
   - Fetch default servers immediately after auth
   - Cache servers locally in Hive
