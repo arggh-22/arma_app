@@ -1411,6 +1411,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unexpected error. Please try again.'**
   String get telegramLinkUnknownError;
+
+  /// No description provided for @dashboardTelegramFabLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Telegram'**
+  String get dashboardTelegramFabLabel;
+
+  /// No description provided for @dashboardAnnouncementTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Announcement'**
+  String get dashboardAnnouncementTitle;
+
+  /// No description provided for @dashboardAnnouncementReadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Read more'**
+  String get dashboardAnnouncementReadMore;
 }
 
 class _AppLocalizationsDelegate

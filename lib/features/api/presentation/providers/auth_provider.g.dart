@@ -179,7 +179,7 @@ final class AuthRepositoryProvider
   }
 }
 
-String _$authRepositoryHash() => r'4fe1a5bc48b7b7ecdb4b56e948c3f0ccf25532c2';
+String _$authRepositoryHash() => r'75c1f0e1d4c2d75c15bd7ac3f7cd4d072d8d89b3';
 
 @ProviderFor(AuthStateNotifier)
 final authStateProvider = AuthStateNotifierProvider._();
@@ -205,7 +205,7 @@ final class AuthStateNotifierProvider
   AuthStateNotifier create() => AuthStateNotifier();
 }
 
-String _$authStateNotifierHash() => r'ab1823ae6ebb5e79857f7a479a0b6fb8abffb413';
+String _$authStateNotifierHash() => r'6e3c5ccd86eb5415918efcd674c361a1e53b6885';
 
 abstract class _$AuthStateNotifier extends $AsyncNotifier<AuthState> {
   FutureOr<AuthState> build();

@@ -1,11 +1,13 @@
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/core/router/app_router.dart';
+import 'package:arma_proxy_vpn_client/features/api/domain/entities/auth_state.dart';
 import 'package:arma_proxy_vpn_client/features/api/domain/entities/telegram_link_outcome.dart';
 import 'package:arma_proxy_vpn_client/features/api/domain/repositories/telegram_link_repository.dart';
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/auth_provider.dart';
 import 'package:arma_proxy_vpn_client/features/connection/domain/entities/connection_status.dart';
 import 'package:arma_proxy_vpn_client/features/connection/presentation/providers/connection_provider.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_servers_provider.dart';
+import 'package:arma_proxy_vpn_client/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/screens/telegram_link_guide_screen.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/active_server_provider.dart';
@@ -17,7 +19,15 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 void main() {
   testWidgets('shows Link FAB and opens Telegram guide route', (tester) async {
-    await _pumpDashboard(tester);
+    await _pumpDashboard(
+      tester,
+      authState: const AuthState(
+        token: 'token',
+        isAuthenticated: true,
+        isGuest: true,
+        userId: 1,
+      ),
+    );
 
     final fabFinder = find.byKey(const Key('dashboard-telegram-link-fab'));
     expect(fabFinder, findsOneWidget);
@@ -34,6 +44,34 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(TelegramLinkGuideScreen), findsOneWidget);
+  });
+
+  testWidgets('shows icon-only Telegram FAB for linked users and opens bot', (
+    tester,
+  ) async {
+    Uri? launchedUri;
+    await _pumpDashboard(
+      tester,
+      authState: const AuthState(
+        token: 'token',
+        isAuthenticated: true,
+        isGuest: false,
+        userId: 2,
+      ),
+      launcher: (uri) async {
+        launchedUri = uri;
+        return true;
+      },
+    );
+
+    expect(find.byKey(const Key('dashboard-telegram-link-fab')), findsNothing);
+    expect(find.byKey(const Key('dashboard-telegram-bot-fab')), findsOneWidget);
+    expect(find.text('Link'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('dashboard-telegram-bot-fab')));
+    await tester.pumpAndSettle();
+
+    expect(launchedUri.toString(), 'https://t.me/devarmabot');
   });
 
   testWidgets('hides FAB on down-scroll and shows it on up-scroll', (
@@ -68,7 +106,11 @@ void main() {
   });
 }
 
-Future<void> _pumpDashboard(WidgetTester tester) async {
+Future<void> _pumpDashboard(
+  WidgetTester tester, {
+  AuthState? authState,
+  DashboardTelegramLauncher? launcher,
+}) async {
   goRouter.go('/dashboard');
 
   await tester.pumpWidget(
@@ -83,6 +125,20 @@ Future<void> _pumpDashboard(WidgetTester tester) async {
         telegramLinkRepositoryProvider.overrideWithValue(
           _TestTelegramLinkRepository(),
         ),
+        authStateProvider.overrideWith(
+          () => _TestAuthStateNotifier(
+            authState ??
+                const AuthState(
+                  token: 'token',
+                  isAuthenticated: true,
+                  isGuest: true,
+                  userId: 1,
+                ),
+          ),
+        ),
+        dashboardTelegramLauncherProvider.overrideWithValue(
+          launcher ?? (_) async => true,
+        ),
       ],
       child: MaterialApp.router(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -92,6 +148,23 @@ Future<void> _pumpDashboard(WidgetTester tester) async {
     ),
   );
   await tester.pumpAndSettle();
+}
+
+class _TestAuthStateNotifier extends AuthStateNotifier {
+  _TestAuthStateNotifier([this._state]);
+
+  final AuthState? _state;
+
+  @override
+  Future<AuthState> build() async {
+    return _state ??
+        const AuthState(
+          token: 'token',
+          isAuthenticated: true,
+          isGuest: true,
+          userId: 1,
+        );
+  }
 }
 
 class _TestConnectionNotifier extends ConnectionNotifier {
@@ -129,6 +202,8 @@ class _TestDefaultServersNotifier extends DefaultServersNotifier {
 class _TestTelegramLinkRepository implements TelegramLinkRepository {
   @override
   Future<TelegramLinkOutcome> linkTelegram(String telegramId) async {
-    return const TelegramLinkOutcome(type: TelegramLinkOutcomeType.alreadyLinked);
+    return const TelegramLinkOutcome(
+      type: TelegramLinkOutcomeType.alreadyLinked,
+    );
   }
 }

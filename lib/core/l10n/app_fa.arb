@@ -236,5 +236,8 @@
   "telegramLinkUnauthorized": "Session expired. Please sign in again, then retry linking.",
   "telegramLinkNetworkError": "No network connection. Reconnect and try again.",
   "telegramLinkServerError": "Server error. Please try again shortly.",
-  "telegramLinkUnknownError": "Unexpected error. Please try again."
+  "telegramLinkUnknownError": "Unexpected error. Please try again.",
+  "dashboardTelegramFabLabel": "Telegram",
+  "dashboardAnnouncementTitle": "Announcement",
+  "dashboardAnnouncementReadMore": "Read more"
 }

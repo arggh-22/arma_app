@@ -15,6 +15,8 @@ _AuthState _$AuthStateFromJson(Map<String, dynamic> json) => _AuthState(
   isGuest: json['isGuest'] as bool? ?? false,
   userId: (json['userId'] as num?)?.toInt(),
   deviceId: json['deviceId'] as String?,
+  announcementTitle: json['announcementTitle'] as String?,
+  announcementText: json['announcementText'] as String?,
 );
 
 Map<String, dynamic> _$AuthStateToJson(_AuthState instance) =>
@@ -25,4 +27,6 @@ Map<String, dynamic> _$AuthStateToJson(_AuthState instance) =>
       'isGuest': instance.isGuest,
       'userId': instance.userId,
       'deviceId': instance.deviceId,
+      'announcementTitle': instance.announcementTitle,
+      'announcementText': instance.announcementText,
     };

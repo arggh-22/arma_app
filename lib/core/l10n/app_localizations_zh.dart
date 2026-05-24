@@ -700,4 +700,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get telegramLinkUnknownError => 'Unexpected error. Please try again.';
+
+  @override
+  String get dashboardTelegramFabLabel => 'Telegram';
+
+  @override
+  String get dashboardAnnouncementTitle => 'Announcement';
+
+  @override
+  String get dashboardAnnouncementReadMore => 'Read more';
 }

@@ -14,8 +14,8 @@ Requirements for Telegram link-status visibility and dashboard announcement UX.
 
 ### Dashboard CTA Behavior
 
-- [ ] **TGCTA-01**: Dashboard shows Link CTA while `is_guest=true`.
-- [ ] **TGCTA-02**: Dashboard replaces Link CTA with Telegram bot CTA when `is_guest=false`, and tap opens bot link.
+- [x] **TGCTA-01**: Dashboard shows Link CTA while `is_guest=true`.
+- [x] **TGCTA-02**: Dashboard replaces Link CTA with Telegram bot CTA when `is_guest=false`, and tap opens bot link.
 
 ### Device Auth Payload Version
 
@@ -23,8 +23,8 @@ Requirements for Telegram link-status visibility and dashboard announcement UX.
 
 ### Announcements
 
-- [ ] **TGANN-01**: Dashboard shows announcement block between statistics and default servers only when `announcement_title` and/or `announcement_text` contains non-empty content.
-- [ ] **TGANN-02**: User can tap **Read more** and view full `announcement_text` in a bottom sheet.
+- [x] **TGANN-01**: Dashboard shows announcement block between statistics and default servers only when `announcement_title` and/or `announcement_text` contains non-empty content.
+- [x] **TGANN-02**: User can tap **Read more** and view full `announcement_text` in a bottom sheet.
 
 ## Future Requirements
 
@@ -48,11 +48,11 @@ Deferred to future milestones.
 |-------------|-------|--------|
 | TGSTAT-01 | Phase 1 | Complete |
 | TGSTAT-02 | Phase 2 | Complete |
-| TGCTA-01 | Phase 3 | Pending |
-| TGCTA-02 | Phase 3 | Pending |
+| TGCTA-01 | Phase 3 | Complete |
+| TGCTA-02 | Phase 3 | Complete |
 | TGVER-01 | Phase 1 | Complete |
-| TGANN-01 | Phase 3 | Pending |
-| TGANN-02 | Phase 3 | Pending |
+| TGANN-01 | Phase 3 | Complete |
+| TGANN-02 | Phase 3 | Complete |
 
 **Coverage:**
 - v1.4 requirements: 7 total
@@ -61,4 +61,4 @@ Deferred to future milestones.
 
 ---
 *Requirements defined: 2026-05-24*
-*Last updated: 2026-05-24 after Phase 1 execution*
+*Last updated: 2026-05-24 after Phase 3 execution*

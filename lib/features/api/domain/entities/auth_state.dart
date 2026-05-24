@@ -13,6 +13,8 @@ abstract class AuthState with _$AuthState {
     @Default(false) bool isGuest,
     int? userId,
     String? deviceId,
+    String? announcementTitle,
+    String? announcementText,
   }) = _AuthState;
 
   factory AuthState.fromJson(Map<String, dynamic> json) =>

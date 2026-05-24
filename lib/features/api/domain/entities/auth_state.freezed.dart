@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AuthState {
 
- String? get token; DateTime? get expiresAt; bool get isAuthenticated; bool get isGuest; int? get userId; String? get deviceId;
+ String? get token; DateTime? get expiresAt; bool get isAuthenticated; bool get isGuest; int? get userId; String? get deviceId; String? get announcementTitle; String? get announcementText;
 /// Create a copy of AuthState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $AuthStateCopyWith<AuthState> get copyWith => _$AuthStateCopyWithImpl<AuthState>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthState&&(identical(other.token, token) || other.token == token)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt)&&(identical(other.isAuthenticated, isAuthenticated) || other.isAuthenticated == isAuthenticated)&&(identical(other.isGuest, isGuest) || other.isGuest == isGuest)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.deviceId, deviceId) || other.deviceId == deviceId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthState&&(identical(other.token, token) || other.token == token)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt)&&(identical(other.isAuthenticated, isAuthenticated) || other.isAuthenticated == isAuthenticated)&&(identical(other.isGuest, isGuest) || other.isGuest == isGuest)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.deviceId, deviceId) || other.deviceId == deviceId)&&(identical(other.announcementTitle, announcementTitle) || other.announcementTitle == announcementTitle)&&(identical(other.announcementText, announcementText) || other.announcementText == announcementText));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,token,expiresAt,isAuthenticated,isGuest,userId,deviceId);
+int get hashCode => Object.hash(runtimeType,token,expiresAt,isAuthenticated,isGuest,userId,deviceId,announcementTitle,announcementText);
 
 @override
 String toString() {
-  return 'AuthState(token: $token, expiresAt: $expiresAt, isAuthenticated: $isAuthenticated, isGuest: $isGuest, userId: $userId, deviceId: $deviceId)';
+  return 'AuthState(token: $token, expiresAt: $expiresAt, isAuthenticated: $isAuthenticated, isGuest: $isGuest, userId: $userId, deviceId: $deviceId, announcementTitle: $announcementTitle, announcementText: $announcementText)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $AuthStateCopyWith<$Res>  {
   factory $AuthStateCopyWith(AuthState value, $Res Function(AuthState) _then) = _$AuthStateCopyWithImpl;
 @useResult
 $Res call({
- String? token, DateTime? expiresAt, bool isAuthenticated, bool isGuest, int? userId, String? deviceId
+ String? token, DateTime? expiresAt, bool isAuthenticated, bool isGuest, int? userId, String? deviceId, String? announcementTitle, String? announcementText
 });
 
 
@@ -65,7 +65,7 @@ class _$AuthStateCopyWithImpl<$Res>
 
 /// Create a copy of AuthState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? token = freezed,Object? expiresAt = freezed,Object? isAuthenticated = null,Object? isGuest = null,Object? userId = freezed,Object? deviceId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? token = freezed,Object? expiresAt = freezed,Object? isAuthenticated = null,Object? isGuest = null,Object? userId = freezed,Object? deviceId = freezed,Object? announcementTitle = freezed,Object? announcementText = freezed,}) {
   return _then(_self.copyWith(
 token: freezed == token ? _self.token : token // ignore: cast_nullable_to_non_nullable
 as String?,expiresAt: freezed == expiresAt ? _self.expiresAt : expiresAt // ignore: cast_nullable_to_non_nullable
@@ -73,6 +73,8 @@ as DateTime?,isAuthenticated: null == isAuthenticated ? _self.isAuthenticated : 
 as bool,isGuest: null == isGuest ? _self.isGuest : isGuest // ignore: cast_nullable_to_non_nullable
 as bool,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as int?,deviceId: freezed == deviceId ? _self.deviceId : deviceId // ignore: cast_nullable_to_non_nullable
+as String?,announcementTitle: freezed == announcementTitle ? _self.announcementTitle : announcementTitle // ignore: cast_nullable_to_non_nullable
+as String?,announcementText: freezed == announcementText ? _self.announcementText : announcementText // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -158,10 +160,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? token,  DateTime? expiresAt,  bool isAuthenticated,  bool isGuest,  int? userId,  String? deviceId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? token,  DateTime? expiresAt,  bool isAuthenticated,  bool isGuest,  int? userId,  String? deviceId,  String? announcementTitle,  String? announcementText)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AuthState() when $default != null:
-return $default(_that.token,_that.expiresAt,_that.isAuthenticated,_that.isGuest,_that.userId,_that.deviceId);case _:
+return $default(_that.token,_that.expiresAt,_that.isAuthenticated,_that.isGuest,_that.userId,_that.deviceId,_that.announcementTitle,_that.announcementText);case _:
   return orElse();
 
 }
@@ -179,10 +181,10 @@ return $default(_that.token,_that.expiresAt,_that.isAuthenticated,_that.isGuest,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? token,  DateTime? expiresAt,  bool isAuthenticated,  bool isGuest,  int? userId,  String? deviceId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? token,  DateTime? expiresAt,  bool isAuthenticated,  bool isGuest,  int? userId,  String? deviceId,  String? announcementTitle,  String? announcementText)  $default,) {final _that = this;
 switch (_that) {
 case _AuthState():
-return $default(_that.token,_that.expiresAt,_that.isAuthenticated,_that.isGuest,_that.userId,_that.deviceId);case _:
+return $default(_that.token,_that.expiresAt,_that.isAuthenticated,_that.isGuest,_that.userId,_that.deviceId,_that.announcementTitle,_that.announcementText);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -199,10 +201,10 @@ return $default(_that.token,_that.expiresAt,_that.isAuthenticated,_that.isGuest,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? token,  DateTime? expiresAt,  bool isAuthenticated,  bool isGuest,  int? userId,  String? deviceId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? token,  DateTime? expiresAt,  bool isAuthenticated,  bool isGuest,  int? userId,  String? deviceId,  String? announcementTitle,  String? announcementText)?  $default,) {final _that = this;
 switch (_that) {
 case _AuthState() when $default != null:
-return $default(_that.token,_that.expiresAt,_that.isAuthenticated,_that.isGuest,_that.userId,_that.deviceId);case _:
+return $default(_that.token,_that.expiresAt,_that.isAuthenticated,_that.isGuest,_that.userId,_that.deviceId,_that.announcementTitle,_that.announcementText);case _:
   return null;
 
 }
@@ -214,7 +216,7 @@ return $default(_that.token,_that.expiresAt,_that.isAuthenticated,_that.isGuest,
 @JsonSerializable()
 
 class _AuthState implements AuthState {
-  const _AuthState({this.token, this.expiresAt, this.isAuthenticated = false, this.isGuest = false, this.userId, this.deviceId});
+  const _AuthState({this.token, this.expiresAt, this.isAuthenticated = false, this.isGuest = false, this.userId, this.deviceId, this.announcementTitle, this.announcementText});
   factory _AuthState.fromJson(Map<String, dynamic> json) => _$AuthStateFromJson(json);
 
 @override final  String? token;
@@ -223,6 +225,8 @@ class _AuthState implements AuthState {
 @override@JsonKey() final  bool isGuest;
 @override final  int? userId;
 @override final  String? deviceId;
+@override final  String? announcementTitle;
+@override final  String? announcementText;
 
 /// Create a copy of AuthState
 /// with the given fields replaced by the non-null parameter values.
@@ -237,16 +241,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthState&&(identical(other.token, token) || other.token == token)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt)&&(identical(other.isAuthenticated, isAuthenticated) || other.isAuthenticated == isAuthenticated)&&(identical(other.isGuest, isGuest) || other.isGuest == isGuest)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.deviceId, deviceId) || other.deviceId == deviceId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthState&&(identical(other.token, token) || other.token == token)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt)&&(identical(other.isAuthenticated, isAuthenticated) || other.isAuthenticated == isAuthenticated)&&(identical(other.isGuest, isGuest) || other.isGuest == isGuest)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.deviceId, deviceId) || other.deviceId == deviceId)&&(identical(other.announcementTitle, announcementTitle) || other.announcementTitle == announcementTitle)&&(identical(other.announcementText, announcementText) || other.announcementText == announcementText));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,token,expiresAt,isAuthenticated,isGuest,userId,deviceId);
+int get hashCode => Object.hash(runtimeType,token,expiresAt,isAuthenticated,isGuest,userId,deviceId,announcementTitle,announcementText);
 
 @override
 String toString() {
-  return 'AuthState(token: $token, expiresAt: $expiresAt, isAuthenticated: $isAuthenticated, isGuest: $isGuest, userId: $userId, deviceId: $deviceId)';
+  return 'AuthState(token: $token, expiresAt: $expiresAt, isAuthenticated: $isAuthenticated, isGuest: $isGuest, userId: $userId, deviceId: $deviceId, announcementTitle: $announcementTitle, announcementText: $announcementText)';
 }
 
 
@@ -257,7 +261,7 @@ abstract mixin class _$AuthStateCopyWith<$Res> implements $AuthStateCopyWith<$Re
   factory _$AuthStateCopyWith(_AuthState value, $Res Function(_AuthState) _then) = __$AuthStateCopyWithImpl;
 @override @useResult
 $Res call({
- String? token, DateTime? expiresAt, bool isAuthenticated, bool isGuest, int? userId, String? deviceId
+ String? token, DateTime? expiresAt, bool isAuthenticated, bool isGuest, int? userId, String? deviceId, String? announcementTitle, String? announcementText
 });
 
 
@@ -274,7 +278,7 @@ class __$AuthStateCopyWithImpl<$Res>
 
 /// Create a copy of AuthState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? token = freezed,Object? expiresAt = freezed,Object? isAuthenticated = null,Object? isGuest = null,Object? userId = freezed,Object? deviceId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? token = freezed,Object? expiresAt = freezed,Object? isAuthenticated = null,Object? isGuest = null,Object? userId = freezed,Object? deviceId = freezed,Object? announcementTitle = freezed,Object? announcementText = freezed,}) {
   return _then(_AuthState(
 token: freezed == token ? _self.token : token // ignore: cast_nullable_to_non_nullable
 as String?,expiresAt: freezed == expiresAt ? _self.expiresAt : expiresAt // ignore: cast_nullable_to_non_nullable
@@ -282,6 +286,8 @@ as DateTime?,isAuthenticated: null == isAuthenticated ? _self.isAuthenticated : 
 as bool,isGuest: null == isGuest ? _self.isGuest : isGuest // ignore: cast_nullable_to_non_nullable
 as bool,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as int?,deviceId: freezed == deviceId ? _self.deviceId : deviceId // ignore: cast_nullable_to_non_nullable
+as String?,announcementTitle: freezed == announcementTitle ? _self.announcementTitle : announcementTitle // ignore: cast_nullable_to_non_nullable
+as String?,announcementText: freezed == announcementText ? _self.announcementText : announcementText // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

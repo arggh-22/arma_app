@@ -17,20 +17,28 @@ class DeviceAuthResponse {
     required this.token,
     required this.isGuest,
     required this.userId,
+    this.announcementTitle,
+    this.announcementText,
   });
 
   final String token;
   final bool isGuest;
   final int userId;
+  final String? announcementTitle;
+  final String? announcementText;
 
   static const _tokenKey = 'token';
   static const _isGuestKey = 'is_guest';
   static const _userIdKey = 'user_id';
+  static const _announcementTitleKey = 'announcement_title';
+  static const _announcementTextKey = 'announcement_text';
 
   factory DeviceAuthResponse.fromJson(Map<String, dynamic> json) {
     final token = json[_tokenKey];
     final isGuest = json[_isGuestKey];
     final userId = json[_userIdKey];
+    final announcementTitle = json[_announcementTitleKey];
+    final announcementText = json[_announcementTextKey];
 
     if (token is! String || token.isEmpty) {
       throw const FormatException('Invalid auth response: token');
@@ -41,8 +49,20 @@ class DeviceAuthResponse {
     if (userId is! int) {
       throw const FormatException('Invalid auth response: user_id');
     }
+    if (announcementTitle != null && announcementTitle is! String) {
+      throw const FormatException('Invalid auth response: announcement_title');
+    }
+    if (announcementText != null && announcementText is! String) {
+      throw const FormatException('Invalid auth response: announcement_text');
+    }
 
-    return DeviceAuthResponse(token: token, isGuest: isGuest, userId: userId);
+    return DeviceAuthResponse(
+      token: token,
+      isGuest: isGuest,
+      userId: userId,
+      announcementTitle: announcementTitle as String?,
+      announcementText: announcementText as String?,
+    );
   }
 
   AuthState toDomain({String? deviceId, DateTime? expiresAt}) {
@@ -53,6 +73,8 @@ class DeviceAuthResponse {
       isGuest: isGuest,
       userId: userId,
       deviceId: deviceId,
+      announcementTitle: announcementTitle,
+      announcementText: announcementText,
     );
   }
 }
