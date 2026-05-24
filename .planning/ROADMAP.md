@@ -182,7 +182,7 @@ v1.1: 5 → 6 → 7
 | 12. Telegram Link UI & Guided Flow | v1.3 | 2/2 | Complete   | 2026-05-24 |
 | 13. Telegram Link UX Hardening & Validation | v1.3 | 2/2 | Complete   | 2026-05-24 |
 | 14. Telegram UI Verification Backfill | v1.3 | 2/2 | Complete | 2026-05-24 |
-| 15. Telegram Reliability Verification Backfill | v1.3 | 0/2 | Not started | — |
+| 15. Telegram Reliability Verification Backfill | v1.3 | 2/2 | Complete | 2026-05-24 |
 
 ---
 
@@ -323,5 +323,5 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 15-01-PLAN.md — Reconstruct and verify Phase 13 requirement evidence into 13-VERIFICATION.md
-- [ ] 15-02-PLAN.md — Re-run milestone traceability checks to confirm Phase 13 gap closure
+- [x] 15-01-PLAN.md — Reconstruct and verify Phase 13 requirement evidence into 13-VERIFICATION.md
+- [x] 15-02-PLAN.md — Re-run milestone traceability checks to confirm Phase 13 gap closure
