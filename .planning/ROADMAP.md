@@ -271,7 +271,11 @@ Plans:
   2. Linking screen shows the full guided steps including bot link `https://t.me/devarmabot`, Start action, ID retrieval command, paste-and-link action
   3. User can complete navigation and input flow with clear actionable controls
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [x] 12-01-PLAN.md — Dashboard Link FAB entry, scroll hide/show behavior, and `/telegram-link` route wiring
+- [x] 12-02-PLAN.md — Telegram guide screen flow (bot CTA, steps, paste/link submit, outcome UX + tests)
 
 ### Phase 13: Telegram Link UX Hardening & Validation
 **Goal**: Finalize result states, reliability, and test coverage for Telegram linking.
@@ -282,4 +286,8 @@ Plans:
   2. UI and API layer tests cover happy path and key failure scenarios
   3. Feature is validated against milestone requirements and ready for rollout
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 13-01-PLAN.md — Telegram guide submit-state hardening (loading/success/error + retry) with widget regression coverage
+- [ ] 13-02-PLAN.md — Provider/repository reliability test expansion and rollout-readiness verification run
