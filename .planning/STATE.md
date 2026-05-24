@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
-**Current focus:** Planning and executing Phase 16
+**Current focus:** Planning and executing Phase 17
 
 ## Current Position
 
-Phase: 16 (Servers Screen Defaults Integration) — NOT STARTED
+Phase: 16 (Servers Screen Defaults Integration) — COMPLETE
 Plan: 1 of 1
-Status: Ready to execute
+Status: Phase 16 delivered; ready for Phase 17 planning/execution
 Last activity: 2026-05-24
 
-Progress: [----------] 0%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
