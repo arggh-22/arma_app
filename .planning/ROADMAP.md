@@ -320,7 +320,7 @@ Plans:
   2. TGUI-03 and TGREL-01 are verified against implementation and test artifacts.
   3. Milestone re-audit no longer flags Phase 13 as unverified.
 
-**Plans**: 0 plans
+**Plans**: 2 plans
 
 Plans:
 - [ ] 15-01-PLAN.md — Reconstruct and verify Phase 13 requirement evidence into 13-VERIFICATION.md
