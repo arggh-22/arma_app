@@ -136,7 +136,11 @@ Plans:
   2. Dashboard displays real-time upload/download speeds and connection status (Disconnected/Connecting/Connected) streamed via CommandClient subscription
   3. Dashboard displays active connection count and per-outbound traffic statistics while connected
   4. User can test individual server latency and run bulk latency tests from the server list with results displayed inline
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 12-01-PLAN.md — Dashboard Link FAB entry (Telegram icon), scroll-hide behavior, and route wiring
+- [ ] 12-02-PLAN.md — Guided Telegram screen steps, paste/link controls, and outcome-driven feedback/navigation
 **UI hint**: yes
 
 ### Phase 7: Feature Parity & Dual-Engine Safety
@@ -150,7 +154,11 @@ Plans:
   4. Per-app proxy (split tunneling) works via sing-box TUN-level `include_package`/`exclude_package` filtering
   5. User can toggle between sing-box and Xray-core engines in Settings, enabling safe rollback if sing-box has issues in their network environment
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 12-01-PLAN.md — Dashboard Link FAB entry, scroll hide/show behavior, and `/telegram-link` route wiring
+- [ ] 12-02-PLAN.md — Telegram guide screen flow (bot CTA, steps, paste/link submit, outcome UX + tests)
 
 ## Progress
 
