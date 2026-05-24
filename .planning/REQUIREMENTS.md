@@ -277,8 +277,8 @@ Requirements for Telegram account linking from the app.
 |-------------|-------|--------|
 | TGAPI-01 | Phase 11 | Complete |
 | TGAPI-02 | Phase 11 | Complete |
-| TGUI-01 | Phase 12 | Pending |
-| TGUI-02 | Phase 12 | Pending |
-| TGUI-03 | Phase 13 | Pending |
+| TGUI-01 | Phase 14 | Pending |
+| TGUI-02 | Phase 14 | Pending |
+| TGUI-03 | Phase 15 | Pending |
 | TGCOMP-01 | Phase 11 | Complete |
-| TGREL-01 | Phase 13 | Pending |
+| TGREL-01 | Phase 15 | Pending |

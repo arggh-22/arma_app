@@ -181,6 +181,8 @@ v1.1: 5 → 6 → 7
 | 11. Telegram Link API Integration | v1.3 | 2/2 | Complete    | 2026-05-24 |
 | 12. Telegram Link UI & Guided Flow | v1.3 | 2/2 | Complete   | 2026-05-24 |
 | 13. Telegram Link UX Hardening & Validation | v1.3 | 2/2 | Complete   | 2026-05-24 |
+| 14. Telegram UI Verification Backfill | v1.3 | 0/2 | Not started | — |
+| 15. Telegram Reliability Verification Backfill | v1.3 | 0/2 | Not started | — |
 
 ---
 
@@ -291,3 +293,35 @@ Plans:
 Plans:
 - [x] 13-01-PLAN.md — Telegram guide submit-state hardening (loading/success/error + retry) with widget regression coverage
 - [x] 13-02-PLAN.md — Provider/repository reliability test expansion and rollout-readiness verification run
+
+### Phase 14: Telegram UI Verification Backfill
+**Goal**: Close milestone audit gaps by producing explicit phase verification evidence for completed Telegram UI guided-flow requirements.
+**Depends on**: Phase 13
+**Requirements**: TGUI-01, TGUI-02
+**Gap Closure**: Closes missing `12-VERIFICATION.md` blocker from `v1.3-MILESTONE-AUDIT.md`.
+**Success Criteria** (what must be TRUE):
+  1. Phase 12 has a complete `12-VERIFICATION.md` with requirements table and artifact evidence.
+  2. TGUI-01 and TGUI-02 are marked verified with concrete code/test references.
+  3. Milestone re-audit no longer flags Phase 12 as unverified.
+
+**Plans**: 0 plans
+
+Plans:
+- [ ] 14-01-PLAN.md — Reconstruct and verify Phase 12 requirement evidence into 12-VERIFICATION.md
+- [ ] 14-02-PLAN.md — Re-run milestone traceability checks to confirm Phase 12 gap closure
+
+### Phase 15: Telegram Reliability Verification Backfill
+**Goal**: Close milestone audit gaps by producing explicit phase verification evidence for Telegram UX hardening and reliability requirements.
+**Depends on**: Phase 14
+**Requirements**: TGUI-03, TGREL-01
+**Gap Closure**: Closes missing `13-VERIFICATION.md` blocker from `v1.3-MILESTONE-AUDIT.md`.
+**Success Criteria** (what must be TRUE):
+  1. Phase 13 has a complete `13-VERIFICATION.md` with requirements coverage and evidence.
+  2. TGUI-03 and TGREL-01 are verified against implementation and test artifacts.
+  3. Milestone re-audit no longer flags Phase 13 as unverified.
+
+**Plans**: 0 plans
+
+Plans:
+- [ ] 15-01-PLAN.md — Reconstruct and verify Phase 13 requirement evidence into 13-VERIFICATION.md
+- [ ] 15-02-PLAN.md — Re-run milestone traceability checks to confirm Phase 13 gap closure
