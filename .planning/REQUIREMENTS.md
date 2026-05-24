@@ -190,14 +190,14 @@ Requirements for integrating your VPN server API to display default servers in h
   - Update cached servers without requiring manual refresh
   - Respect user's update preference from settings
 
-- [ ] **DATA-03**: Server storage
+- [x] **DATA-03**: Server storage
   - Store default servers separately from user-added servers in Hive
   - Include metadata: fetch_timestamp, expires_at, api_source
   - Clear expired servers (compare with expire_date from API)
 
 ### Integration with Existing Features
 
-- [ ] **COMPAT-01**: Connection compatibility
+- [x] **COMPAT-01**: Connection compatibility
   - Default servers must work with existing VPN connection logic
   - Use key_body string as server config (same as user-added servers)
   - Support all existing protocols (VLESS, VMess, Trojan, SS, Hysteria2)
