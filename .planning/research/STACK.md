@@ -1,19 +1,21 @@
-# STACK.md — v1.4 Telegram Link Status & Announcement
+# Technology Stack — v1.5 Dashboard Layout Refresh + Servers Screen Defaults
 
-## Stack additions
+## Recommended stack
 
-- Reuse the existing app-version source displayed in Settings as the auth payload source.
-- If that shared source is static today, make that same source runtime-resolved (do not introduce separate version constants per feature).
+- Keep existing Flutter + Riverpod + go_router + Hive stack.
+- Add **no new dependencies** for this milestone.
+- Implement via presentation-layer refactor and shared widgets/providers.
 
-## Reuse existing stack
+## Integration points
 
-- Existing `http` + `ApiClient` flow.
-- Existing Riverpod providers for state orchestration.
-- Existing auth repository/device-auth pipeline.
-- Material `showModalBottomSheet` for announcement details.
+- `dashboard_screen.dart`: split into top/bottom layout sections (35/65).
+- `server_list_screen.dart`: add default-servers section using existing default-server providers.
+- Shared default-server card renderer for dashboard + servers screen.
+- Reuse `activeServerProvider` for selected/parked server visual state.
 
-## Avoid
+## Explicitly avoid
 
-- No new network clients (Dio/Retrofit/etc.).
-- No new state framework (Bloc/GetX/etc.).
-- No extra announcement/CMS dependencies for this milestone.
+- No state-management migration.
+- No networking/storage contract changes.
+- No heavy UI framework additions.
+- No behavior changes to existing connection/auth flows.

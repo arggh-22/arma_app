@@ -1,18 +1,17 @@
-# PITFALLS.md — v1.4 Telegram Link Status & Announcement
+# Pitfalls — v1.5 Dashboard Layout Refresh + Servers Screen Defaults
 
 ## Critical pitfalls
 
-1. **Auth header drift** (`Token` vs `Bearer`) reappears on Telegram link call.
-   - Prevent with focused contract tests in API client/repository.
-2. **Stale `is_guest` state** after successful linking.
-   - Prevent by forcing auth-state refresh when Step 3 check runs and after link success.
-3. **App version mismatch** between Settings display and `/auth/device/` payload.
-   - Prevent by reusing one shared version source.
-4. **Announcement parsing breaks auth path** when values are null/empty.
-   - Keep announcement fields nullable and non-blocking.
+1. Selected-server identity drift between default-server cards and persisted active server state.
+2. Race conditions when switching servers while already connected.
+3. Dashboard 35/65 relayout regressing CTA/announcement visibility behavior.
+4. Servers screen accidentally applying imported-server destructive actions to default-server cards.
+5. Repeating artifact debt (missing verification artifacts / partial validation) at phase close.
 
-## UX pitfalls
+## Prevention strategy
 
-- Showing announcement block when title/text is empty.
-- Repeated status checks causing duplicate requests.
-- Read-more bottom sheet not handling long content safely.
+- Keep `activeServerProvider` as single selected-server source of truth.
+- Centralize default-server tap/switch logic in one shared action path.
+- Lock dashboard invariants with widget tests (CTA branch, announcement visibility, read-more).
+- Keep default servers as a distinct section in Servers screen with capability-gated actions.
+- Require phase exit gates to include verification + validation artifacts.
