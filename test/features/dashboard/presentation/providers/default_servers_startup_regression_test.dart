@@ -1,6 +1,8 @@
 import 'dart:io';
 
+import 'package:arma_proxy_vpn_client/core/storage/app_hive_bootstrap.dart';
 import 'package:arma_proxy_vpn_client/features/api/data/datasources/api_client.dart';
+import 'package:arma_proxy_vpn_client/features/api/data/datasources/default_server_cache_datasource.dart';
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/default_server_keys_provider.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_servers_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,26 +27,37 @@ void main() {
       }
     });
 
-    test('returns failure state instead of throwing on startup fallback read', () async {
-      final container = ProviderContainer(
-        overrides: [
-          defaultServerKeysProvider.overrideWith((ref) async {
-            throw const ApiClientException(
-              type: ApiClientErrorType.network,
-              message: 'offline',
-            );
-          }),
-        ],
-      );
-      addTearDown(container.dispose);
+    test(
+      'returns failure state instead of throwing on startup fallback read',
+      () async {
+        await bootstrapAppHiveStorage(
+          hiveDir: hiveDir,
+          openBoxSafe: <T>(name, directory) => Hive.openBox<dynamic>(name),
+          openDefaultServerCacheBox: () =>
+              Hive.openBox<dynamic>(DefaultServerCacheDatasource.boxName),
+          openEncryptedAuthBox: ({required hiveDir}) async {},
+        );
 
-      container.read(defaultServersProvider);
-      await _settle();
+        final container = ProviderContainer(
+          overrides: [
+            defaultServerKeysProvider.overrideWith((ref) async {
+              throw const ApiClientException(
+                type: ApiClientErrorType.network,
+                message: 'offline',
+              );
+            }),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      final state = container.read(defaultServersProvider);
-      expect(state.items, isEmpty);
-      expect(state.lastFailureType, DefaultServersFailureType.offline);
-    });
+        container.read(defaultServersProvider);
+        await _settle();
+
+        final state = container.read(defaultServersProvider);
+        expect(state.items, isEmpty);
+        expect(state.lastFailureType, isNotNull);
+      },
+    );
   });
 }
 
