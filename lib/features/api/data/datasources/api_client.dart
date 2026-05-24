@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:arma_proxy_vpn_client/config/app_config.dart';
 import 'package:arma_proxy_vpn_client/features/api/data/models/default_server_key_model.dart';
 import 'package:arma_proxy_vpn_client/features/api/data/models/device_auth_response.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 enum ApiClientErrorType {
@@ -119,6 +120,10 @@ class ApiClient {
 
     for (var attempt = 0; attempt < 2; attempt++) {
       if (attempt > 0) {
+        _logDiagnostics('retry_wait', {
+          'attempt': attempt + 1,
+          'delay_ms': retryDelay.inMilliseconds,
+        });
         await Future<void>.delayed(retryDelay);
       }
 
@@ -131,10 +136,28 @@ class ApiClient {
 
         final exception = _exceptionFromStatus(status);
         if (!_shouldRetry(status: status, attempt: attempt)) {
+          _logDiagnostics('response_error', {
+            'attempt': attempt + 1,
+            'status': status,
+            'type': exception.type.name,
+            'message': exception.message,
+          });
           throw exception;
         }
         transientFailure = exception;
+        _logDiagnostics('response_retry', {
+          'attempt': attempt + 1,
+          'status': status,
+          'type': exception.type.name,
+          'message': exception.message,
+        });
       } on ApiClientException catch (error) {
+        _logDiagnostics('api_exception', {
+          'attempt': attempt + 1,
+          'type': error.type.name,
+          'status': error.statusCode,
+          'message': error.message,
+        });
         if (!error.isTransient || attempt >= 1) {
           rethrow;
         }
@@ -144,6 +167,11 @@ class ApiClient {
           type: ApiClientErrorType.network,
           message: 'Network error while calling VPN API',
         );
+        _logDiagnostics('socket_exception', {
+          'attempt': attempt + 1,
+          'type': exception.type.name,
+          'message': exception.message,
+        });
         if (attempt >= 1) {
           throw exception;
         }
@@ -153,6 +181,11 @@ class ApiClient {
           type: ApiClientErrorType.timeout,
           message: 'VPN API request timed out',
         );
+        _logDiagnostics('timeout_exception', {
+          'attempt': attempt + 1,
+          'type': exception.type.name,
+          'message': exception.message,
+        });
         if (attempt >= 1) {
           throw exception;
         }
@@ -162,6 +195,11 @@ class ApiClient {
           type: ApiClientErrorType.network,
           message: 'HTTP client error while calling VPN API',
         );
+        _logDiagnostics('http_client_exception', {
+          'attempt': attempt + 1,
+          'type': exception.type.name,
+          'message': exception.message,
+        });
         if (attempt >= 1) {
           throw exception;
         }
@@ -173,6 +211,11 @@ class ApiClient {
           type: ApiClientErrorType.unknown,
           message: 'Unknown VPN API error',
         );
+        _logDiagnostics('unknown_exception', {
+          'attempt': attempt + 1,
+          'type': exception.type.name,
+          'message': exception.message,
+        });
         if (attempt >= 1) {
           throw exception;
         }
@@ -198,9 +241,24 @@ class ApiClient {
       ..headers.addAll(headers ?? const {})
       ..body = body == null ? '' : jsonEncode(body);
 
+    _logDiagnostics('request', {
+      'method': method,
+      'url': uri.toString(),
+      'headers': _sanitizeHeaders(request.headers),
+      'body': _sanitizeRawBody(request.body),
+    });
+
     final streamedResponse =
         await _client.send(request).timeout(connectTimeout);
-    return http.Response.fromStream(streamedResponse).timeout(readTimeout);
+    final response = await http.Response.fromStream(streamedResponse).timeout(readTimeout);
+    _logDiagnostics('response', {
+      'method': method,
+      'url': uri.toString(),
+      'status': response.statusCode,
+      'headers': _sanitizeHeaders(response.headers),
+      'body': _sanitizeRawBody(response.body),
+    });
+    return response;
   }
 
   bool _shouldRetry({required int status, required int attempt}) =>
@@ -255,5 +313,64 @@ class ApiClient {
         message: 'Response is not valid JSON',
       );
     }
+  }
+
+  void _logDiagnostics(String event, Map<String, Object?> payload) {
+    if (!AppConfig.apiDiagnosticsEnabled) {
+      return;
+    }
+    debugPrint('[ApiClient][$event] ${jsonEncode(payload)}');
+  }
+
+  Map<String, String> _sanitizeHeaders(Map<String, String> headers) {
+    final sanitized = <String, String>{};
+    for (final entry in headers.entries) {
+      final key = entry.key.toLowerCase();
+      final value = entry.value;
+      if (key == 'authorization' || key == AppConfig.apiKeyHeaderName.toLowerCase()) {
+        sanitized[entry.key] = _maskValue(value);
+      } else {
+        sanitized[entry.key] = value;
+      }
+    }
+    return sanitized;
+  }
+
+  String _sanitizeRawBody(String rawBody) {
+    if (rawBody.isEmpty) {
+      return '';
+    }
+    try {
+      final dynamic decoded = jsonDecode(rawBody);
+      return jsonEncode(_sanitizeJson(decoded));
+    } catch (_) {
+      return rawBody;
+    }
+  }
+
+  dynamic _sanitizeJson(dynamic value) {
+    if (value is Map<String, dynamic>) {
+      return value.map((key, dynamic entryValue) {
+        final lower = key.toLowerCase();
+        if (lower.contains('token') ||
+            lower.contains('device_id') ||
+            lower == 'key_body' ||
+            lower == 'authorization') {
+          return MapEntry<String, dynamic>(key, _maskValue('$entryValue'));
+        }
+        return MapEntry<String, dynamic>(key, _sanitizeJson(entryValue));
+      });
+    }
+    if (value is List) {
+      return value.map(_sanitizeJson).toList(growable: false);
+    }
+    return value;
+  }
+
+  String _maskValue(String raw) {
+    if (raw.length <= 8) {
+      return '***';
+    }
+    return '${raw.substring(0, 4)}***${raw.substring(raw.length - 4)}';
   }
 }

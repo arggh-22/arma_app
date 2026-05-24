@@ -10,4 +10,12 @@ class AppConfig {
   static const connectTimeout = Duration(seconds: 5);
   static const readTimeout = Duration(seconds: 10);
   static const transientRetryDelay = Duration(seconds: 1);
+
+  /// Enables API request/response diagnostics in app logs.
+  /// Can be overridden at build time:
+  /// `--dart-define=API_DIAGNOSTICS=false`
+  static const apiDiagnosticsEnabled = bool.fromEnvironment(
+    'API_DIAGNOSTICS',
+    defaultValue: true,
+  );
 }
