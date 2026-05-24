@@ -234,7 +234,7 @@ Requirements for Telegram account linking from the app.
 
 ### Telegram Linking API
 
-- [ ] **TGAPI-01**: App links Telegram account using `POST /auth/telegram/link/`
+- [x] **TGAPI-01**: App links Telegram account using `POST /auth/telegram/link/`
   - Uses existing stored auth token as Bearer token
   - Sends JSON body `{ "telegram_id": "<id>" }`
   - Handles success and non-2xx responses with typed errors
@@ -263,7 +263,7 @@ Requirements for Telegram account linking from the app.
 
 ### Compatibility & Reliability
 
-- [ ] **TGCOMP-01**: Telegram linking integrates with existing auth lifecycle
+- [x] **TGCOMP-01**: Telegram linking integrates with existing auth lifecycle
   - Reuses current auth token providers/repository
   - Handles unauthorized responses consistently with existing re-auth behavior
 
@@ -275,10 +275,10 @@ Requirements for Telegram account linking from the app.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TGAPI-01 | Phase 11 | Pending |
+| TGAPI-01 | Phase 11 | Complete |
 | TGAPI-02 | Phase 11 | Pending |
 | TGUI-01 | Phase 12 | Pending |
 | TGUI-02 | Phase 12 | Pending |
 | TGUI-03 | Phase 13 | Pending |
-| TGCOMP-01 | Phase 11 | Pending |
+| TGCOMP-01 | Phase 11 | Complete |
 | TGREL-01 | Phase 13 | Pending |

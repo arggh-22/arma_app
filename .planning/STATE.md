@@ -1,10 +1,10 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.3
-milestone_name: Telegram Account Linking
-status: active
-stopped_at: Milestone initialized
-last_updated: "2026-05-24T14:23:00.000Z"
+milestone: v1.1
+milestone_name: sing-box Engine Migration
+status: executing
+stopped_at: Completed 11-01-PLAN.md
+last_updated: "2026-05-24T14:42:36.544Z"
 last_activity: 2026-05-24
 progress:
   total_phases: 3
@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-05-24)
 
 ## Current Position
 
-Phase: Not started (defining requirements and roadmap)
-Plan: —
-Status: Milestone v1.3 initialized — ready for Phase 11 discussion/planning
+Phase: 11 (telegram-link-api-integration) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
 Last activity: 2026-05-24
 
 Progress: [░░░░░░░░░░] 0%
@@ -70,6 +70,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 10-settings-auto-update-configuration P03 | 191 | 2 tasks | 10 files |
 | Phase 10 P04 | 2 | 2 tasks | 13 files |
 | Phase 10-settings-auto-update-configuration P05 | 187 | 2 tasks | 13 files |
+| Phase 11 P01 | 143 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -108,6 +109,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 10]: Reused defaultServerAutoUpdateProvider.setInterval to keep persistence and scheduler updates centralized.
 - [Phase 10]: Bound overdue-refresh indicator visibility directly to scheduler provider typed fields in Settings.
 - [Phase 10]: Used MaterialLocalizations compact date/time plus ARB placeholder microcopy for overdue refresh timestamp text.
+- [Phase 11]: Mapped client 400 to invalidId and client 409 to alreadyLinked to preserve locked outcome set.
+- [Phase 11]: Kept Telegram link execution strictly behind AuthRepository.executeWithAuthRetry.
 
 ### Pending Todos
 
@@ -122,6 +125,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-24T13:07:59.502Z
-Stopped at: Completed 10-05-PLAN.md
+Last session: 2026-05-24T14:42:36.540Z
+Stopped at: Completed 11-01-PLAN.md
 Resume file: None
