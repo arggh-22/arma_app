@@ -109,13 +109,24 @@ void main() {
       ),
     );
 
+    final bottomGroup = find.byKey(const Key('dashboard-bottom-visual-group'));
+    expect(bottomGroup, findsOneWidget);
+
     final statsY = tester.getTopLeft(find.byType(TrafficStatsCard)).dy;
-    final announcementY = tester
-        .getTopLeft(find.byKey(const Key('dashboard-announcement-card')))
-        .dy;
-    final defaultServersY = tester
-        .getTopLeft(find.byType(DefaultServersSection))
-        .dy;
+    final announcementFinder = find.descendant(
+      of: bottomGroup,
+      matching: find.byKey(const Key('dashboard-announcement-card')),
+    );
+    final defaultServersFinder = find.descendant(
+      of: bottomGroup,
+      matching: find.byType(DefaultServersSection),
+    );
+
+    expect(announcementFinder, findsOneWidget);
+    expect(defaultServersFinder, findsOneWidget);
+
+    final announcementY = tester.getTopLeft(announcementFinder).dy;
+    final defaultServersY = tester.getTopLeft(defaultServersFinder).dy;
 
     expect(statsY, lessThan(announcementY));
     expect(announcementY, lessThan(defaultServersY));
