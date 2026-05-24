@@ -27,7 +27,9 @@ Milestone v1.4 uses fresh numbering and does not depend on legacy phase chains.
   1. User can tap **Check Link Status** in Telegram Link Step 3 and trigger a device refresh request.
   2. Status refresh requests use the same app-version source displayed in Settings, avoiding stale auth-flow version mismatches.
   3. After triggering the check, user sees refreshed link-status result data in the Telegram link flow.
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 01-01-PLAN.md — Add Step 3 status refresh via auth provider flow and unify `/auth/device/` app version source with Settings
 **UI hint**: yes
 
 ### Phase 2: Link Status Feedback & Retry UX
@@ -57,6 +59,6 @@ Milestone v1.4 uses fresh numbering and does not depend on legacy phase chains.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Telegram Link Status Refresh | 0/0 | Not started | - |
+| 1. Telegram Link Status Refresh | 0/1 | Not started | - |
 | 2. Link Status Feedback & Retry UX | 0/0 | Not started | - |
 | 3. Dashboard Telegram CTA & Announcements | 0/0 | Not started | - |
