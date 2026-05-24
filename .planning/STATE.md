@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Dashboard Layout Refresh + Servers Screen Defaults
-status: executing
-stopped_at: Completed 17-01-PLAN.md
-last_updated: "2026-05-24T22:25:45.942Z"
-last_activity: 2026-05-24
+status: phase_planned
+stopped_at: Phase 17 gap plan 17-02 ready
+last_updated: "2026-05-25T02:33:00+04:00"
+last_activity: 2026-05-25 -- Phase 17 UAT found selected-highlight parity gap; 17-02 planned
 progress:
   total_phases: 2
   completed_phases: 2
-  total_plans: 4
+  total_plans: 5
   completed_plans: 4
-  percent: 100
+  percent: 80
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-24)
 
 **Core value:** Users can import a server configuration and connect in one tap — it just works, every time, even in hostile network environments.
-**Current focus:** Phase 17 execution completed
+**Current focus:** Closing Phase 17 UAT gap
 
 ## Current Position
 
-Phase: 17 (Dashboard 35/65 Layout Refresh) — COMPLETE
-Plan: 1 of 1
-Status: Plan execution complete
-Last activity: 2026-05-24
+Phase: 17 (Dashboard 35/65 Layout Refresh) — IN PROGRESS (gap closure)
+Plan: 1 of 2
+Status: Gap plan 17-02 ready for execution (`--gaps-only`)
+Last activity: 2026-05-25 -- Phase 17 UAT found selected-highlight parity gap; 17-02 planned
 
-Progress: [██████████] 100%
+Progress: [████████--] 80%
 
 ## Performance Metrics
 
