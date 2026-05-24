@@ -77,6 +77,111 @@ void main() {
       expect(cached.keys.first.expireDate, apiKeys.first.expireDate);
     });
 
+    test('expands rows from each key subscription_url response', () async {
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      addTearDown(server.close);
+      server.listen((request) async {
+        request.response.statusCode = HttpStatus.ok;
+        request.response.write(
+          'vless://uuid-a@one.example:443?type=tcp&security=tls#Zone A\n'
+          'vless://uuid-b@two.example:443?type=tcp&security=tls#Zone B',
+        );
+        await request.response.close();
+      });
+
+      final subUrl =
+          'http://${server.address.address}:${server.port}/subscription';
+      final key = _sampleKey(
+        id: 501,
+        name: 'Key 501',
+        keyBody: 'vless://uuid-fallback@fallback.example:443?type=tcp#Fallback',
+        subscriptionUrl: subUrl,
+      );
+      final container = ProviderContainer(
+        overrides: [
+          defaultServerRefreshServiceProvider.overrideWithValue(
+            _service(
+              cacheDatasource: cacheDatasource,
+              settingsDatasource: settingsDatasource,
+              fetchKeys: () async => [key],
+            ),
+          ),
+          defaultServerKeysProvider.overrideWith((ref) => _legacyPathGuard()),
+          defaultServerCacheDatasourceProvider.overrideWithValue(cacheDatasource),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.read(defaultServersProvider);
+      await _settle();
+      final state = container.read(defaultServersProvider);
+
+      expect(state.items, hasLength(2));
+      expect(state.items.map((item) => item.id), ['default-api-501-1', 'default-api-501-2']);
+      expect(state.items.map((item) => item.name), ['Zone A', 'Zone B']);
+      expect(
+        state.items.map((item) => item.subscriptionUrl).toSet(),
+        {subUrl},
+      );
+    });
+
+    test('falls back to keyBody mapping when one subscription_url fetch fails', () async {
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      addTearDown(server.close);
+      server.listen((request) async {
+        request.response.statusCode = HttpStatus.ok;
+        request.response.write(
+          'vless://uuid-a@one.example:443?type=tcp&security=tls#Primary A\n'
+          'vless://uuid-b@two.example:443?type=tcp&security=tls#Primary B',
+        );
+        await request.response.close();
+      });
+
+      final successUrl = 'http://${server.address.address}:${server.port}/ok';
+      final keys = [
+        _sampleKey(
+          id: 601,
+          name: 'Key 601',
+          keyBody: 'vless://uuid-fallback@fallback.example:443?type=tcp#Fallback 601',
+          subscriptionUrl: 'http://127.0.0.1:1/unreachable',
+        ),
+        _sampleKey(
+          id: 602,
+          name: 'Key 602',
+          keyBody: 'vless://uuid-unused@unused.example:443?type=tcp#Unused',
+          subscriptionUrl: successUrl,
+        ),
+      ];
+
+      final container = ProviderContainer(
+        overrides: [
+          defaultServerRefreshServiceProvider.overrideWithValue(
+            _service(
+              cacheDatasource: cacheDatasource,
+              settingsDatasource: settingsDatasource,
+              fetchKeys: () async => keys,
+            ),
+          ),
+          defaultServerKeysProvider.overrideWith((ref) => _legacyPathGuard()),
+          defaultServerCacheDatasourceProvider.overrideWithValue(cacheDatasource),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.read(defaultServersProvider);
+      await _settle();
+      final state = container.read(defaultServersProvider);
+
+      expect(state.items, hasLength(3));
+      expect(state.items.first.id, 'default-api-601');
+      expect(state.items.first.name, 'Key 601');
+      expect(state.items.skip(1).map((item) => item.id), [
+        'default-api-602-1',
+        'default-api-602-2',
+      ]);
+      expect(state.lastFailureType, isNull);
+    });
+
     test('falls back to cache and marks state as offline data', () async {
       final cachedKey = _sampleKey(id: 99, name: 'Cached');
       await cacheDatasource.write(
@@ -271,12 +376,17 @@ Future<void> _settle() async {
   }
 }
 
-DefaultServerKey _sampleKey({int id = 42, String name = 'Default 42'}) {
+DefaultServerKey _sampleKey({
+  int id = 42,
+  String name = 'Default 42',
+  String? keyBody,
+  String? subscriptionUrl,
+}) {
   return DefaultServerKey(
     id: id,
     name: name,
-    keyBody: 'vless://uuid@server.com:443?type=tcp&security=tls#$name',
-    subscriptionUrl: 'https://example.com/sub/$id',
+    keyBody: keyBody ?? 'vless://uuid@server.com:443?type=tcp&security=tls#$name',
+    subscriptionUrl: subscriptionUrl ?? 'https://example.com/sub/$id',
     expireDate: DateTime.utc(2026, 12, 1),
     isActive: true,
     status: 'active',
