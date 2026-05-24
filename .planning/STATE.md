@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Dashboard Layout Refresh + Servers Screen Defaults
-status: phase_planned
-stopped_at: Phase 16 gap plan 16-03 ready
-last_updated: "2026-05-25T01:39:00+04:00"
-last_activity: 2026-05-25 -- UAT rerun found subscription_url grouping gap; 16-03 planned
+status: executing
+stopped_at: Completed 16-03-PLAN.md
+last_updated: "2026-05-24T21:55:48.332Z"
+last_activity: 2026-05-24
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 3
-  completed_plans: 2
-  percent: 67
+  completed_plans: 3
+  percent: 100
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-05-24)
 ## Current Position
 
 Phase: 16 (Servers Screen Defaults Integration) — IN PROGRESS (gap closure)
-Plan: 2 of 3
-Status: Gap plan 16-03 ready for execution (`--gaps-only`)
-Last activity: 2026-05-25 -- UAT rerun found subscription_url grouping gap; 16-03 planned
+Plan: 3 of 3
+Status: Ready to execute
+Last activity: 2026-05-24
 
 Progress: [███████---] 67%
 
@@ -75,6 +75,7 @@ Progress: [███████---] 67%
 | Phase 11 P02 | 198 | 2 tasks | 3 files |
 | Phase 16 P01 | 254 | 3 tasks | 5 files |
 | Phase 16 P02 | 97 | 3 tasks | 5 files |
+| Phase 16 P03 | 422 | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -122,6 +123,9 @@ Progress: [███████---] 67%
 - [Phase 16]: Use deterministic server-group header keys to make imported regression tests stable.
 - [Phase 16]: Use SubscriptionParser parseBody + deterministic default-api-{keyId}-{index} IDs for multi-link default rows while preserving single-link compatibility.
 - [Phase 16]: Gate ServerList empty state on imported and defaults availability so defaults remain reachable when imported list is empty in normal mode.
+- [Phase 16]: Resolve defaults per key through SubscriptionService.fetch with per-key keyBody fallback only on fetch failure.
+- [Phase 16]: Render defaults as nested subgroup headers keyed by subscription_url while showing safe group labels only.
+- [Phase 16]: Keep default-row tap parity unchanged: select first, then disconnect/connect only when connected to another target.
 
 ### Roadmap Evolution
 
@@ -140,6 +144,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-24T21:26:13.872Z
-Stopped at: Completed 16-02-PLAN.md
+Last session: 2026-05-24T21:55:48.328Z
+Stopped at: Completed 16-03-PLAN.md
 Resume file: None
