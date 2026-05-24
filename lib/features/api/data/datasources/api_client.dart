@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:arma_proxy_vpn_client/config/app_config.dart';
 import 'package:arma_proxy_vpn_client/features/api/data/models/default_server_key_model.dart';
 import 'package:arma_proxy_vpn_client/features/api/data/models/device_auth_response.dart';
+import 'package:arma_proxy_vpn_client/features/api/data/models/telegram_link_response.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
@@ -111,6 +112,25 @@ class ApiClient {
           return DefaultServerKeyModel.fromJson(item);
         })
         .toList(growable: false);
+  }
+
+  Future<TelegramLinkResponse> linkTelegram({
+    required String token,
+    required String telegramId,
+  }) async {
+    final response = await _sendWithRetry(
+      () => _send(
+        method: 'POST',
+        path: '/auth/telegram/link/',
+        headers: {
+          DeviceAuthApiFields.authorization: 'Bearer $token',
+          'content-type': 'application/json',
+        },
+        body: <String, dynamic>{'telegram_id': telegramId},
+      ),
+    );
+    final payload = _decodeJsonMap(response.body);
+    return TelegramLinkResponse.fromJson(payload);
   }
 
   Future<http.Response> _sendWithRetry(
