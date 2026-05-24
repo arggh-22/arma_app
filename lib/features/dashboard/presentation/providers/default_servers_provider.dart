@@ -6,6 +6,8 @@ import 'package:arma_proxy_vpn_client/features/api/domain/entities/default_serve
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/default_server_cache_provider.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/data/mappers/default_server_item_mapper.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/domain/entities/default_server_item.dart';
+import 'package:arma_proxy_vpn_client/features/server/data/services/subscription_service.dart';
+import 'package:arma_proxy_vpn_client/features/server/domain/entities/subscription.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -50,6 +52,10 @@ final defaultServersRetryScheduleProvider = Provider<List<Duration>>(
 final defaultServersRetryDelayProvider = Provider<DefaultServersRetryDelay>(
   (ref) =>
       (duration) => Future<void>.delayed(duration),
+);
+
+final defaultServersSubscriptionServiceProvider = Provider<SubscriptionService>(
+  (ref) => SubscriptionService(),
 );
 
 class DefaultServersState {
@@ -121,7 +127,7 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
       final refreshResult = await ref
           .read(defaultServerRefreshServiceProvider)
           .refreshNow();
-      final items = _mapItems(refreshResult.keys);
+      final items = await _mapItems(refreshResult.keys);
 
       state = state.copyWith(
         items: items,
@@ -135,7 +141,9 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
       final cache = await ref.read(defaultServerCacheDatasourceProvider).read();
       final cachedItems = cache == null
           ? const <DefaultServerItem>[]
-          : _mapItems(cache.keys);
+          : cache.keys
+                .expand(DefaultServerItemMapper.mapAll)
+                .toList(growable: false);
 
       state = state.copyWith(
         items: cachedItems,
@@ -156,8 +164,34 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
     }
   }
 
-  List<DefaultServerItem> _mapItems(List<DefaultServerKey> keys) {
-    return keys.expand(DefaultServerItemMapper.mapAll).toList(growable: false);
+  Future<List<DefaultServerItem>> _mapItems(List<DefaultServerKey> keys) async {
+    final service = ref.read(defaultServersSubscriptionServiceProvider);
+    final allItems = <DefaultServerItem>[];
+
+    for (final key in keys) {
+      try {
+        final resolved = await service.fetch(_toSyntheticSubscription(key));
+        allItems.addAll(
+          DefaultServerItemMapper.mapResolved(key, resolved.servers),
+        );
+      } on Object {
+        allItems.addAll(DefaultServerItemMapper.mapAll(key));
+      }
+    }
+
+    return allItems;
+  }
+
+  Subscription _toSyntheticSubscription(DefaultServerKey key) {
+    final syntheticTimestamp = DateTime.fromMillisecondsSinceEpoch(0);
+    return Subscription(
+      id: 'default-api-key-${key.id}',
+      name: key.name,
+      url: key.subscriptionUrl,
+      lastUpdated: syntheticTimestamp,
+      addedAt: syntheticTimestamp,
+      autoUpdate: false,
+    );
   }
 
   bool _isRetryEligible(

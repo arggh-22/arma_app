@@ -13,6 +13,14 @@ class DefaultServerItemMapper {
 
   static List<DefaultServerItem> mapAll(DefaultServerKey key) {
     final parsedConfigs = SubscriptionParser.parseBody(key.keyBody);
+    return mapResolved(key, parsedConfigs);
+  }
+
+  static List<DefaultServerItem> mapResolved(
+    DefaultServerKey key,
+    List<ServerConfig> servers,
+  ) {
+    final parsedConfigs = servers;
     if (parsedConfigs.isEmpty) {
       return [_fallbackItem(key)];
     }
