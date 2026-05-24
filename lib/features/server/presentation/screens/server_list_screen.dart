@@ -226,11 +226,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     // Build flat list of widgets: headers + cards with spacing
     final items = <Widget>[];
     if (!isMultiSelectActive) {
-      items.add(
-        ServerListDefaultServersSection(
-          onServerTap: (_) async {},
-        ),
-      );
+      items.add(const ServerListDefaultServersSection());
       if (groupEntries.isNotEmpty) {
         items.add(const Gap(8));
       }

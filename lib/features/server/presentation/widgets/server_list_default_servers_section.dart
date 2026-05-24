@@ -1,4 +1,6 @@
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
+import 'package:arma_proxy_vpn_client/features/connection/domain/entities/connection_status.dart';
+import 'package:arma_proxy_vpn_client/features/connection/presentation/providers/connection_provider.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/domain/entities/default_server_item.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_servers_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/active_server_provider.dart';
@@ -83,10 +85,14 @@ class _ServerListDefaultServersSectionState
                   item: item,
                   isSelected: activeServer?.id == item.serverConfig?.id,
                   onTap: () async {
-                    if (!item.isConnectable || widget.onServerTap == null) {
+                    if (!item.isConnectable) {
                       return;
                     }
-                    await widget.onServerTap!(item);
+                    if (widget.onServerTap case final onTap?) {
+                      await onTap(item);
+                      return;
+                    }
+                    await _onTapDefaultServer(item);
                   },
                 ),
             const Gap(8),
@@ -94,6 +100,23 @@ class _ServerListDefaultServersSectionState
         ],
       ),
     );
+  }
+
+  Future<void> _onTapDefaultServer(DefaultServerItem item) async {
+    final target = item.serverConfig;
+    if (target == null) {
+      return;
+    }
+
+    final currentSelection = ref.read(activeServerProvider);
+    await ref.read(activeServerProvider.notifier).selectServer(target);
+
+    final connectionState = ref.read(connectionProvider);
+    if (connectionState is Connected && currentSelection?.id != target.id) {
+      final connectionNotifier = ref.read(connectionProvider.notifier);
+      await connectionNotifier.disconnect();
+      await connectionNotifier.connect(target);
+    }
   }
 }
 
