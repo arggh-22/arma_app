@@ -21,11 +21,25 @@ class ActiveServerCard extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final isSelected = server != null;
+    final cardColor = isSelected
+        ? Color.alphaBlend(
+            colorScheme.primary.withValues(alpha: 0.08),
+            colorScheme.surfaceContainerLow,
+          )
+        : colorScheme.surfaceContainerLow;
+    final cardBorder = isSelected
+        ? BorderSide(
+            color: colorScheme.primary.withValues(alpha: 0.7),
+            width: 1.5,
+          )
+        : BorderSide.none;
 
     return Card(
-      color: colorScheme.surfaceContainerLow,
+      color: cardColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
+        side: cardBorder,
       ),
       child: InkWell(
         onTap: () {

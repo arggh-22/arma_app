@@ -166,7 +166,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ),
               ),
               const Gap(24),
-              Container(
+              SizedBox(
                 key: const Key('dashboard-bottom-visual-group'),
                 width: double.infinity,
                 child: Column(
@@ -181,14 +181,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             children: [
                               if (hasAnnouncementTitle)
                                 Text(
-                                  announcementTitle!,
+                                  announcementTitle,
                                   style: Theme.of(context).textTheme.titleMedium,
                                 ),
                               if (hasAnnouncementTitle && hasAnnouncementText)
                                 const Gap(8),
                               if (hasAnnouncementText)
                                 Text(
-                                  announcementText!,
+                                  announcementText,
                                   maxLines: 3,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -201,7 +201,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                       'dashboard-announcement-read-more',
                                     ),
                                     onPressed: () =>
-                                        _openAnnouncementSheet(announcementText!),
+                                        _openAnnouncementSheet(announcementText),
                                     child: Text(l10n.dashboardAnnouncementReadMore),
                                   ),
                                 ),
