@@ -44,7 +44,7 @@ Plans:
   2. Top panel shows connect button, selected server, and statistics.
   3. Bottom panel shows announcements and default-server cards.
   4. Selected server is clearly parked/highlighted in UI.
-**Plans**: 0 plans
+**Plans**: 1 plan
 Plans:
 - [ ] 17-01-PLAN.md — Implement dashboard layout split and selected-server parked visual state
 **UI hint**: yes
