@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import 'package:arma_proxy_vpn_client/features/connection/domain/entities/connection_status.dart';
+import 'package:arma_proxy_vpn_client/features/connection/presentation/providers/connection_provider.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/domain/entities/default_server_item.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_servers_provider.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/default_servers_sheet.dart';
@@ -110,7 +112,17 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
     if (!item.isConnectable) {
       return;
     }
-    await ref.read(activeServerProvider.notifier).selectServer(item.serverConfig);
+    final target = item.serverConfig!;
+    final currentSelection = ref.read(activeServerProvider);
+
+    await ref.read(activeServerProvider.notifier).selectServer(target);
+
+    final connectionState = ref.read(connectionProvider);
+    if (connectionState is Connected && currentSelection?.id != target.id) {
+      final connectionNotifier = ref.read(connectionProvider.notifier);
+      await connectionNotifier.disconnect();
+      await connectionNotifier.connect(target);
+    }
   }
 
   void _openShowAllSheet(BuildContext context, List<DefaultServerItem> items) {
