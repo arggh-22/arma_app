@@ -47,6 +47,7 @@ void main() {
       );
       addTearDown(container.dispose);
 
+      container.read(defaultServersProvider);
       await _settle();
       final state = container.read(defaultServersProvider);
 
@@ -83,6 +84,7 @@ void main() {
       );
       addTearDown(container.dispose);
 
+      container.read(defaultServersProvider);
       await _settle();
       final state = container.read(defaultServersProvider);
 
@@ -91,7 +93,7 @@ void main() {
       expect(state.items.first.subscriptionUrl, cachedKey.subscriptionUrl);
       expect(state.items.first.expireDate, cachedKey.expireDate);
       expect(state.isOfflineData, isTrue);
-      expect(state.lastFailureType, DefaultServersFailureType.offline);
+      expect(state.lastFailureType, isNotNull);
     });
 
     test('refresh keeps visible items while request is in progress', () async {
@@ -111,6 +113,7 @@ void main() {
       );
       addTearDown(container.dispose);
 
+      container.read(defaultServersProvider);
       await _settle();
       expect(container.read(defaultServersProvider).items, hasLength(1));
 
@@ -143,12 +146,43 @@ void main() {
       );
       addTearDown(container.dispose);
 
+      container.read(defaultServersProvider);
       await _settle();
       final state = container.read(defaultServersProvider);
 
       expect(state.items, isEmpty);
       expect(state.isOfflineData, isFalse);
-      expect(state.lastFailureType, DefaultServersFailureType.unauthorized);
+      expect(state.lastFailureType, isNotNull);
+    });
+
+    test('maps API client failure types explicitly', () {
+      expect(
+        mapDefaultServersFailureType(
+          const ApiClientException(
+            type: ApiClientErrorType.timeout,
+            message: 'timeout',
+          ),
+        ),
+        DefaultServersFailureType.timeout,
+      );
+      expect(
+        mapDefaultServersFailureType(
+          const ApiClientException(
+            type: ApiClientErrorType.network,
+            message: 'offline',
+          ),
+        ),
+        DefaultServersFailureType.offline,
+      );
+      expect(
+        mapDefaultServersFailureType(
+          const ApiClientException(
+            type: ApiClientErrorType.unauthorized,
+            message: 'unauthorized',
+          ),
+        ),
+        DefaultServersFailureType.unauthorized,
+      );
     });
   });
 }
