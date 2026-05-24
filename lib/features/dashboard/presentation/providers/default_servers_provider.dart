@@ -1,10 +1,9 @@
 import 'dart:async';
 
 import 'package:arma_proxy_vpn_client/features/api/data/datasources/api_client.dart';
-import 'package:arma_proxy_vpn_client/features/api/data/models/default_server_cache_model.dart';
+import 'package:arma_proxy_vpn_client/features/api/data/services/default_server_refresh_service.dart';
 import 'package:arma_proxy_vpn_client/features/api/domain/entities/default_server_key.dart';
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/default_server_cache_provider.dart';
-import 'package:arma_proxy_vpn_client/features/api/presentation/providers/default_server_keys_provider.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/data/mappers/default_server_item_mapper.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/domain/entities/default_server_item.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -112,7 +111,6 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
   Future<void> refresh() async {
     state = state.copyWith(isRefreshing: true);
     await _load(
-      useRefreshProvider: true,
       triggerRetryQueue: true,
     );
   }
@@ -120,13 +118,13 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
   Future<void> _initialLoad() => _load();
 
   Future<void> _load({
-    bool useRefreshProvider = false,
     bool triggerRetryQueue = false,
   }) async {
     try {
-      final keys = await _fetchKeys(useRefreshProvider: useRefreshProvider);
-      await _persistCache(keys);
-      final items = _mapItems(keys);
+      final refreshResult = await ref
+          .read(defaultServerRefreshServiceProvider)
+          .refreshNow();
+      final items = _mapItems(refreshResult.keys);
 
       state = state.copyWith(
         items: items,
@@ -157,24 +155,6 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
         _startRetryQueue();
       }
     }
-  }
-
-  Future<List<DefaultServerKey>> _fetchKeys({
-    required bool useRefreshProvider,
-  }) {
-    if (useRefreshProvider) {
-      return ref.refresh(defaultServerKeysProvider.future);
-    }
-    return ref.read(defaultServerKeysProvider.future);
-  }
-
-  Future<void> _persistCache(List<DefaultServerKey> keys) {
-    return ref.read(defaultServerCacheDatasourceProvider).write(
-      DefaultServerCacheModel(
-        fetchedAt: DateTime.now(),
-        keys: keys,
-      ),
-    );
   }
 
   List<DefaultServerItem> _mapItems(List<DefaultServerKey> keys) {
@@ -230,7 +210,6 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
       );
 
       await _load(
-        useRefreshProvider: true,
         triggerRetryQueue: false,
       );
       if (!ref.mounted) {
