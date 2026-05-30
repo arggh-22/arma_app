@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,6 +18,8 @@ import 'package:arma_proxy_vpn_client/features/server/presentation/providers/mul
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/server_list_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/sort_filter_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/subscription_provider.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/screens/server_xray_config_screen.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/debug_long_press_wrapper.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/empty_server_state.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/import_fab.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/server_card.dart';
@@ -338,24 +341,32 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
                     onDismissed: (_) {
                       _onSwipeDelete(context, ref, server);
                     },
-                    child: ServerCard(
-                      server: server,
-                      isSelected: server.id == activeServer?.id,
-                      latency: latencyMap[server.id],
-                      onTap: () {
-                        HapticFeedback.selectionClick();
-                        ref
-                            .read(activeServerProvider.notifier)
-                            .selectServer(server);
-                      },
-                      onLongPress: () {
-                        HapticFeedback.mediumImpact();
-                        ref
-                            .read(multiSelectProvider.notifier)
-                            .enterSelectionMode(server.id);
-                      },
-                      onLatencyTap: () =>
-                          ref.read(latencyProvider.notifier).testServer(server),
+                    child: DebugLongPressWrapper(
+                      onDebugLongPress: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) =>
+                              ServerXrayConfigScreen(server: server),
+                        ),
+                      ),
+                      child: ServerCard(
+                        server: server,
+                        isSelected: server.id == activeServer?.id,
+                        latency: latencyMap[server.id],
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          ref
+                              .read(activeServerProvider.notifier)
+                              .selectServer(server);
+                        },
+                        onLongPress: () {
+                          HapticFeedback.mediumImpact();
+                          ref
+                              .read(multiSelectProvider.notifier)
+                              .enterSelectionMode(server.id);
+                        },
+                        onLatencyTap: () =>
+                            ref.read(latencyProvider.notifier).testServer(server),
+                      ),
                     ),
                   ),
           ),
