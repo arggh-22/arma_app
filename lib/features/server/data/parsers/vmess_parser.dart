@@ -129,6 +129,7 @@ class VmessParser {
         sni: ParserUtils.nonEmpty(params['sni']),
         host: ParserUtils.nonEmpty(params['host']),
         path: ParserUtils.decodeParam(params['path']),
+        xhttpMode: params['mode'] ?? 'auto',
         addedAt: DateTime.now(),
       );
     } catch (_) {

@@ -35,8 +35,11 @@ abstract class ServerConfig with _$ServerConfig {
     /// Encryption method (VMess: auto/aes-128-gcm/chacha20-poly1305/none).
     @Default('none') String encryption,
 
-    /// Transport network type: tcp, ws, grpc, h2, kcp.
+    /// Transport network type: tcp, ws, grpc, h2, xhttp.
     @Default('tcp') String network,
+
+    /// XHTTP transport mode (auto, stream-one, stream-up, packet-up).
+    @Default('auto') String xhttpMode,
 
     /// TLS security: none, tls, reality.
     @Default('none') String security,

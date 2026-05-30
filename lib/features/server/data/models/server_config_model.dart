@@ -9,7 +9,7 @@ part 'server_config_model.g.dart';
 /// Uses explicit `@HiveField` indices with intentional gaps to allow
 /// adding new fields in future schema versions without breaking existing data.
 ///
-/// Index gaps: 3-4, 7-9, 16-19, 26-29, 36-39
+/// Index gaps: 3-4, 7-9, 16-19, 26(xhttpMode), 27-29, 36-39
 @HiveType(typeId: 0)
 class ServerConfigModel extends HiveObject {
   @HiveField(0)
@@ -70,6 +70,8 @@ class ServerConfigModel extends HiveObject {
   final int alterId;
 
   // GAP: 26-29 reserved for future transport fields
+  @HiveField(26)
+  final String xhttpMode;
 
   @HiveField(30)
   final String? serviceName;
@@ -133,6 +135,7 @@ class ServerConfigModel extends HiveObject {
     this.fingerprint,
     this.flow,
     this.alterId = 0,
+    this.xhttpMode = 'auto',
     this.serviceName,
     this.authority,
     this.publicKey,
@@ -169,6 +172,7 @@ class ServerConfigModel extends HiveObject {
       fingerprint: fingerprint,
       flow: flow,
       alterId: alterId,
+      xhttpMode: xhttpMode,
       serviceName: serviceName,
       authority: authority,
       publicKey: publicKey,
@@ -209,6 +213,7 @@ extension ServerConfigModelMapper on ServerConfigModel {
       fingerprint: config.fingerprint,
       flow: config.flow,
       alterId: config.alterId,
+      xhttpMode: config.xhttpMode,
       serviceName: config.serviceName,
       authority: config.authority,
       publicKey: config.publicKey,

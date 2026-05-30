@@ -11,8 +11,8 @@ import 'package:arma_proxy_vpn_client/features/settings/domain/entities/vpn_sett
 /// executor — it receives the complete JSON string and passes it to
 /// `StartLoop(json, tunFd)`.
 ///
-/// Handles 4 protocols (VLESS, VMess, Trojan, Shadowsocks) × 4 transports
-/// (TCP, WS, gRPC, H2) × 3 TLS modes (none, tls, reality).
+/// Handles 4 protocols (VLESS, VMess, Trojan, Shadowsocks) × 5 transports
+/// (TCP, WS, gRPC, H2, XHTTP) × 3 TLS modes (none, tls, reality).
 class XrayConfigBuilder {
   XrayConfigBuilder._();
 
@@ -281,7 +281,7 @@ class XrayConfigBuilder {
   /// Resolves the VLESS flow field.
   ///
   /// Flow MUST only be set for VLESS + TCP + (TLS or Reality).
-  /// Setting flow on WS/gRPC/H2 causes connection failure (Pitfall from research).
+  /// Setting flow on WS/gRPC/H2/XHTTP causes connection failure.
   static String _resolveFlow(ServerConfig server) {
     if (server.protocol != ProtocolType.vless) return '';
     if (server.network != 'tcp') return '';
@@ -369,6 +369,16 @@ class XrayConfigBuilder {
           'host': [server.host ?? server.address],
           'path': server.path ?? '/',
         };
+      case 'xhttp':
+        final xhttpSettings = <String, dynamic>{
+          'path': server.path ?? '/',
+          'host': server.host ?? server.address,
+        };
+        // Only emit mode when non-default — Xray-core defaults to 'auto'
+        if (server.xhttpMode.isNotEmpty && server.xhttpMode != 'auto') {
+          xhttpSettings['mode'] = server.xhttpMode;
+        }
+        settings['xhttpSettings'] = xhttpSettings;
     }
 
     // TLS ClientHello fragmentation via sockopt (anti-censorship D-10)

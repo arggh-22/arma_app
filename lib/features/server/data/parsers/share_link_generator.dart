@@ -48,6 +48,9 @@ class ShareLinkGenerator {
     if (server.network == 'grpc') {
       _addIfNotEmpty(params, 'serviceName', server.serviceName);
     }
+    if (server.network == 'xhttp' && server.xhttpMode != 'auto') {
+      params['mode'] = server.xhttpMode;
+    }
 
     final query = params.entries
         .map((e) => '${e.key}=${e.value}')
@@ -100,6 +103,9 @@ class ShareLinkGenerator {
 
     if (server.network == 'grpc') {
       _addIfNotEmpty(params, 'serviceName', server.serviceName);
+    }
+    if (server.network == 'xhttp' && server.xhttpMode != 'auto') {
+      params['mode'] = server.xhttpMode;
     }
 
     final query = params.entries

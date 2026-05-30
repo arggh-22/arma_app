@@ -114,6 +114,15 @@ class ClashParser {
       }
     }
 
+    // XHTTP options
+    String xhttpMode = 'auto';
+    final xhttpOpts = proxy['xhttp-opts'];
+    if (xhttpOpts is YamlMap) {
+      path ??= _nonEmpty(xhttpOpts['path']?.toString());
+      host ??= _nonEmpty(xhttpOpts['host']?.toString());
+      xhttpMode = _nonEmpty(xhttpOpts['mode']?.toString()) ?? 'auto';
+    }
+
     // Protocol-specific fields
     final uuid = _nonEmpty(proxy['uuid']?.toString());
     final password = _nonEmpty(proxy['password']?.toString());
@@ -139,6 +148,7 @@ class ClashParser {
           : 'none',
       method: protocol == ProtocolType.shadowsocks ? cipher : null,
       network: network,
+      xhttpMode: xhttpMode,
       security: security,
       sni: sni,
       host: host,

@@ -34,6 +34,7 @@ class ServerConfigModelAdapter extends TypeAdapter<ServerConfigModel> {
       fingerprint: fields[23] as String?,
       flow: fields[24] as String?,
       alterId: fields[25] == null ? 0 : (fields[25] as num).toInt(),
+      xhttpMode: fields[26] == null ? 'auto' : fields[26] as String,
       serviceName: fields[30] as String?,
       authority: fields[31] as String?,
       publicKey: fields[32] as String?,
@@ -54,7 +55,7 @@ class ServerConfigModelAdapter extends TypeAdapter<ServerConfigModel> {
   @override
   void write(BinaryWriter writer, ServerConfigModel obj) {
     writer
-      ..writeByte(31)
+      ..writeByte(32)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -89,6 +90,8 @@ class ServerConfigModelAdapter extends TypeAdapter<ServerConfigModel> {
       ..write(obj.flow)
       ..writeByte(25)
       ..write(obj.alterId)
+      ..writeByte(26)
+      ..write(obj.xhttpMode)
       ..writeByte(30)
       ..write(obj.serviceName)
       ..writeByte(31)

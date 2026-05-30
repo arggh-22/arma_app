@@ -47,6 +47,7 @@ class TrojanParser {
         path: ParserUtils.decodeParam(params['path']),
         fingerprint: ParserUtils.nonEmpty(params['fp']),
         alpn: ParserUtils.nonEmpty(params['alpn']),
+        xhttpMode: params['mode'] ?? 'auto',
         addedAt: DateTime.now(),
       );
     } catch (_) {

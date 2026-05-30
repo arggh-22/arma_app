@@ -49,6 +49,7 @@ class VlessParser {
         spiderX: ParserUtils.decodeParam(params['spx']),
         serviceName: ParserUtils.nonEmpty(params['serviceName']),
         alpn: ParserUtils.nonEmpty(params['alpn']),
+        xhttpMode: params['mode'] ?? 'auto',
         addedAt: DateTime.now(),
       );
     } catch (_) {

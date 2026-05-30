@@ -36,7 +36,7 @@ final class AuthBootstrapProvider
   AuthBootstrap create() => AuthBootstrap();
 }
 
-String _$authBootstrapHash() => r'54d8eb5dc67f827cf0c2e4a2ac85acd6547c66f8';
+String _$authBootstrapHash() => r'2b1c1c8b2cb71fb13a4fbd8047348de23fc48144';
 
 /// Startup bootstrap that authenticates once and prewarms default key fetches.
 
