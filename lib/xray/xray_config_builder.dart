@@ -336,11 +336,15 @@ class XrayConfigBuilder {
         'allowInsecure': false,
         'fingerprint': server.fingerprint ?? 'chrome',
       };
-      // Only emit alpn when explicitly configured — an empty array tells
-      // Xray-core to advertise NO protocols, which can break HTTP/2 negotiation.
+      // SplitHTTP/XHTTP download channel uses HTTP/2 — must advertise h2 in
+      // ALPN so TLS negotiates h2 instead of defaulting to HTTP/1.1.
+      // Without h2, the GET response stream (downlink) silently returns 0 bytes.
+      // User-configured ALPN always takes precedence.
       final alpnList = server.alpn?.split(',').where((s) => s.isNotEmpty).toList();
       if (alpnList != null && alpnList.isNotEmpty) {
         tlsSettings['alpn'] = alpnList;
+      } else if (effectiveNetwork == 'splithttp') {
+        tlsSettings['alpn'] = ['h2', 'http/1.1'];
       }
       settings['tlsSettings'] = tlsSettings;
     }

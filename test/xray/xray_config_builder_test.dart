@@ -362,6 +362,27 @@ void main() {
       expect(settings['host'], 'cdn.example.com');
       // Default mode 'auto' is omitted from config
       expect(settings.containsKey('mode'), isFalse);
+
+      // SplitHTTP download channel requires h2 — must be in ALPN
+      final tls = stream['tlsSettings'] as Map<String, dynamic>;
+      final alpn = tls['alpn'] as List;
+      expect(alpn, containsAll(['h2', 'http/1.1']));
+    });
+
+    test('XHTTP user-configured ALPN overrides default h2', () {
+      final server = _makeServer(
+        network: 'xhttp',
+        security: 'tls',
+        alpn: 'h2',
+      );
+
+      final json = jsonDecode(XrayConfigBuilder.build(server))
+          as Map<String, dynamic>;
+      final stream = (json['outbounds'] as List)[0]['streamSettings']
+          as Map<String, dynamic>;
+      final tls = stream['tlsSettings'] as Map<String, dynamic>;
+      // User explicitly set alpn=h2, should be respected (not overridden)
+      expect(tls['alpn'], ['h2']);
     });
 
     test('XHTTP with non-default mode emits mode field', () {
