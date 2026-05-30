@@ -319,8 +319,13 @@ class XrayConfigBuilder {
     final effectiveSecurity =
         server.network == 'h2' ? 'tls' : server.security;
 
+    // Normalize xhttp → splithttp: this AAR's Xray-core registers the transport
+    // as "splithttp" (pre-rename). Both names refer to the same protocol.
+    final effectiveNetwork =
+        server.network == 'xhttp' ? 'splithttp' : server.network;
+
     final settings = <String, dynamic>{
-      'network': server.network,
+      'network': effectiveNetwork,
       'security': effectiveSecurity,
     };
 
@@ -346,7 +351,7 @@ class XrayConfigBuilder {
     }
 
     // Transport-specific settings
-    switch (server.network) {
+    switch (effectiveNetwork) {
       case 'tcp':
         settings['tcpSettings'] = {
           'header': {'type': 'none'},
@@ -370,6 +375,7 @@ class XrayConfigBuilder {
           'path': server.path ?? '/',
         };
       case 'xhttp':
+      case 'splithttp':
         final xhttpSettings = <String, dynamic>{
           'path': server.path ?? '/',
           'host': server.host ?? server.address,
@@ -378,7 +384,7 @@ class XrayConfigBuilder {
         if (server.xhttpMode.isNotEmpty && server.xhttpMode != 'auto') {
           xhttpSettings['mode'] = server.xhttpMode;
         }
-        settings['xhttpSettings'] = xhttpSettings;
+        settings['splithttpSettings'] = xhttpSettings;
     }
 
     // TLS ClientHello fragmentation via sockopt (anti-censorship D-10)

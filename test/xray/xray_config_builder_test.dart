@@ -335,6 +335,94 @@ void main() {
       expect(http['host'], ['h2.example.com']);
       expect(http['path'], '/h2path');
     });
+
+    test('XHTTP transport normalizes to splithttp network name', () {
+      final server = _makeServer(
+        network: 'xhttp',
+        security: 'tls',
+        host: 'cdn.example.com',
+        path: '/download',
+        sni: 'cdn.example.com',
+      );
+
+      final json = jsonDecode(XrayConfigBuilder.build(server))
+          as Map<String, dynamic>;
+      final proxy =
+          (json['outbounds'] as List)[0] as Map<String, dynamic>;
+      final stream = proxy['streamSettings'] as Map<String, dynamic>;
+
+      // Must use 'splithttp' network name (not 'xhttp') — AAR only
+      // registers this transport as 'splithttp'
+      expect(stream['network'], 'splithttp');
+      expect(stream.containsKey('splithttpSettings'), isTrue);
+      expect(stream.containsKey('xhttpSettings'), isFalse);
+
+      final settings = stream['splithttpSettings'] as Map<String, dynamic>;
+      expect(settings['path'], '/download');
+      expect(settings['host'], 'cdn.example.com');
+      // Default mode 'auto' is omitted from config
+      expect(settings.containsKey('mode'), isFalse);
+    });
+
+    test('XHTTP with non-default mode emits mode field', () {
+      final server = ServerConfig(
+        id: 'test-id',
+        name: 'xhttp mode test',
+        protocol: ProtocolType.vless,
+        address: 'srv.example.com',
+        port: 443,
+        uuid: 'test-uuid',
+        network: 'xhttp',
+        xhttpMode: 'stream-up',
+        security: 'tls',
+        path: '/up',
+        host: 'cdn.example.com',
+        addedAt: DateTime(2024, 1, 1),
+      );
+
+      final json = jsonDecode(XrayConfigBuilder.build(server))
+          as Map<String, dynamic>;
+      final stream = (json['outbounds'] as List)[0]['streamSettings']
+          as Map<String, dynamic>;
+
+      final settings = stream['splithttpSettings'] as Map<String, dynamic>;
+      expect(settings['mode'], 'stream-up');
+    });
+
+    test('splithttp network type also uses splithttpSettings', () {
+      final server = _makeServer(
+        network: 'splithttp',
+        host: 'cdn.example.com',
+        path: '/path',
+      );
+
+      final json = jsonDecode(XrayConfigBuilder.build(server))
+          as Map<String, dynamic>;
+      final stream = (json['outbounds'] as List)[0]['streamSettings']
+          as Map<String, dynamic>;
+
+      expect(stream['network'], 'splithttp');
+      expect(stream.containsKey('splithttpSettings'), isTrue);
+    });
+
+    test('XHTTP does not set flow even when flow is provided', () {
+      final server = _makeServer(
+        network: 'xhttp',
+        security: 'tls',
+        flow: 'xtls-rprx-vision', // should be ignored for non-tcp
+      );
+
+      final json = jsonDecode(XrayConfigBuilder.build(server))
+          as Map<String, dynamic>;
+      final proxy =
+          (json['outbounds'] as List)[0] as Map<String, dynamic>;
+      final settings = proxy['settings'] as Map<String, dynamic>;
+      final users =
+          ((settings['vnext'] as List)[0]['users'] as List)[0]
+              as Map<String, dynamic>;
+
+      expect(users['flow'], '');
+    });
   });
 
   group('Config structure', () {
