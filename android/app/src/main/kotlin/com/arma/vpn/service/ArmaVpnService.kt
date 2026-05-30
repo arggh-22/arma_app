@@ -235,6 +235,25 @@ class ArmaVpnService : VpnService() {
             coreController = XrayCoreManager.createController(callback)
             Log.w(TAG, "CoreController created: $coreController")
 
+            // 4a. Set underlying physical network BEFORE startLoop so that protect()
+            //     can immediately bind sockets to the physical network. Without this,
+            //     the first sockets Xray creates have no declared underlying network,
+            //     which can cause protect() to fail or route incorrectly on some devices.
+            val cm = getSystemService(ConnectivityManager::class.java)
+            val physicalNetwork = cm.allNetworks.firstOrNull { network ->
+                val caps = cm.getNetworkCapabilities(network)
+                caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
+                    caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN) == true
+            }
+            if (physicalNetwork != null) {
+                setUnderlyingNetworks(arrayOf(physicalNetwork))
+                Log.w(TAG, "Step 4a: setUnderlyingNetworks (pre-start): $physicalNetwork")
+                debugLog("setUnderlyingNetworks (pre-start): $physicalNetwork")
+            } else {
+                Log.w(TAG, "Step 4a: No physical network found before startLoop")
+                debugLog("WARNING: No physical network found before startLoop")
+            }
+
             Log.w(TAG, "Step 5: Calling startLoop(config.length=${config.length}, tunFd=${tunInterface!!.fd})")
             Log.w(TAG, "=== FULL XRAY CONFIG START ===")
             // Log config in chunks (logcat has line length limits)
@@ -492,16 +511,20 @@ class ArmaVpnService : VpnService() {
             .build()
         networkCallback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
+                Log.w(TAG, "Physical network available: $network")
                 setUnderlyingNetworks(arrayOf(network))
             }
             override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
                 setUnderlyingNetworks(arrayOf(network))
             }
             override fun onLost(network: Network) {
+                Log.w(TAG, "Physical network lost: $network")
                 setUnderlyingNetworks(null)
             }
         }
-        cm.requestNetwork(request, networkCallback!!)
+        // Use registerNetworkCallback (not requestNetwork) to observe without requesting.
+        // requestNetwork can have unintended side effects (e.g., requesting new network bringup).
+        cm.registerNetworkCallback(request, networkCallback!!)
     }
 
     /**

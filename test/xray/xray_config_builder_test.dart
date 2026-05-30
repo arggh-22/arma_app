@@ -360,8 +360,8 @@ void main() {
       final settings = stream['splithttpSettings'] as Map<String, dynamic>;
       expect(settings['path'], '/download');
       expect(settings['host'], 'cdn.example.com');
-      // Default mode 'auto' is omitted from config
-      expect(settings.containsKey('mode'), isFalse);
+      // Default mode is 'stream-up' for cross-version server compatibility
+      expect(settings['mode'], 'stream-up');
 
       // SplitHTTP download channel requires h2 — must be in ALPN
       final tls = stream['tlsSettings'] as Map<String, dynamic>;
@@ -385,7 +385,7 @@ void main() {
       expect(tls['alpn'], ['h2']);
     });
 
-    test('XHTTP with non-default mode emits mode field', () {
+    test('XHTTP user-configured mode overrides stream-up default', () {
       final server = ServerConfig(
         id: 'test-id',
         name: 'xhttp mode test',

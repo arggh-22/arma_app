@@ -390,10 +390,19 @@ class XrayConfigBuilder {
           'path': server.path ?? '/',
           'host': server.host ?? server.address,
         };
-        // Only emit mode when non-default — Xray-core defaults to 'auto'
-        if (server.xhttpMode.isNotEmpty && server.xhttpMode != 'auto') {
-          xhttpSettings['mode'] = server.xhttpMode;
-        }
+        // Determine upload mode. In Xray-core v1.260327.0+ the default auto-selected
+        // mode for TLS (non-Reality) is "packet-up" (multiple small POSTs, CDN-friendly).
+        // However, "packet-up" embeds the seq number in the POST path (/path/UUID/0),
+        // which older server Xray versions can't parse — they treat the whole segment as
+        // the session ID and never match GET vs POST, causing downlink = 0.
+        // "stream-up" (one streaming POST to /path/UUID, same URL as GET) is compatible
+        // with both old and new server versions AND works through CDNs.
+        // Use user-configured mode if set; otherwise default to "stream-up".
+        final resolvedMode =
+            (server.xhttpMode.isNotEmpty && server.xhttpMode != 'auto')
+                ? server.xhttpMode
+                : 'stream-up';
+        xhttpSettings['mode'] = resolvedMode;
         settings['splithttpSettings'] = xhttpSettings;
     }
 
