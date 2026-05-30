@@ -1,4 +1,7 @@
 import 'package:arma_proxy_vpn_client/features/dashboard/domain/entities/default_server_item.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/screens/server_xray_config_screen.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/debug_long_press_wrapper.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
@@ -54,12 +57,23 @@ class DefaultServersSheet extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 16),
             itemBuilder: (context, index) {
               final item = items[index];
-              return ListTile(
-                enabled: item.isConnectable,
-                title: Text(item.name),
-                subtitle: Text(item.status),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: item.isConnectable ? () => onServerTap(item) : null,
+              return DebugLongPressWrapper(
+                onDebugLongPress: item.serverConfig != null && kDebugMode
+                    ? () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => ServerXrayConfigScreen(
+                              server: item.serverConfig!,
+                            ),
+                          ),
+                        )
+                    : () {},
+                child: ListTile(
+                  enabled: item.isConnectable,
+                  title: Text(item.name),
+                  subtitle: Text(item.status),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: item.isConnectable ? () => onServerTap(item) : null,
+                ),
               );
             },
             separatorBuilder: (_, _) => const Divider(height: 1),

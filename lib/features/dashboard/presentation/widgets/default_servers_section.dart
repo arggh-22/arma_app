@@ -6,6 +6,9 @@ import 'package:arma_proxy_vpn_client/features/dashboard/domain/entities/default
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_servers_provider.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/default_servers_sheet.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/active_server_provider.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/screens/server_xray_config_screen.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/debug_long_press_wrapper.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -86,10 +89,21 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
                   for (final item in previewItems)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8),
-                      child: _DefaultServerTile(
-                        item: item,
-                        isSelected: item.serverConfig?.id == activeServer?.id,
-                        onTap: () => _onTapItem(item),
+                      child: DebugLongPressWrapper(
+                        onDebugLongPress: item.serverConfig != null && kDebugMode
+                            ? () => Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => ServerXrayConfigScreen(
+                                      server: item.serverConfig!,
+                                    ),
+                                  ),
+                                )
+                            : () {},
+                        child: _DefaultServerTile(
+                          item: item,
+                          isSelected: item.serverConfig?.id == activeServer?.id,
+                          onTap: () => _onTapItem(item),
+                        ),
                       ),
                     ),
                 ],
