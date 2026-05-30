@@ -21,7 +21,13 @@
   "disabledQrScan": "QR scanning coming soon",
   "deleteServerTitle": "Delete server?",
   "deleteServerBody": "This will permanently remove {serverName}.",
-  "@deleteServerBody": { "placeholders": { "serverName": { "type": "String" } } },
+  "@deleteServerBody": {
+    "placeholders": {
+      "serverName": {
+        "type": "String"
+      }
+    }
+  },
   "deleteConfirm": "Delete",
   "deleteCancel": "Keep Server",
   "pasteConfigTitle": "Paste Config",
@@ -48,11 +54,29 @@
   "version": "Version",
   "openSourceLicenses": "Open Source Licenses",
   "languageChanged": "Language changed to {language}",
-  "@languageChanged": { "placeholders": { "language": { "type": "String" } } },
+  "@languageChanged": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
   "downloadSpeed": "↓ {speed}",
-  "@downloadSpeed": { "placeholders": { "speed": { "type": "String" } } },
+  "@downloadSpeed": {
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
   "uploadSpeed": "↑ {speed}",
-  "@uploadSpeed": { "placeholders": { "speed": { "type": "String" } } },
+  "@uploadSpeed": {
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
   "viewAction": "View",
   "retryAction": "Retry",
   "connecting": "Connecting",
@@ -65,16 +89,40 @@
   "qrUnrecognized": "Couldn't recognize this QR code",
   "cameraPermissionDenied": "Camera permission required to scan QR codes. Enable in Settings.",
   "deleteServersTitle": "Delete {count} servers?",
-  "@deleteServersTitle": { "placeholders": { "count": { "type": "int" } } },
+  "@deleteServersTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "deleteServersBody": "This will permanently remove the selected servers. Servers from subscriptions will reappear on next refresh.",
   "deleteServersConfirm": "Delete {count}",
-  "@deleteServersConfirm": { "placeholders": { "count": { "type": "int" } } },
+  "@deleteServersConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "keepServers": "Keep Servers",
   "subscriptionRefreshSuccess": "Updated {count} subscriptions",
-  "@subscriptionRefreshSuccess": { "placeholders": { "count": { "type": "int" } } },
+  "@subscriptionRefreshSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "subscriptionRefreshNoChange": "All up to date",
   "subscriptionRefreshFail": "Failed to update {name}. Check your connection.",
-  "@subscriptionRefreshFail": { "placeholders": { "name": { "type": "String" } } },
+  "@subscriptionRefreshFail": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "qrSubscriptionPrompt": "This looks like a subscription URL. Add as subscription?",
   "notNow": "Not Now",
   "dismissDialog": "Dismiss",
@@ -89,7 +137,13 @@
   "testAllServers": "Test All",
   "bestServer": "Best Server",
   "selectedCount": "{count} selected",
-  "@selectedCount": { "placeholders": { "count": { "type": "int" } } },
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "selectAll": "Select All",
   "scanQrTitle": "Scan QR Code",
   "scanQrInstruction": "Point camera at a QR code",
@@ -101,15 +155,33 @@
   "viewLogs": "View Logs",
   "autoScroll": "Auto-scroll",
   "linesCount": "{count} lines",
-  "@linesCount": { "placeholders": { "count": { "type": "int" } } },
+  "@linesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "autoUpdateOnLaunch": "Auto-update on app launch",
   "userAgentHint": "Leave empty for default browser UA",
   "subscriptionUrl": "URL",
   "subscriptionName": "Name",
   "subscriptionInfoFormat": "{count} servers",
-  "@subscriptionInfoFormat": { "placeholders": { "count": { "type": "int" } } },
+  "@subscriptionInfoFormat": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "importedServersCount": "Imported {count} servers",
-  "@importedServersCount": { "placeholders": { "count": { "type": "int" } } },
+  "@importedServersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "logFilterAll": "All",
   "logFilterInfo": "Info",
   "logFilterWarning": "Warning",
@@ -121,13 +193,25 @@
   "enablePerAppProxy": "Enable Per-App Proxy",
   "searchApps": "Search apps…",
   "appsSelectedCount": "{count} apps selected",
-  "@appsSelectedCount": { "placeholders": { "count": { "type": "int" } } },
+  "@appsSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "blacklistMode": "Blacklist",
   "whitelistMode": "Whitelist",
   "blacklistDescription": "All apps route through VPN except selected",
   "whitelistDescription": "Only selected apps route through VPN",
   "switchedToMode": "Switched to {mode} mode",
-  "@switchedToMode": { "placeholders": { "mode": { "type": "String" } } },
+  "@switchedToMode": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
   "loadingApps": "Loading installed apps…",
   "noAppsSelected": "No apps selected — check apps to include or exclude them",
   "addRule": "Add Rule",
@@ -221,22 +305,25 @@
   "telegramLinkScreenTitle": "Link Telegram",
   "telegramLinkOpenBot": "Open Telegram Bot",
   "telegramLinkStepStartTitle": "Tap Start in Telegram bot",
-  "telegramLinkStepStartBody": "Open @devarmabot and tap Start.",
-  "telegramLinkStepGetIdTitle": "Get your Telegram ID",
-  "telegramLinkStepGetIdBody": "In bot menu commands tap Get Telegram ID, or send /my_id.",
-  "telegramLinkIdLabel": "Telegram ID",
-  "telegramLinkIdHint": "Paste numeric Telegram ID",
+  "telegramLinkStepStartBody": "Open @devarmabot — the bot will automatically send you a 6-digit link code.",
+  "telegramLinkStepGetIdTitle": "Get your link code",
+  "telegramLinkStepGetIdBody": "Type /link in the bot or tap Start. Copy the 6-digit code it sends you.",
+  "telegramLinkIdLabel": "Link Code",
+  "telegramLinkIdHint": "Enter 6-digit code",
   "telegramLinkPasteAction": "Paste",
   "telegramLinkSubmitAction": "Link",
   "telegramLinkOpenBotFailed": "Couldn’t open Telegram bot. Try again.",
   "telegramLinkPasteEmpty": "Clipboard is empty.",
   "telegramLinkSuccess": "Telegram account linked successfully.",
   "telegramLinkAlreadyLinked": "This Telegram account is already linked.",
-  "telegramLinkInvalidId": "Telegram ID is invalid. Use 5–20 digits.",
+  "telegramLinkInvalidId": "Enter the 6-digit code from the Telegram bot.",
   "telegramLinkUnauthorized": "Session expired. Please sign in again, then retry linking.",
   "telegramLinkNetworkError": "No network connection. Reconnect and try again.",
   "telegramLinkServerError": "Server error. Please try again shortly.",
   "telegramLinkUnknownError": "Unexpected error. Please try again.",
+  "telegramLinkLinkedTitle": "Telegram Linked!",
+  "telegramLinkLinkedBody": "Your account has been successfully linked to Telegram.",
+  "telegramLinkDoneAction": "Done",
   "dashboardTelegramFabLabel": "Telegram",
   "dashboardAnnouncementTitle": "Announcement",
   "dashboardAnnouncementReadMore": "Read more"

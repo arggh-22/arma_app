@@ -1319,31 +1319,31 @@ abstract class AppLocalizations {
   /// No description provided for @telegramLinkStepStartBody.
   ///
   /// In en, this message translates to:
-  /// **'Open @devarmabot and tap Start.'**
+  /// **'Open @devarmabot — the bot will automatically send you a 6-digit link code.'**
   String get telegramLinkStepStartBody;
 
   /// No description provided for @telegramLinkStepGetIdTitle.
   ///
   /// In en, this message translates to:
-  /// **'Get your Telegram ID'**
+  /// **'Get your link code'**
   String get telegramLinkStepGetIdTitle;
 
   /// No description provided for @telegramLinkStepGetIdBody.
   ///
   /// In en, this message translates to:
-  /// **'In bot menu commands tap Get Telegram ID, or send /my_id.'**
+  /// **'Type /link in the bot or tap Start. Copy the 6-digit code it sends you.'**
   String get telegramLinkStepGetIdBody;
 
   /// No description provided for @telegramLinkIdLabel.
   ///
   /// In en, this message translates to:
-  /// **'Telegram ID'**
+  /// **'Link Code'**
   String get telegramLinkIdLabel;
 
   /// No description provided for @telegramLinkIdHint.
   ///
   /// In en, this message translates to:
-  /// **'Paste numeric Telegram ID'**
+  /// **'Enter 6-digit code'**
   String get telegramLinkIdHint;
 
   /// No description provided for @telegramLinkPasteAction.
@@ -1385,7 +1385,7 @@ abstract class AppLocalizations {
   /// No description provided for @telegramLinkInvalidId.
   ///
   /// In en, this message translates to:
-  /// **'Telegram ID is invalid. Use 5–20 digits.'**
+  /// **'Enter the 6-digit code from the Telegram bot.'**
   String get telegramLinkInvalidId;
 
   /// No description provided for @telegramLinkUnauthorized.
@@ -1411,6 +1411,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unexpected error. Please try again.'**
   String get telegramLinkUnknownError;
+
+  /// No description provided for @telegramLinkLinkedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Telegram Linked!'**
+  String get telegramLinkLinkedTitle;
+
+  /// No description provided for @telegramLinkLinkedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been successfully linked to Telegram.'**
+  String get telegramLinkLinkedBody;
+
+  /// No description provided for @telegramLinkDoneAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get telegramLinkDoneAction;
 
   /// No description provided for @dashboardTelegramFabLabel.
   ///

@@ -21,7 +21,13 @@
   "disabledQrScan": "QR սկանավորումը շուտով կհասնի",
   "deleteServerTitle": "Ջնջե՞լ սերվերը",
   "deleteServerBody": "Սա մշտապես կջնջի {serverName}-ը։",
-  "@deleteServerBody": { "placeholders": { "serverName": { "type": "String" } } },
+  "@deleteServerBody": {
+    "placeholders": {
+      "serverName": {
+        "type": "String"
+      }
+    }
+  },
   "deleteConfirm": "Ջնջել",
   "deleteCancel": "Պահել",
   "pasteConfigTitle": "Տեղադրել կոնֆիգ",
@@ -48,11 +54,29 @@
   "version": "Տարբերակ",
   "openSourceLicenses": "Բաց կոդի լիցենզիաներ",
   "languageChanged": "Լեզուն փոխվեց՝ {language}",
-  "@languageChanged": { "placeholders": { "language": { "type": "String" } } },
+  "@languageChanged": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
   "downloadSpeed": "↓ {speed}",
-  "@downloadSpeed": { "placeholders": { "speed": { "type": "String" } } },
+  "@downloadSpeed": {
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
   "uploadSpeed": "↑ {speed}",
-  "@uploadSpeed": { "placeholders": { "speed": { "type": "String" } } },
+  "@uploadSpeed": {
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
   "viewAction": "Դիտել",
   "retryAction": "Կրկնել",
   "connecting": "Միացվում է",
@@ -65,16 +89,40 @@
   "qrUnrecognized": "Չհաջողվեց ճանաչել QR կոդը",
   "cameraPermissionDenied": "QR սկանավորման համար անհրաժեշտ է տեսախցիկի թույլտվություն",
   "deleteServersTitle": "Ջնջե՞լ {count} սերվեր",
-  "@deleteServersTitle": { "placeholders": { "count": { "type": "int" } } },
+  "@deleteServersTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "deleteServersBody": "Սա մշտապես կջնջի ընտրված սերվերները։ Բաժանորդագրությունից սերվերները կվերադառնան թարմացման ժամանակ։",
   "deleteServersConfirm": "Ջնջել {count}",
-  "@deleteServersConfirm": { "placeholders": { "count": { "type": "int" } } },
+  "@deleteServersConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "keepServers": "Պահել",
   "subscriptionRefreshSuccess": "Թարմացվել է {count} բաժանորդագրություն",
-  "@subscriptionRefreshSuccess": { "placeholders": { "count": { "type": "int" } } },
+  "@subscriptionRefreshSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "subscriptionRefreshNoChange": "Ամեն ինչ արդիական է",
   "subscriptionRefreshFail": "Չհաջողվեց թարմացնել {name}-ը",
-  "@subscriptionRefreshFail": { "placeholders": { "name": { "type": "String" } } },
+  "@subscriptionRefreshFail": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "qrSubscriptionPrompt": "Սա նման է բաժանորդագրության URL-ի։ Ավելացնե՞լ որպես բաժանորդագրություն",
   "notNow": "Հիմա ոչ",
   "dismissDialog": "Փակել",
@@ -89,7 +137,13 @@
   "testAllServers": "Ստուգել բոլորը",
   "bestServer": "Լավագույն սերվեր",
   "selectedCount": "{count} ընտրված է",
-  "@selectedCount": { "placeholders": { "count": { "type": "int" } } },
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "selectAll": "Ընտրել բոլորը",
   "scanQrTitle": "QR սքանավորում",
   "scanQrInstruction": "Տեսախցիկը ուղղեք QR կոդի վրա",
@@ -101,15 +155,33 @@
   "viewLogs": "Դիտել լոգերը",
   "autoScroll": "Ավտո-scroll",
   "linesCount": "{count} տող",
-  "@linesCount": { "placeholders": { "count": { "type": "int" } } },
+  "@linesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "autoUpdateOnLaunch": "Ավտոթարմացում գործարկման ժամանակ",
   "userAgentHint": "Թողեք դատարկ՝ լռելյայն browser UA-ի համար",
   "subscriptionUrl": "URL",
   "subscriptionName": "Անուն",
   "subscriptionInfoFormat": "{count} սերվեր",
-  "@subscriptionInfoFormat": { "placeholders": { "count": { "type": "int" } } },
+  "@subscriptionInfoFormat": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "importedServersCount": "Ներմուծվել է {count} սերվեր",
-  "@importedServersCount": { "placeholders": { "count": { "type": "int" } } },
+  "@importedServersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "logFilterAll": "Բոլորը",
   "logFilterInfo": "Տեղեկություն",
   "logFilterWarning": "Զգուշացում",
@@ -121,13 +193,25 @@
   "enablePerAppProxy": "Միացնել per-app proxy",
   "searchApps": "Որոնել հավելվածներ…",
   "appsSelectedCount": "{count} հավելված ընտրված է",
-  "@appsSelectedCount": { "placeholders": { "count": { "type": "int" } } },
+  "@appsSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "blacklistMode": "Սև ցուցակ",
   "whitelistMode": "Սպիտակ ցուցակ",
   "blacklistDescription": "Բոլոր հավելվածները անցնում են VPN-ով՝ բացի ընտրվածներից",
   "whitelistDescription": "Միայն ընտրված հավելվածներն են անցնում VPN-ով",
   "switchedToMode": "Փոխվեց {mode} ռեժիմի",
-  "@switchedToMode": { "placeholders": { "mode": { "type": "String" } } },
+  "@switchedToMode": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
   "loadingApps": "Տեղադրված հավելվածների բեռնում…",
   "noAppsSelected": "Հավելվածներ չեն ընտրված",
   "addRule": "Ավելացնել կանոն",
@@ -221,22 +305,25 @@
   "telegramLinkScreenTitle": "Link Telegram",
   "telegramLinkOpenBot": "Open Telegram Bot",
   "telegramLinkStepStartTitle": "Tap Start in Telegram bot",
-  "telegramLinkStepStartBody": "Open @devarmabot and tap Start.",
-  "telegramLinkStepGetIdTitle": "Get your Telegram ID",
-  "telegramLinkStepGetIdBody": "In bot menu commands tap Get Telegram ID, or send /my_id.",
-  "telegramLinkIdLabel": "Telegram ID",
-  "telegramLinkIdHint": "Paste numeric Telegram ID",
+  "telegramLinkStepStartBody": "Open @devarmabot — the bot will automatically send you a 6-digit link code.",
+  "telegramLinkStepGetIdTitle": "Get your link code",
+  "telegramLinkStepGetIdBody": "Type /link in the bot or tap Start. Copy the 6-digit code it sends you.",
+  "telegramLinkIdLabel": "Link Code",
+  "telegramLinkIdHint": "Enter 6-digit code",
   "telegramLinkPasteAction": "Paste",
   "telegramLinkSubmitAction": "Link",
   "telegramLinkOpenBotFailed": "Couldn’t open Telegram bot. Try again.",
   "telegramLinkPasteEmpty": "Clipboard is empty.",
   "telegramLinkSuccess": "Telegram account linked successfully.",
   "telegramLinkAlreadyLinked": "This Telegram account is already linked.",
-  "telegramLinkInvalidId": "Telegram ID is invalid. Use 5–20 digits.",
+  "telegramLinkInvalidId": "Enter the 6-digit code from the Telegram bot.",
   "telegramLinkUnauthorized": "Session expired. Please sign in again, then retry linking.",
   "telegramLinkNetworkError": "No network connection. Reconnect and try again.",
   "telegramLinkServerError": "Server error. Please try again shortly.",
   "telegramLinkUnknownError": "Unexpected error. Please try again.",
+  "telegramLinkLinkedTitle": "Telegram Linked!",
+  "telegramLinkLinkedBody": "Your account has been successfully linked to Telegram.",
+  "telegramLinkDoneAction": "Done",
   "dashboardTelegramFabLabel": "Telegram",
   "dashboardAnnouncementTitle": "Announcement",
   "dashboardAnnouncementReadMore": "Read more"

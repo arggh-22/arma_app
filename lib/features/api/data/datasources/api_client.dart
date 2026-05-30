@@ -116,17 +116,17 @@ class ApiClient {
 
   Future<TelegramLinkResponse> linkTelegram({
     required String token,
-    required String telegramId,
+    required String code,
   }) async {
     final response = await _sendWithRetry(
       () => _send(
         method: 'POST',
-        path: '/auth/telegram/link/',
+        path: '/auth/telegram/link-code/',
         headers: {
           DeviceAuthApiFields.authorization: 'Token $token',
           'content-type': 'application/json',
         },
-        body: <String, dynamic>{'telegram_id': telegramId},
+        body: <String, dynamic>{'code': code},
       ),
     );
     final payload = _decodeJsonMap(response.body);

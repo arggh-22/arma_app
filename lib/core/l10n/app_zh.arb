@@ -21,7 +21,13 @@
   "disabledQrScan": "二维码扫描即将推出",
   "deleteServerTitle": "删除服务器？",
   "deleteServerBody": "这将永久删除 {serverName}。",
-  "@deleteServerBody": { "placeholders": { "serverName": { "type": "String" } } },
+  "@deleteServerBody": {
+    "placeholders": {
+      "serverName": {
+        "type": "String"
+      }
+    }
+  },
   "deleteConfirm": "删除",
   "deleteCancel": "保留",
   "pasteConfigTitle": "粘贴配置",
@@ -48,11 +54,29 @@
   "version": "版本",
   "openSourceLicenses": "开源许可证",
   "languageChanged": "语言已更改为{language}",
-  "@languageChanged": { "placeholders": { "language": { "type": "String" } } },
+  "@languageChanged": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
   "downloadSpeed": "↓ {speed}",
-  "@downloadSpeed": { "placeholders": { "speed": { "type": "String" } } },
+  "@downloadSpeed": {
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
   "uploadSpeed": "↑ {speed}",
-  "@uploadSpeed": { "placeholders": { "speed": { "type": "String" } } },
+  "@uploadSpeed": {
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
   "viewAction": "查看",
   "retryAction": "重试",
   "connecting": "连接中",
@@ -65,16 +89,40 @@
   "qrUnrecognized": "无法识别此二维码",
   "cameraPermissionDenied": "扫描二维码需要相机权限，请在设置中启用",
   "deleteServersTitle": "删除 {count} 个服务器？",
-  "@deleteServersTitle": { "placeholders": { "count": { "type": "int" } } },
+  "@deleteServersTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "deleteServersBody": "选中的服务器将被永久删除。订阅服务器会在下次刷新时恢复。",
   "deleteServersConfirm": "删除 {count} 个",
-  "@deleteServersConfirm": { "placeholders": { "count": { "type": "int" } } },
+  "@deleteServersConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "keepServers": "保留",
   "subscriptionRefreshSuccess": "已更新 {count} 个订阅",
-  "@subscriptionRefreshSuccess": { "placeholders": { "count": { "type": "int" } } },
+  "@subscriptionRefreshSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "subscriptionRefreshNoChange": "全部已是最新",
   "subscriptionRefreshFail": "更新 {name} 失败",
-  "@subscriptionRefreshFail": { "placeholders": { "name": { "type": "String" } } },
+  "@subscriptionRefreshFail": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "qrSubscriptionPrompt": "这看起来是订阅链接。是否添加为订阅？",
   "notNow": "暂不",
   "dismissDialog": "取消",
@@ -89,7 +137,13 @@
   "testAllServers": "全部测试",
   "bestServer": "最佳服务器",
   "selectedCount": "已选 {count} 个",
-  "@selectedCount": { "placeholders": { "count": { "type": "int" } } },
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "selectAll": "全选",
   "scanQrTitle": "扫描二维码",
   "scanQrInstruction": "将摄像头对准二维码",
@@ -101,15 +155,33 @@
   "viewLogs": "查看日志",
   "autoScroll": "自动滚动",
   "linesCount": "{count} 行",
-  "@linesCount": { "placeholders": { "count": { "type": "int" } } },
+  "@linesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "autoUpdateOnLaunch": "启动时自动更新",
   "userAgentHint": "留空使用默认浏览器UA",
   "subscriptionUrl": "URL",
   "subscriptionName": "名称",
   "subscriptionInfoFormat": "{count} 个服务器",
-  "@subscriptionInfoFormat": { "placeholders": { "count": { "type": "int" } } },
+  "@subscriptionInfoFormat": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "importedServersCount": "已导入 {count} 个服务器",
-  "@importedServersCount": { "placeholders": { "count": { "type": "int" } } },
+  "@importedServersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "logFilterAll": "全部",
   "logFilterInfo": "信息",
   "logFilterWarning": "警告",
@@ -121,13 +193,25 @@
   "enablePerAppProxy": "启用分应用代理",
   "searchApps": "搜索应用…",
   "appsSelectedCount": "已选择 {count} 个应用",
-  "@appsSelectedCount": { "placeholders": { "count": { "type": "int" } } },
+  "@appsSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "blacklistMode": "黑名单",
   "whitelistMode": "白名单",
   "blacklistDescription": "所有应用通过VPN，选中的除外",
   "whitelistDescription": "仅选中的应用通过VPN",
   "switchedToMode": "已切换到{mode}模式",
-  "@switchedToMode": { "placeholders": { "mode": { "type": "String" } } },
+  "@switchedToMode": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
   "loadingApps": "正在加载已安装应用…",
   "noAppsSelected": "未选择应用 — 勾选要包含或排除的应用",
   "addRule": "添加规则",
@@ -221,22 +305,25 @@
   "telegramLinkScreenTitle": "Link Telegram",
   "telegramLinkOpenBot": "Open Telegram Bot",
   "telegramLinkStepStartTitle": "Tap Start in Telegram bot",
-  "telegramLinkStepStartBody": "Open @devarmabot and tap Start.",
-  "telegramLinkStepGetIdTitle": "Get your Telegram ID",
-  "telegramLinkStepGetIdBody": "In bot menu commands tap Get Telegram ID, or send /my_id.",
-  "telegramLinkIdLabel": "Telegram ID",
-  "telegramLinkIdHint": "Paste numeric Telegram ID",
+  "telegramLinkStepStartBody": "Open @devarmabot — the bot will automatically send you a 6-digit link code.",
+  "telegramLinkStepGetIdTitle": "Get your link code",
+  "telegramLinkStepGetIdBody": "Type /link in the bot or tap Start. Copy the 6-digit code it sends you.",
+  "telegramLinkIdLabel": "Link Code",
+  "telegramLinkIdHint": "Enter 6-digit code",
   "telegramLinkPasteAction": "Paste",
   "telegramLinkSubmitAction": "Link",
   "telegramLinkOpenBotFailed": "Couldn’t open Telegram bot. Try again.",
   "telegramLinkPasteEmpty": "Clipboard is empty.",
   "telegramLinkSuccess": "Telegram account linked successfully.",
   "telegramLinkAlreadyLinked": "This Telegram account is already linked.",
-  "telegramLinkInvalidId": "Telegram ID is invalid. Use 5–20 digits.",
+  "telegramLinkInvalidId": "Enter the 6-digit code from the Telegram bot.",
   "telegramLinkUnauthorized": "Session expired. Please sign in again, then retry linking.",
   "telegramLinkNetworkError": "No network connection. Reconnect and try again.",
   "telegramLinkServerError": "Server error. Please try again shortly.",
   "telegramLinkUnknownError": "Unexpected error. Please try again.",
+  "telegramLinkLinkedTitle": "Telegram Linked!",
+  "telegramLinkLinkedBody": "Your account has been successfully linked to Telegram.",
+  "telegramLinkDoneAction": "Done",
   "dashboardTelegramFabLabel": "Telegram",
   "dashboardAnnouncementTitle": "Announcement",
   "dashboardAnnouncementReadMore": "Read more"

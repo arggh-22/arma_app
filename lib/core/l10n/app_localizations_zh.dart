@@ -647,20 +647,20 @@ class AppLocalizationsZh extends AppLocalizations {
   String get telegramLinkStepStartTitle => 'Tap Start in Telegram bot';
 
   @override
-  String get telegramLinkStepStartBody => 'Open @devarmabot and tap Start.';
+  String get telegramLinkStepStartBody => 'Open @devarmabot — the bot will automatically send you a 6-digit link code.';
 
   @override
-  String get telegramLinkStepGetIdTitle => 'Get your Telegram ID';
+  String get telegramLinkStepGetIdTitle => 'Get your link code';
 
   @override
   String get telegramLinkStepGetIdBody =>
-      'In bot menu commands tap Get Telegram ID, or send /my_id.';
+      'Type /link in the bot or tap Start. Copy the 6-digit code it sends you.';
 
   @override
-  String get telegramLinkIdLabel => 'Telegram ID';
+  String get telegramLinkIdLabel => 'Link Code';
 
   @override
-  String get telegramLinkIdHint => 'Paste numeric Telegram ID';
+  String get telegramLinkIdHint => 'Enter 6-digit code';
 
   @override
   String get telegramLinkPasteAction => 'Paste';
@@ -684,7 +684,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get telegramLinkInvalidId =>
-      'Telegram ID is invalid. Use 5–20 digits.';
+      'Enter the 6-digit code from the Telegram bot.';
 
   @override
   String get telegramLinkUnauthorized =>
@@ -709,4 +709,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dashboardAnnouncementReadMore => 'Read more';
+
+  @override
+  String get telegramLinkLinkedTitle => 'Telegram Linked!';
+
+  @override
+  String get telegramLinkLinkedBody =>
+      'Your account has been successfully linked to Telegram.';
+
+  @override
+  String get telegramLinkDoneAction => 'Done';
 }

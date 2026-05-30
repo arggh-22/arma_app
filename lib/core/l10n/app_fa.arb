@@ -21,7 +21,13 @@
   "disabledQrScan": "اسکن QR به زودی اضافه می‌شود",
   "deleteServerTitle": "حذف سرور؟",
   "deleteServerBody": "این عمل {serverName} را برای همیشه حذف می‌کند.",
-  "@deleteServerBody": { "placeholders": { "serverName": { "type": "String" } } },
+  "@deleteServerBody": {
+    "placeholders": {
+      "serverName": {
+        "type": "String"
+      }
+    }
+  },
   "deleteConfirm": "حذف",
   "deleteCancel": "نگه داشتن",
   "pasteConfigTitle": "پیکربندی را بچسبانید",
@@ -48,11 +54,29 @@
   "version": "نسخه",
   "openSourceLicenses": "مجوزهای متن‌باز",
   "languageChanged": "زبان به {language} تغییر کرد",
-  "@languageChanged": { "placeholders": { "language": { "type": "String" } } },
+  "@languageChanged": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
   "downloadSpeed": "↓ {speed}",
-  "@downloadSpeed": { "placeholders": { "speed": { "type": "String" } } },
+  "@downloadSpeed": {
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
   "uploadSpeed": "↑ {speed}",
-  "@uploadSpeed": { "placeholders": { "speed": { "type": "String" } } },
+  "@uploadSpeed": {
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
   "viewAction": "مشاهده",
   "retryAction": "تلاش مجدد",
   "connecting": "در حال اتصال",
@@ -65,16 +89,40 @@
   "qrUnrecognized": "محتوای QR قابل شناسایی نیست",
   "cameraPermissionDenied": "برای اسکن QR به دسترسی دوربین نیاز است. در تنظیمات فعال کنید.",
   "deleteServersTitle": "حذف {count} سرور؟",
-  "@deleteServersTitle": { "placeholders": { "count": { "type": "int" } } },
+  "@deleteServersTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "deleteServersBody": "سرورهای انتخاب شده حذف خواهند شد. سرورهای اشتراکی در بروزرسانی بعدی بازمی‌گردند.",
   "deleteServersConfirm": "حذف {count}",
-  "@deleteServersConfirm": { "placeholders": { "count": { "type": "int" } } },
+  "@deleteServersConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "keepServers": "نگه داشتن",
   "subscriptionRefreshSuccess": "{count} اشتراک بروزرسانی شد",
-  "@subscriptionRefreshSuccess": { "placeholders": { "count": { "type": "int" } } },
+  "@subscriptionRefreshSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "subscriptionRefreshNoChange": "همه بروز هستند",
   "subscriptionRefreshFail": "بروزرسانی {name} ناموفق بود.",
-  "@subscriptionRefreshFail": { "placeholders": { "name": { "type": "String" } } },
+  "@subscriptionRefreshFail": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "qrSubscriptionPrompt": "این یک آدرس اشتراک به نظر می‌رسد. افزودن به عنوان اشتراک؟",
   "notNow": "الان نه",
   "dismissDialog": "بستن",
@@ -89,7 +137,13 @@
   "testAllServers": "تست همه",
   "bestServer": "بهترین سرور",
   "selectedCount": "{count} انتخاب شده",
-  "@selectedCount": { "placeholders": { "count": { "type": "int" } } },
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "selectAll": "انتخاب همه",
   "scanQrTitle": "اسکن QR",
   "scanQrInstruction": "دوربین را به سمت QR بگیرید",
@@ -101,15 +155,33 @@
   "viewLogs": "مشاهده لاگ‌ها",
   "autoScroll": "اسکرول خودکار",
   "linesCount": "{count} خط",
-  "@linesCount": { "placeholders": { "count": { "type": "int" } } },
+  "@linesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "autoUpdateOnLaunch": "بروزرسانی خودکار هنگام اجرا",
   "userAgentHint": "خالی بگذارید برای UA پیش‌فرض",
   "subscriptionUrl": "آدرس",
   "subscriptionName": "نام",
   "subscriptionInfoFormat": "{count} سرور",
-  "@subscriptionInfoFormat": { "placeholders": { "count": { "type": "int" } } },
+  "@subscriptionInfoFormat": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "importedServersCount": "{count} سرور وارد شد",
-  "@importedServersCount": { "placeholders": { "count": { "type": "int" } } },
+  "@importedServersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "logFilterAll": "همه",
   "logFilterInfo": "اطلاعات",
   "logFilterWarning": "هشدار",
@@ -121,13 +193,25 @@
   "enablePerAppProxy": "فعال‌سازی پروکسی هر برنامه",
   "searchApps": "جستجوی برنامه‌ها…",
   "appsSelectedCount": "{count} برنامه انتخاب شده",
-  "@appsSelectedCount": { "placeholders": { "count": { "type": "int" } } },
+  "@appsSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "blacklistMode": "لیست سیاه",
   "whitelistMode": "لیست سفید",
   "blacklistDescription": "همه برنامه‌ها از VPN عبور می‌کنند به جز انتخاب‌شده‌ها",
   "whitelistDescription": "فقط برنامه‌های انتخاب‌شده از VPN عبور می‌کنند",
   "switchedToMode": "تغییر به حالت {mode}",
-  "@switchedToMode": { "placeholders": { "mode": { "type": "String" } } },
+  "@switchedToMode": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
   "loadingApps": "بارگذاری برنامه‌های نصب‌شده…",
   "noAppsSelected": "هیچ برنامه‌ای انتخاب نشده — برنامه‌ها را علامت بزنید",
   "addRule": "افزودن قانون",
@@ -221,22 +305,25 @@
   "telegramLinkScreenTitle": "Link Telegram",
   "telegramLinkOpenBot": "Open Telegram Bot",
   "telegramLinkStepStartTitle": "Tap Start in Telegram bot",
-  "telegramLinkStepStartBody": "Open @devarmabot and tap Start.",
-  "telegramLinkStepGetIdTitle": "Get your Telegram ID",
-  "telegramLinkStepGetIdBody": "In bot menu commands tap Get Telegram ID, or send /my_id.",
-  "telegramLinkIdLabel": "Telegram ID",
-  "telegramLinkIdHint": "Paste numeric Telegram ID",
+  "telegramLinkStepStartBody": "بات @devarmabot را باز کنید — بات به طور خودکار یک کد ۶ رقمی برای شما ارسال می‌کند.",
+  "telegramLinkStepGetIdTitle": "کد پیوند دریافت کنید",
+  "telegramLinkStepGetIdBody": "دستور /link را در بات تایپ کنید یا روی Start فشار دهید. کد ۶ رقمی ارسال شده را کپی کنید.",
+  "telegramLinkIdLabel": "کد پیوند",
+  "telegramLinkIdHint": "کد ۶ رقمی را وارد کنید",
   "telegramLinkPasteAction": "Paste",
   "telegramLinkSubmitAction": "Link",
   "telegramLinkOpenBotFailed": "Couldn’t open Telegram bot. Try again.",
   "telegramLinkPasteEmpty": "Clipboard is empty.",
   "telegramLinkSuccess": "Telegram account linked successfully.",
   "telegramLinkAlreadyLinked": "This Telegram account is already linked.",
-  "telegramLinkInvalidId": "Telegram ID is invalid. Use 5–20 digits.",
+  "telegramLinkInvalidId": "کد ۶ رقمی ارسال شده از بات تلگرام را وارد کنید.",
   "telegramLinkUnauthorized": "Session expired. Please sign in again, then retry linking.",
   "telegramLinkNetworkError": "No network connection. Reconnect and try again.",
   "telegramLinkServerError": "Server error. Please try again shortly.",
   "telegramLinkUnknownError": "Unexpected error. Please try again.",
+  "telegramLinkLinkedTitle": "تلگرام متصل شد!",
+  "telegramLinkLinkedBody": "حساب شما با موفقیت به تلگرام متصل شد.",
+  "telegramLinkDoneAction": "انجام شد",
   "dashboardTelegramFabLabel": "Telegram",
   "dashboardAnnouncementTitle": "Announcement",
   "dashboardAnnouncementReadMore": "Read more"

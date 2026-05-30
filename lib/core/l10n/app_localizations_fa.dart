@@ -674,20 +674,20 @@ class AppLocalizationsFa extends AppLocalizations {
   String get telegramLinkStepStartTitle => 'Tap Start in Telegram bot';
 
   @override
-  String get telegramLinkStepStartBody => 'Open @devarmabot and tap Start.';
+  String get telegramLinkStepStartBody => 'بات @devarmabot را باز کنید — بات به طور خودکار یک کد ۶ رقمی برای شما ارسال می‌کند.';
 
   @override
-  String get telegramLinkStepGetIdTitle => 'Get your Telegram ID';
+  String get telegramLinkStepGetIdTitle => 'کد پیوند دریافت کنید';
 
   @override
   String get telegramLinkStepGetIdBody =>
-      'In bot menu commands tap Get Telegram ID, or send /my_id.';
+      'دستور /link را در بات تایپ کنید یا روی Start فشار دهید. کد ۶ رقمی ارسال شده را کپی کنید.';
 
   @override
-  String get telegramLinkIdLabel => 'Telegram ID';
+  String get telegramLinkIdLabel => 'کد پیوند';
 
   @override
-  String get telegramLinkIdHint => 'Paste numeric Telegram ID';
+  String get telegramLinkIdHint => 'کد ۶ رقمی را وارد کنید';
 
   @override
   String get telegramLinkPasteAction => 'Paste';
@@ -711,7 +711,7 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get telegramLinkInvalidId =>
-      'Telegram ID is invalid. Use 5–20 digits.';
+      'کد ۶ رقمی ارسال شده از بات تلگرام را وارد کنید.';
 
   @override
   String get telegramLinkUnauthorized =>
@@ -736,4 +736,14 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get dashboardAnnouncementReadMore => 'Read more';
+
+  @override
+  String get telegramLinkLinkedTitle => 'تلگرام متصل شد!';
+
+  @override
+  String get telegramLinkLinkedBody =>
+      'حساب شما با موفقیت به تلگرام متصل شد.';
+
+  @override
+  String get telegramLinkDoneAction => 'انجام شد';
 }

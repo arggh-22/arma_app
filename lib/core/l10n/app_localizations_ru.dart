@@ -676,20 +676,20 @@ class AppLocalizationsRu extends AppLocalizations {
   String get telegramLinkStepStartTitle => 'Tap Start in Telegram bot';
 
   @override
-  String get telegramLinkStepStartBody => 'Open @devarmabot and tap Start.';
+  String get telegramLinkStepStartBody => 'Откройте @devarmabot — бот автоматически пришлёт вам 6-значный код привязки.';
 
   @override
-  String get telegramLinkStepGetIdTitle => 'Get your Telegram ID';
+  String get telegramLinkStepGetIdTitle => 'Получите код привязки';
 
   @override
   String get telegramLinkStepGetIdBody =>
-      'In bot menu commands tap Get Telegram ID, or send /my_id.';
+      'Введите /link в боте или нажмите Start. Скопируйте 6-значный код.';
 
   @override
-  String get telegramLinkIdLabel => 'Telegram ID';
+  String get telegramLinkIdLabel => 'Код привязки';
 
   @override
-  String get telegramLinkIdHint => 'Paste numeric Telegram ID';
+  String get telegramLinkIdHint => 'Введите 6-значный код';
 
   @override
   String get telegramLinkPasteAction => 'Paste';
@@ -713,7 +713,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get telegramLinkInvalidId =>
-      'Telegram ID is invalid. Use 5–20 digits.';
+      'Введите 6-значный код из Telegram-бота.';
 
   @override
   String get telegramLinkUnauthorized =>
@@ -738,4 +738,14 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get dashboardAnnouncementReadMore => 'Read more';
+
+  @override
+  String get telegramLinkLinkedTitle => 'Telegram привязан!';
+
+  @override
+  String get telegramLinkLinkedBody =>
+      'Ваш аккаунт успешно привязан к Telegram.';
+
+  @override
+  String get telegramLinkDoneAction => 'Готово';
 }

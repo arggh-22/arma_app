@@ -6,25 +6,29 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class TelegramLinkState {
   const TelegramLinkState({
     required this.isSubmitting,
+    this.isLinked = false,
     this.lastOutcome,
-    this.lastSubmittedId,
+    this.lastSubmittedCode,
   });
 
   const TelegramLinkState.initial() : this(isSubmitting: false);
 
   final bool isSubmitting;
+  final bool isLinked;
   final TelegramLinkOutcome? lastOutcome;
-  final String? lastSubmittedId;
+  final String? lastSubmittedCode;
 
   TelegramLinkState copyWith({
     bool? isSubmitting,
+    bool? isLinked,
     TelegramLinkOutcome? lastOutcome,
-    String? lastSubmittedId,
+    String? lastSubmittedCode,
   }) {
     return TelegramLinkState(
       isSubmitting: isSubmitting ?? this.isSubmitting,
+      isLinked: isLinked ?? this.isLinked,
       lastOutcome: lastOutcome ?? this.lastOutcome,
-      lastSubmittedId: lastSubmittedId ?? this.lastSubmittedId,
+      lastSubmittedCode: lastSubmittedCode ?? this.lastSubmittedCode,
     );
   }
 }
@@ -44,39 +48,42 @@ class TelegramLinkNotifier extends Notifier<TelegramLinkState> {
     return const TelegramLinkState.initial();
   }
 
-  Future<TelegramLinkOutcome> submit(String telegramId) async {
+  Future<TelegramLinkOutcome> submit(String code) async {
     final inFlight = _activeSubmit;
     if (inFlight != null) {
       return inFlight;
     }
 
-    final normalizedId = telegramId.trim();
-    final validationFailure = _validate(normalizedId);
+    final normalizedCode = code.trim();
+    final validationFailure = _validate(normalizedCode);
     if (validationFailure != null) {
       state = state.copyWith(
         isSubmitting: false,
         lastOutcome: validationFailure,
-        lastSubmittedId: normalizedId,
+        lastSubmittedCode: normalizedCode,
       );
       return validationFailure;
     }
 
     state = state.copyWith(
       isSubmitting: true,
-      lastSubmittedId: normalizedId,
+      lastSubmittedCode: normalizedCode,
     );
-    final submit = _submitValidated(normalizedId);
+    final submit = _submitValidated(normalizedCode);
     _activeSubmit = submit;
     return submit;
   }
 
-  Future<TelegramLinkOutcome> _submitValidated(String normalizedId) async {
+  Future<TelegramLinkOutcome> _submitValidated(String normalizedCode) async {
     try {
-      final outcome = await _repository.linkTelegram(normalizedId);
+      final outcome = await _repository.linkTelegram(normalizedCode);
+      final linked = outcome.type == TelegramLinkOutcomeType.linked ||
+          outcome.type == TelegramLinkOutcomeType.alreadyLinked;
       state = state.copyWith(
         isSubmitting: false,
+        isLinked: linked,
         lastOutcome: outcome,
-        lastSubmittedId: normalizedId,
+        lastSubmittedCode: normalizedCode,
       );
       return outcome;
     } catch (_) {
@@ -84,7 +91,7 @@ class TelegramLinkNotifier extends Notifier<TelegramLinkState> {
       state = state.copyWith(
         isSubmitting: false,
         lastOutcome: fallback,
-        lastSubmittedId: normalizedId,
+        lastSubmittedCode: normalizedCode,
       );
       return fallback;
     } finally {
@@ -92,12 +99,9 @@ class TelegramLinkNotifier extends Notifier<TelegramLinkState> {
     }
   }
 
-  TelegramLinkOutcome? _validate(String telegramId) {
-    if (telegramId.length < 5 || telegramId.length > 20) {
-      return const TelegramLinkOutcome(type: TelegramLinkOutcomeType.invalidId);
-    }
-    final digitsOnly = RegExp(r'^\d+$');
-    if (!digitsOnly.hasMatch(telegramId)) {
+  /// Validates that the code is exactly 6 digits.
+  TelegramLinkOutcome? _validate(String code) {
+    if (code.length != 6 || !RegExp(r'^\d{6}$').hasMatch(code)) {
       return const TelegramLinkOutcome(type: TelegramLinkOutcomeType.invalidId);
     }
     return null;

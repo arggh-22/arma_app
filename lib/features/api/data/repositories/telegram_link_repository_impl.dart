@@ -15,11 +15,10 @@ class TelegramLinkRepositoryImpl implements TelegramLinkRepository {
   final AuthRepository _authRepository;
 
   @override
-  Future<TelegramLinkOutcome> linkTelegram(String telegramId) async {
+  Future<TelegramLinkOutcome> linkTelegram(String code) async {
     try {
       final response = await _authRepository.executeWithAuthRetry(
-        (token) =>
-            _apiClient.linkTelegram(token: token, telegramId: telegramId),
+        (token) => _apiClient.linkTelegram(token: token, code: code),
       );
       return _mapResponse(response);
     } on AuthRepositoryException catch (error) {
