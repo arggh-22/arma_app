@@ -236,6 +236,7 @@ class _ConfigView extends StatelessWidget {
           right: 16,
           bottom: 16,
           child: FloatingActionButton.extended(
+            heroTag: 'xray-config-copy-fab',
             onPressed: onCopy,
             backgroundColor: colorScheme.secondaryContainer,
             foregroundColor: colorScheme.onSecondaryContainer,

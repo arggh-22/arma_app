@@ -224,12 +224,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ? isGuest
                 ? FloatingActionButton.extended(
                     key: const Key('dashboard-telegram-link-fab'),
+                    heroTag: 'dashboard-telegram-link-fab',
                     onPressed: () => context.push('/telegram-link'),
                     icon: const FaIcon(FontAwesomeIcons.telegram, size: 18),
                     label: Text(l10n.telegramLinkFabLabel),
                   )
                 : FloatingActionButton(
                     key: const Key('dashboard-telegram-bot-fab'),
+                    heroTag: 'dashboard-telegram-bot-fab',
                     tooltip: l10n.dashboardTelegramFabLabel,
                     onPressed: _openTelegramBot,
                     child: const FaIcon(FontAwesomeIcons.telegram, size: 20),

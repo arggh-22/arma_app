@@ -363,13 +363,12 @@ void main() {
       // Default mode is 'stream-up' for cross-version server compatibility
       expect(settings['mode'], 'stream-up');
 
-      // SplitHTTP download channel requires h2 — must be in ALPN
+      // No ALPN forced — Xray/Go TLS defaults handle negotiation
       final tls = stream['tlsSettings'] as Map<String, dynamic>;
-      final alpn = tls['alpn'] as List;
-      expect(alpn, containsAll(['h2', 'http/1.1']));
+      expect(tls.containsKey('alpn'), isFalse);
     });
 
-    test('XHTTP user-configured ALPN overrides default h2', () {
+    test('XHTTP user-configured ALPN is included in tlsSettings', () {
       final server = _makeServer(
         network: 'xhttp',
         security: 'tls',
@@ -381,7 +380,7 @@ void main() {
       final stream = (json['outbounds'] as List)[0]['streamSettings']
           as Map<String, dynamic>;
       final tls = stream['tlsSettings'] as Map<String, dynamic>;
-      // User explicitly set alpn=h2, should be respected (not overridden)
+      // User explicitly set alpn=h2, should be included
       expect(tls['alpn'], ['h2']);
     });
 

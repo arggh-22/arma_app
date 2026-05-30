@@ -336,15 +336,10 @@ class XrayConfigBuilder {
         'allowInsecure': false,
         'fingerprint': server.fingerprint ?? 'chrome',
       };
-      // SplitHTTP/XHTTP download channel uses HTTP/2 — must advertise h2 in
-      // ALPN so TLS negotiates h2 instead of defaulting to HTTP/1.1.
-      // Without h2, the GET response stream (downlink) silently returns 0 bytes.
-      // User-configured ALPN always takes precedence.
+      // User-configured ALPN takes precedence; otherwise omit (Go/Xray uses its defaults).
       final alpnList = server.alpn?.split(',').where((s) => s.isNotEmpty).toList();
       if (alpnList != null && alpnList.isNotEmpty) {
         tlsSettings['alpn'] = alpnList;
-      } else if (effectiveNetwork == 'splithttp') {
-        tlsSettings['alpn'] = ['h2', 'http/1.1'];
       }
       settings['tlsSettings'] = tlsSettings;
     }

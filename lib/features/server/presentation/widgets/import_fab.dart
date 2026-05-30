@@ -362,6 +362,7 @@ class _ImportFabState extends ConsumerState<ImportFab>
         ),
         // Main FAB
         FloatingActionButton.extended(
+          heroTag: 'import-server-fab',
           onPressed: _toggle,
           icon: AnimatedRotation(
             turns: _isExpanded ? 0.125 : 0,
