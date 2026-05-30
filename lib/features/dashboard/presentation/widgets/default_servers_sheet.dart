@@ -8,47 +8,64 @@ class DefaultServersSheet extends StatelessWidget {
     super.key,
     required this.items,
     required this.onServerTap,
+    required this.scrollController,
   });
 
   final List<DefaultServerItem> items;
   final ValueChanged<DefaultServerItem> onServerTap;
+  final ScrollController scrollController;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
+    return Column(
+      children: [
+        // Drag handle
+        Padding(
+          padding: const EdgeInsets.only(top: 12, bottom: 4),
+          child: Container(
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
+        // Title
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Text(
               l10n.defaultServersShowAll,
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            const SizedBox(height: 12),
-            Flexible(
-              child: ListView.separated(
-                shrinkWrap: true,
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final item = items[index];
-                  return ListTile(
-                    enabled: item.isConnectable,
-                    title: Text(item.name),
-                    subtitle: Text(item.status),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: item.isConnectable ? () => onServerTap(item) : null,
-                  );
-                },
-                separatorBuilder: (_, _) => const Divider(height: 1),
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
+        const Divider(height: 1),
+        // Scrollable list
+        Expanded(
+          child: ListView.separated(
+            controller: scrollController,
+            itemCount: items.length,
+            padding: const EdgeInsets.only(bottom: 16),
+            itemBuilder: (context, index) {
+              final item = items[index];
+              return ListTile(
+                enabled: item.isConnectable,
+                title: Text(item.name),
+                subtitle: Text(item.status),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: item.isConnectable ? () => onServerTap(item) : null,
+              );
+            },
+            separatorBuilder: (_, _) => const Divider(height: 1),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -128,15 +128,28 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
   }
 
   void _openShowAllSheet(BuildContext context, List<DefaultServerItem> items) {
+    // Cap initial size so the sheet never opens full-screen.
+    // On small phones a large list would overflow; DraggableScrollableSheet
+    // lets the user expand/collapse and swipe down to dismiss.
+    final itemFraction = (items.length * 0.1).clamp(0.3, 0.6);
+
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => DefaultServersSheet(
-        items: items,
-        onServerTap: (item) {
-          Navigator.of(context).pop();
-          _onTapItem(item);
-        },
+      useSafeArea: true,
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: itemFraction,
+        minChildSize: 0.25,
+        maxChildSize: 0.92,
+        expand: false,
+        builder: (_, scrollController) => DefaultServersSheet(
+          items: items,
+          scrollController: scrollController,
+          onServerTap: (item) {
+            Navigator.of(context).pop();
+            _onTapItem(item);
+          },
+        ),
       ),
     );
   }
