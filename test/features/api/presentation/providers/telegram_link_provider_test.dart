@@ -38,15 +38,16 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           telegramLinkRepositoryProvider.overrideWithValue(fakeRepository),
+          authStatusRefreshProvider.overrideWithValue(_noOpAuthRefresh),
         ],
       );
       addTearDown(container.dispose);
 
       final notifier = container.read(telegramLinkProvider.notifier);
-      final outcome = await notifier.submit('12345');
+      final outcome = await notifier.submit('123456');
 
       expect(fakeRepository.calls, 1);
-      expect(fakeRepository.lastTelegramId, '12345');
+      expect(fakeRepository.lastCode, '123456');
       expect(outcome.type, TelegramLinkOutcomeType.linked);
     });
 
@@ -55,16 +56,17 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           telegramLinkRepositoryProvider.overrideWithValue(fakeRepository),
+          authStatusRefreshProvider.overrideWithValue(_noOpAuthRefresh),
         ],
       );
       addTearDown(container.dispose);
 
       final notifier = container.read(telegramLinkProvider.notifier);
-      await notifier.submit('  12345  ');
+      await notifier.submit('  123456  ');
 
       expect(fakeRepository.calls, 1);
-      expect(fakeRepository.lastTelegramId, '12345');
-      expect(container.read(telegramLinkProvider).lastSubmittedId, '12345');
+      expect(fakeRepository.lastCode, '123456');
+      expect(container.read(telegramLinkProvider).lastSubmittedCode, '12345');
     });
 
     test('submit rejects non-digit telegram ids before network call', () async {
@@ -72,6 +74,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           telegramLinkRepositoryProvider.overrideWithValue(fakeRepository),
+          authStatusRefreshProvider.overrideWithValue(_noOpAuthRefresh),
         ],
       );
       addTearDown(container.dispose);
@@ -84,18 +87,19 @@ void main() {
       expect(container.read(telegramLinkProvider).isSubmitting, isFalse);
     });
 
-    test('submit rejects ids outside 5..20 digit length range', () async {
+    test('submit rejects codes that are not exactly 6 digits', () async {
       final fakeRepository = _FakeTelegramLinkRepository();
       final container = ProviderContainer(
         overrides: [
           telegramLinkRepositoryProvider.overrideWithValue(fakeRepository),
+          authStatusRefreshProvider.overrideWithValue(_noOpAuthRefresh),
         ],
       );
       addTearDown(container.dispose);
 
       final notifier = container.read(telegramLinkProvider.notifier);
-      final shortOutcome = await notifier.submit('1234');
-      final longOutcome = await notifier.submit('123456789012345678901');
+      final shortOutcome = await notifier.submit('12345');
+      final longOutcome = await notifier.submit('1234567');
 
       expect(shortOutcome.type, TelegramLinkOutcomeType.invalidId);
       expect(longOutcome.type, TelegramLinkOutcomeType.invalidId);
@@ -110,13 +114,14 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           telegramLinkRepositoryProvider.overrideWithValue(fakeRepository),
+          authStatusRefreshProvider.overrideWithValue(_noOpAuthRefresh),
         ],
       );
       addTearDown(container.dispose);
 
       final notifier = container.read(telegramLinkProvider.notifier);
-      final first = notifier.submit('12345');
-      final second = notifier.submit('12345');
+      final first = notifier.submit('123456');
+      final second = notifier.submit('123456');
       await Future<void>.delayed(Duration.zero);
 
       expect(fakeRepository.calls, 1);
@@ -146,14 +151,15 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           telegramLinkRepositoryProvider.overrideWithValue(fakeRepository),
+          authStatusRefreshProvider.overrideWithValue(_noOpAuthRefresh),
         ],
       );
       addTearDown(container.dispose);
 
       final notifier = container.read(telegramLinkProvider.notifier);
-      final firstOutcome = await notifier.submit('12345');
+      final firstOutcome = await notifier.submit('123456');
       final firstState = container.read(telegramLinkProvider);
-      final secondOutcome = await notifier.submit('12345');
+      final secondOutcome = await notifier.submit('123456');
       final secondState = container.read(telegramLinkProvider);
 
       expect(firstOutcome.type, TelegramLinkOutcomeType.unknown);
@@ -163,11 +169,12 @@ void main() {
       expect(fakeRepository.calls, 2);
     });
 
-    test('validation failure preserves normalized lastSubmittedId', () async {
+    test('validation failure preserves normalized lastSubmittedCode', () async {
       final fakeRepository = _FakeTelegramLinkRepository();
       final container = ProviderContainer(
         overrides: [
           telegramLinkRepositoryProvider.overrideWithValue(fakeRepository),
+          authStatusRefreshProvider.overrideWithValue(_noOpAuthRefresh),
         ],
       );
       addTearDown(container.dispose);
@@ -177,11 +184,13 @@ void main() {
       final state = container.read(telegramLinkProvider);
 
       expect(outcome.type, TelegramLinkOutcomeType.invalidId);
-      expect(state.lastSubmittedId, '12a3');
+      expect(state.lastSubmittedCode, '12a3');
       expect(fakeRepository.calls, 0);
     });
   });
 }
+
+Future<AuthState> _noOpAuthRefresh() async => const AuthState();
 
 class _FakeAuthRepository implements AuthRepository {
   @override
@@ -202,17 +211,17 @@ class _FakeAuthRepository implements AuthRepository {
 
 class _FakeTelegramLinkRepository implements TelegramLinkRepository {
   _FakeTelegramLinkRepository({
-    Future<TelegramLinkOutcome> Function(String telegramId)? responder,
+    Future<TelegramLinkOutcome> Function(String code)? responder,
   }) : _responder = responder;
 
-  final Future<TelegramLinkOutcome> Function(String telegramId)? _responder;
+  final Future<TelegramLinkOutcome> Function(String code)? _responder;
   int calls = 0;
-  String? lastTelegramId;
+  String? lastCode;
 
   @override
   Future<TelegramLinkOutcome> linkTelegram(String telegramId) async {
     calls++;
-    lastTelegramId = telegramId;
+    lastCode = telegramId;
     if (_responder != null) {
       return _responder(telegramId);
     }

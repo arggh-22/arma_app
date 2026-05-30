@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:arma_proxy_vpn_client/features/api/domain/entities/telegram_link_outcome.dart';
 import 'package:arma_proxy_vpn_client/features/api/domain/repositories/telegram_link_repository.dart';
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/auth_provider.dart';
@@ -85,6 +87,11 @@ class TelegramLinkNotifier extends Notifier<TelegramLinkState> {
         lastOutcome: outcome,
         lastSubmittedCode: normalizedCode,
       );
+      // Refresh auth state in the background so is_guest updates to false
+      // on the dashboard FAB and any other auth-aware widgets.
+      if (linked) {
+        unawaited(ref.read(authStatusRefreshProvider)());
+      }
       return outcome;
     } catch (_) {
       const fallback = TelegramLinkOutcome(type: TelegramLinkOutcomeType.unknown);

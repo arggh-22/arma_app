@@ -676,7 +676,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get telegramLinkStepStartTitle => 'Tap Start in Telegram bot';
 
   @override
-  String get telegramLinkStepStartBody => 'Откройте @devarmabot — бот автоматически пришлёт вам 6-значный код привязки.';
+  String get telegramLinkStepStartBody =>
+      'Откройте @devarmabot — бот автоматически пришлёт вам 6-значный код привязки.';
 
   @override
   String get telegramLinkStepGetIdTitle => 'Получите код привязки';
@@ -712,8 +713,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'This Telegram account is already linked.';
 
   @override
-  String get telegramLinkInvalidId =>
-      'Введите 6-значный код из Telegram-бота.';
+  String get telegramLinkInvalidId => 'Введите 6-значный код из Telegram-бота.';
 
   @override
   String get telegramLinkUnauthorized =>
@@ -731,15 +731,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get telegramLinkUnknownError => 'Unexpected error. Please try again.';
 
   @override
-  String get dashboardTelegramFabLabel => 'Telegram';
-
-  @override
-  String get dashboardAnnouncementTitle => 'Announcement';
-
-  @override
-  String get dashboardAnnouncementReadMore => 'Read more';
-
-  @override
   String get telegramLinkLinkedTitle => 'Telegram привязан!';
 
   @override
@@ -748,4 +739,13 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get telegramLinkDoneAction => 'Готово';
+
+  @override
+  String get dashboardTelegramFabLabel => 'Telegram';
+
+  @override
+  String get dashboardAnnouncementTitle => 'Announcement';
+
+  @override
+  String get dashboardAnnouncementReadMore => 'Read more';
 }

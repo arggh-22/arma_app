@@ -675,7 +675,8 @@ class AppLocalizationsHy extends AppLocalizations {
   String get telegramLinkStepStartTitle => 'Tap Start in Telegram bot';
 
   @override
-  String get telegramLinkStepStartBody => 'Open @devarmabot — the bot will automatically send you a 6-digit link code.';
+  String get telegramLinkStepStartBody =>
+      'Open @devarmabot — the bot will automatically send you a 6-digit link code.';
 
   @override
   String get telegramLinkStepGetIdTitle => 'Get your link code';
@@ -730,15 +731,6 @@ class AppLocalizationsHy extends AppLocalizations {
   String get telegramLinkUnknownError => 'Unexpected error. Please try again.';
 
   @override
-  String get dashboardTelegramFabLabel => 'Telegram';
-
-  @override
-  String get dashboardAnnouncementTitle => 'Announcement';
-
-  @override
-  String get dashboardAnnouncementReadMore => 'Read more';
-
-  @override
   String get telegramLinkLinkedTitle => 'Telegram Linked!';
 
   @override
@@ -747,4 +739,13 @@ class AppLocalizationsHy extends AppLocalizations {
 
   @override
   String get telegramLinkDoneAction => 'Done';
+
+  @override
+  String get dashboardTelegramFabLabel => 'Telegram';
+
+  @override
+  String get dashboardAnnouncementTitle => 'Announcement';
+
+  @override
+  String get dashboardAnnouncementReadMore => 'Read more';
 }

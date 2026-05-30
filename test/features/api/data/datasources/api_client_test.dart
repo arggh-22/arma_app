@@ -148,7 +148,7 @@ void main() {
       expect(attempts, 1);
     });
 
-    test('linkTelegram sends bearer auth and telegram_id payload', () async {
+    test('linkTelegram sends bearer auth and code payload', () async {
       late http.Request capturedRequest;
       final client = MockClient((request) async {
         capturedRequest = request;
@@ -165,7 +165,7 @@ void main() {
 
       final response = await apiClient.linkTelegram(
         token: 'bearer-token-123',
-        telegramId: '123456789',
+        code: '123456',
       );
 
       expect(response, isA<TelegramLinkResponse>());
@@ -173,11 +173,11 @@ void main() {
       expect(capturedRequest.method, 'POST');
       expect(
         capturedRequest.url.toString(),
-        'https://example.com/api/v1/auth/telegram/link/',
+        'https://example.com/api/v1/auth/telegram/link-code/',
       );
-      expect(capturedRequest.headers['Authorization'], 'Bearer bearer-token-123');
+      expect(capturedRequest.headers['Authorization'], 'Token bearer-token-123');
       expect(capturedRequest.headers['content-type'], 'application/json');
-      expect(capturedRequest.body, '{"telegram_id":"123456789"}');
+      expect(capturedRequest.body, '{"code":"123456"}');
     });
 
     test('linkTelegram retries once for transient 5xx then succeeds', () async {
@@ -201,7 +201,7 @@ void main() {
 
       final response = await apiClient.linkTelegram(
         token: 'bearer-token-123',
-        telegramId: '123456789',
+        code: '123456',
       );
 
       expect(response.status, 'linked');
@@ -222,7 +222,7 @@ void main() {
 
       final call = apiClient.linkTelegram(
         token: 'bearer-token-secret-very-long',
-        telegramId: '123456789',
+        code: '123456',
       );
       await expectLater(
         call,

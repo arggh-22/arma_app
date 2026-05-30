@@ -25,7 +25,7 @@ void main() {
     });
 
     test('returns linked outcome when API status is linked', () async {
-      apiClient.linkHandler = ({required token, required telegramId}) async {
+      apiClient.linkHandler = ({required token, required code}) async {
         return const TelegramLinkResponse(
           detail: 'Link request sent',
           status: 'linked',
@@ -37,13 +37,13 @@ void main() {
       expect(outcome.type, TelegramLinkOutcomeType.linked);
       expect(authRepository.executeCalls, 1);
       expect(apiClient.lastToken, 'repo-token');
-      expect(apiClient.lastTelegramId, '123456789');
+      expect(apiClient.lastCode, '123456789');
     });
 
     test(
       'returns already_linked outcome when API status indicates already linked',
       () async {
-        apiClient.linkHandler = ({required token, required telegramId}) async {
+        apiClient.linkHandler = ({required token, required code}) async {
           return const TelegramLinkResponse(
             detail: 'Telegram is already linked',
             status: 'already_linked',
@@ -65,7 +65,7 @@ void main() {
       final outcome = await repository.linkTelegram('123456789');
 
       expect(outcome.type, TelegramLinkOutcomeType.unauthorized);
-      expect(apiClient.lastTelegramId, isNull);
+      expect(apiClient.lastCode, isNull);
     });
 
     test('maps network/timeout failures to network outcome', () async {
@@ -140,7 +140,7 @@ void main() {
     });
 
     test('maps unexpected thrown exceptions to unknown outcome', () async {
-      apiClient.linkHandler = ({required token, required telegramId}) async {
+      apiClient.linkHandler = ({required token, required code}) async {
         throw StateError('unexpected');
       };
 
@@ -187,12 +187,12 @@ class _StubApiClient extends ApiClient {
 
   Future<TelegramLinkResponse> Function({
     required String token,
-    required String telegramId,
+    required String code,
   })?
   linkHandler;
   ApiClientException? linkError;
   String? lastToken;
-  String? lastTelegramId;
+  String? lastCode;
 
   @override
   Future<DeviceAuthResponse> authenticateDevice({
@@ -211,16 +211,16 @@ class _StubApiClient extends ApiClient {
   @override
   Future<TelegramLinkResponse> linkTelegram({
     required String token,
-    required String telegramId,
+    required String code,
   }) async {
     lastToken = token;
-    lastTelegramId = telegramId;
+    lastCode = code;
     if (linkError case final ApiClientException error?) {
       throw error;
     }
     final handler = linkHandler;
     if (handler != null) {
-      return handler(token: token, telegramId: telegramId);
+      return handler(token: token, code: code);
     }
     return const TelegramLinkResponse(
       detail: 'Link request sent',
