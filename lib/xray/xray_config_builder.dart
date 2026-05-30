@@ -394,6 +394,27 @@ class XrayConfigBuilder {
         if (server.xhttpMode.isNotEmpty && server.xhttpMode != 'auto') {
           xhttpSettings['mode'] = server.xhttpMode;
         }
+        // Older AAR versions have a bug where the download (GET) channel does
+        // not inherit TLS settings from the parent streamSettings. Provide
+        // explicit downloadSettings so the GET channel uses correct TLS/SNI.
+        if (effectiveSecurity == 'tls') {
+          final dlTls = <String, dynamic>{
+            'serverName': server.sni ?? server.address,
+            'allowInsecure': false,
+            'fingerprint': server.fingerprint ?? 'chrome',
+          };
+          final alpnList =
+              server.alpn?.split(',').where((s) => s.isNotEmpty).toList();
+          if (alpnList != null && alpnList.isNotEmpty) {
+            dlTls['alpn'] = alpnList;
+          } else {
+            dlTls['alpn'] = ['h2', 'http/1.1'];
+          }
+          xhttpSettings['downloadSettings'] = {
+            'security': 'tls',
+            'tlsSettings': dlTls,
+          };
+        }
         settings['splithttpSettings'] = xhttpSettings;
     }
 

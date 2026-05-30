@@ -367,6 +367,14 @@ void main() {
       final tls = stream['tlsSettings'] as Map<String, dynamic>;
       final alpn = tls['alpn'] as List;
       expect(alpn, containsAll(['h2', 'http/1.1']));
+
+      // downloadSettings must be present with explicit TLS for download GET channel
+      expect(settings.containsKey('downloadSettings'), isTrue);
+      final dlSettings = settings['downloadSettings'] as Map<String, dynamic>;
+      expect(dlSettings['security'], 'tls');
+      final dlTls = dlSettings['tlsSettings'] as Map<String, dynamic>;
+      expect(dlTls['serverName'], 'cdn.example.com');
+      expect(dlTls.containsKey('fingerprint'), isTrue);
     });
 
     test('XHTTP user-configured ALPN overrides default h2', () {
