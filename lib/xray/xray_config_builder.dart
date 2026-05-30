@@ -331,12 +331,18 @@ class XrayConfigBuilder {
 
     // TLS settings
     if (effectiveSecurity == 'tls') {
-      settings['tlsSettings'] = {
+      final tlsSettings = <String, dynamic>{
         'serverName': server.sni ?? server.address,
         'allowInsecure': false,
-        'alpn': server.alpn?.split(',') ?? <String>[],
         'fingerprint': server.fingerprint ?? 'chrome',
       };
+      // Only emit alpn when explicitly configured — an empty array tells
+      // Xray-core to advertise NO protocols, which can break HTTP/2 negotiation.
+      final alpnList = server.alpn?.split(',').where((s) => s.isNotEmpty).toList();
+      if (alpnList != null && alpnList.isNotEmpty) {
+        tlsSettings['alpn'] = alpnList;
+      }
+      settings['tlsSettings'] = tlsSettings;
     }
 
     // Reality settings (NOT tlsSettings)
