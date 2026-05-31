@@ -336,10 +336,17 @@ class XrayConfigBuilder {
         'allowInsecure': false,
         'fingerprint': server.fingerprint ?? 'chrome',
       };
-      // User-configured ALPN takes precedence; otherwise omit (Xray/Go TLS uses its defaults).
+      // User-configured ALPN takes precedence; otherwise omit for most transports.
+      // EXCEPTION: SplitHTTP requires HTTP/1.1 to avoid HTTP 400 from CDN/server.
+      // Xray v1.260327.0 defaults to h2 (ALPN empty → len=0 → "2"), but servers
+      // using Cloudflare CDN return 400 Bad Request on h2 SplitHTTP POST requests.
+      // Older Xray (used by most servers) only supports h1.1 for SplitHTTP.
+      // alpn:["http/1.1"] forces HTTP/1.1 via decideHTTPVersion (len=1, first="http/1.1").
       final alpnList = server.alpn?.split(',').where((s) => s.isNotEmpty).toList();
       if (alpnList != null && alpnList.isNotEmpty) {
         tlsSettings['alpn'] = alpnList;
+      } else if (effectiveNetwork == 'splithttp') {
+        tlsSettings['alpn'] = ['http/1.1'];
       }
       settings['tlsSettings'] = tlsSettings;
     }

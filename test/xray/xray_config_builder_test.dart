@@ -363,9 +363,9 @@ void main() {
       // Default: no mode set (Xray uses packet-up default, matching happ/standard configs)
       expect(settings.containsKey('mode'), isFalse);
 
-      // No forced ALPN — let Xray/Go TLS use defaults (h2)
+      // SplitHTTP forces HTTP/1.1 via ALPN — server returns 400 Bad Request on h2
       final tls = stream['tlsSettings'] as Map<String, dynamic>;
-      expect(tls.containsKey('alpn'), isFalse);
+      expect(tls['alpn'], ['http/1.1']);
     });
 
     test('XHTTP user-configured ALPN is included in tlsSettings', () {
