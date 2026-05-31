@@ -356,7 +356,7 @@ class ArmaVpnService : VpnService() {
                 val reader = java.io.BufferedReader(
                     java.io.InputStreamReader(proc.inputStream)
                 )
-                var line: String?
+                var line: String? = null
                 while (!Thread.currentThread().isInterrupted &&
                     reader.readLine().also { line = it } != null
                 ) {
