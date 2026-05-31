@@ -363,14 +363,16 @@ void main() {
       // Default: no mode set (Xray uses packet-up default, matching happ/standard configs)
       expect(settings.containsKey('mode'), isFalse);
 
-      // SplitHTTP forces HTTP/1.1 via ALPN — server returns 400 Bad Request on h2
       final tls = stream['tlsSettings'] as Map<String, dynamic>;
-      expect(tls['alpn'], ['http/1.1']);
+
+      // SplitHTTP does NOT force http/1.1 ALPN — CDN gateways (e.g. Cloudflare)
+      // force h2 at TLS level regardless of client ALPN offer. Letting Xray
+      // default to h2 keeps TLS and transport consistent.
+      expect(tls.containsKey('alpn'), isFalse);
 
       // SplitHTTP must NOT use Chrome fingerprint by default.
-      // utls Chrome hard-wires h2 in ClientHello regardless of ALPN config,
-      // causing TLS to negotiate h2 while Go transport uses h1.1 → malformed
-      // response. Standard Go TLS (fingerprint='') respects our ALPN correctly.
+      // utls Chrome hard-wires h2 in ClientHello regardless of ALPN config.
+      // Standard Go TLS (fingerprint='') lets the configured ALPN be honoured.
       expect(tls['fingerprint'], '');
     });
 
@@ -378,7 +380,7 @@ void main() {
       final server = _makeServer(
         network: 'xhttp',
         security: 'tls',
-        alpn: 'h2',
+        alpn: 'http/1.1',
       );
 
       final json = jsonDecode(XrayConfigBuilder.build(server))
@@ -386,8 +388,9 @@ void main() {
       final stream = (json['outbounds'] as List)[0]['streamSettings']
           as Map<String, dynamic>;
       final tls = stream['tlsSettings'] as Map<String, dynamic>;
-      // User explicitly set alpn=h2, should be included
-      expect(tls['alpn'], ['h2']);
+      // User explicitly set alpn=http/1.1 — must be respected (for servers that
+      // reject h2 POST; user can override default h2 behaviour this way)
+      expect(tls['alpn'], ['http/1.1']);
     });
 
     test('XHTTP user-configured fingerprint is respected', () {

@@ -331,13 +331,10 @@ class XrayConfigBuilder {
 
     // TLS settings
     if (effectiveSecurity == 'tls') {
-      // SplitHTTP requires standard Go TLS (no fingerprint) so that ALPN is
-      // properly negotiated. utls Chrome fingerprint hard-wires h2 in the
-      // ClientHello regardless of our alpn config, causing the server to
-      // select h2 at TLS level while Go's transport uses h1.1 → malformed
-      // response (\x00\x00\x12\x04... = HTTP/2 SETTINGS frame). Without utls,
-      // Go TLS sends only the configured ALPN and negotiates h1.1 correctly.
-      // User-set fingerprints are still respected for advanced use cases.
+      // SplitHTTP: use standard Go TLS (no fingerprint) so ALPN is respected.
+      // utls Chrome hard-wires h2 regardless of ALPN config; with standard
+      // Go TLS the ALPN we send is honoured by the TLS layer.
+      // User-set fingerprints are always respected.
       final defaultFingerprint =
           effectiveNetwork == 'splithttp' ? '' : 'chrome';
       final tlsSettings = <String, dynamic>{
@@ -346,14 +343,19 @@ class XrayConfigBuilder {
         'fingerprint': server.fingerprint ?? defaultFingerprint,
       };
       // User-configured ALPN takes precedence.
-      // SplitHTTP defaults to http/1.1: h2 POST requests return 400 from
-      // servers running older Xray behind Cloudflare CDN.
-      final alpnList = server.alpn?.split(',').where((s) => s.isNotEmpty).toList();
+      // SplitHTTP: CDN gateways (e.g. Cloudflare) often force h2 at TLS level
+      // regardless of the client ALPN offer. When Go uses h1.1 transport but
+      // TLS negotiated h2 the server sends h2 SETTINGS that h1.1 cannot parse.
+      // Omitting the ALPN override lets Xray default to h2 (empty ALPN →
+      // decideHTTPVersion → "2"), so both TLS and transport speak h2 and the
+      // session is consistent. To force h1.1 (only for servers that reject h2
+      // POST), set alpn=http/1.1 explicitly on the server entry.
+      final alpnList =
+          server.alpn?.split(',').where((s) => s.isNotEmpty).toList();
       if (alpnList != null && alpnList.isNotEmpty) {
         tlsSettings['alpn'] = alpnList;
-      } else if (effectiveNetwork == 'splithttp') {
-        tlsSettings['alpn'] = ['http/1.1'];
       }
+      // No default ALPN override for SplitHTTP — let Xray use h2 (default).
       settings['tlsSettings'] = tlsSettings;
     }
 
