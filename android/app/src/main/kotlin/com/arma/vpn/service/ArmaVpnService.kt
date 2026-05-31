@@ -63,6 +63,7 @@ class ArmaVpnService : VpnService() {
     private var lastStatus: String = "disconnected"
     private var clientMessenger: Messenger? = null
     private val incomingMessenger = Messenger(IncomingHandler())
+    private var logcatThread: Thread? = null
 
     // --- Network callback for auto-reconnect (D-10, MON-04) ---
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
@@ -308,7 +309,10 @@ class ArmaVpnService : VpnService() {
             Log.w(TAG, "Step 8: Registering network callback")
             registerNetworkCallback()
 
-            // 10. Notify client of connected state
+            // 10. Start capturing Xray native logs from logcat
+            startLogcatCapture()
+
+            // 11. Notify client of connected state
             Log.w(TAG, "Step 9: Sending 'connected' status to client")
             sendStatusToClient("connected")
             debugLog("VPN started successfully!")
@@ -330,6 +334,64 @@ class ArmaVpnService : VpnService() {
     }
 
     // =========================================================================
+    // Xray logcat capture — forwards native Xray logs to the in-app log screen
+    // =========================================================================
+
+    /**
+     * Starts a background thread that tails logcat for this process and
+     * forwards lines containing Xray/transport keywords to the in-app log
+     * screen via debugLog(). Xray's Go code writes directly to logcat (not
+     * through the onEmitStatus callback), so this is the only way to surface
+     * connection errors, TLS failures, and transport diagnostics in-app.
+     */
+    private fun startLogcatCapture() {
+        stopLogcatCapture()
+        val pid = android.os.Process.myPid()
+        logcatThread = Thread {
+            var proc: Process? = null
+            try {
+                proc = Runtime.getRuntime().exec(
+                    arrayOf("logcat", "--pid=$pid", "-v", "brief", "-b", "main")
+                )
+                val reader = java.io.BufferedReader(
+                    java.io.InputStreamReader(proc.inputStream)
+                )
+                var line: String?
+                while (!Thread.currentThread().isInterrupted &&
+                    reader.readLine().also { line = it } != null
+                ) {
+                    val l = line ?: continue
+                    if (l.isBlank() || l.startsWith("-----")) continue
+                    val lo = l.lowercase()
+                    val relevant = lo.contains("xray") || lo.contains("splithttp") ||
+                        lo.contains("xhttp") || lo.contains("libgojni") ||
+                        lo.contains("libv2ray") || lo.contains("v2ray") ||
+                        lo.contains("transport") || lo.contains("proxy") ||
+                        lo.contains("dial") || lo.contains("tls") ||
+                        l.contains("E/") || l.contains("W/") ||
+                        lo.contains("error") || lo.contains("fatal")
+                    if (relevant) debugLog("[sys] ${l.trim()}")
+                }
+            } catch (_: InterruptedException) {
+                // Normal stop
+            } catch (e: Exception) {
+                Log.w(TAG, "Logcat capture stopped: ${e.message}")
+            } finally {
+                proc?.destroyForcibly()
+            }
+        }.also {
+            it.isDaemon = true
+            it.name = "xray-logcat"
+            it.start()
+        }
+    }
+
+    private fun stopLogcatCapture() {
+        logcatThread?.interrupt()
+        logcatThread = null
+    }
+
+    // =========================================================================
     // Cleanup — ensure no stale resources from previous session
     // =========================================================================
 
@@ -340,6 +402,7 @@ class ArmaVpnService : VpnService() {
      * when coreInstance.Close() is called, so we give it time.
      */
     private fun cleanupPreviousSession() {
+        stopLogcatCapture()
         trafficMonitor?.stop()
         trafficMonitor = null
 
@@ -390,7 +453,8 @@ class ArmaVpnService : VpnService() {
         sendStatusToClient("disconnected")
 
         // D-09: Shutdown order is CRITICAL
-        Log.w(TAG, "Stop step 1: Stopping traffic monitor")
+        Log.w(TAG, "Stop step 1: Stopping traffic monitor and logcat capture")
+        stopLogcatCapture()
         trafficMonitor?.stop()
         trafficMonitor = null
 
