@@ -360,8 +360,10 @@ void main() {
       final settings = stream['splithttpSettings'] as Map<String, dynamic>;
       expect(settings['path'], '/download');
       expect(settings['host'], 'cdn.example.com');
-      // Default: no mode set (Xray uses packet-up default, matching happ/standard configs)
-      expect(settings.containsKey('mode'), isFalse);
+      // Default mode: stream-up (one streaming POST per connection).
+      // packet-up (Xray default) sends many short h2 POSTs that Cloudflare CDN
+      // and older Xray servers return 400 on. stream-up is more compatible.
+      expect(settings['mode'], 'stream-up');
 
       final tls = stream['tlsSettings'] as Map<String, dynamic>;
 

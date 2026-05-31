@@ -400,11 +400,17 @@ class XrayConfigBuilder {
           'path': server.path ?? '/',
           'host': server.host ?? server.address,
         };
-        // Only set mode when explicitly configured by user.
-        // Xray v1.260327.0 default (packet-up) is compatible with modern servers.
-        if (server.xhttpMode.isNotEmpty && server.xhttpMode != 'auto') {
-          xhttpSettings['mode'] = server.xhttpMode;
-        }
+        // Respect user-configured mode.
+        // Default: stream-up (single long-lived streaming POST per connection).
+        // packet-up (Xray default) sends many short POST requests per data chunk;
+        // Cloudflare CDN returns 400 Bad Request on those h2 short POSTs because
+        // the CDN or origin (older Xray) cannot handle the packet-up seq-numbered
+        // URL format over h2. stream-up uses one continuous POST stream per
+        // connection, which is simpler and accepted by older Xray servers.
+        final mode = (server.xhttpMode.isNotEmpty && server.xhttpMode != 'auto')
+            ? server.xhttpMode
+            : 'stream-up';
+        xhttpSettings['mode'] = mode;
         settings['splithttpSettings'] = xhttpSettings;
     }
 
