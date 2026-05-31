@@ -340,6 +340,12 @@ class XrayConfigBuilder {
       final alpnList = server.alpn?.split(',').where((s) => s.isNotEmpty).toList();
       if (alpnList != null && alpnList.isNotEmpty) {
         tlsSettings['alpn'] = alpnList;
+      } else if (effectiveNetwork == 'splithttp') {
+        // Force HTTP/1.1 for SplitHTTP CDN compatibility.
+        // Xray v1.260327.0 uses HTTP/2 by default (ALPN empty → h2), but CDN providers
+        // (e.g. Cloudflare) may buffer HTTP/2 streaming responses indefinitely, causing
+        // downlink = 0. HTTP/1.1 uses Transfer-Encoding: chunked which CDNs pass through.
+        tlsSettings['alpn'] = ['http/1.1'];
       }
       settings['tlsSettings'] = tlsSettings;
     }

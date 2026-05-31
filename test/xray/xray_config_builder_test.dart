@@ -363,9 +363,9 @@ void main() {
       // Default mode is 'stream-up' for cross-version server compatibility
       expect(settings['mode'], 'stream-up');
 
-      // No ALPN forced — Xray/Go TLS defaults handle negotiation
+      // SplitHTTP forces HTTP/1.1 via ALPN for CDN compatibility
       final tls = stream['tlsSettings'] as Map<String, dynamic>;
-      expect(tls.containsKey('alpn'), isFalse);
+      expect(tls['alpn'], ['http/1.1']);
     });
 
     test('XHTTP user-configured ALPN is included in tlsSettings', () {
