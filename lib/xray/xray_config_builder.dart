@@ -336,16 +336,10 @@ class XrayConfigBuilder {
         'allowInsecure': false,
         'fingerprint': server.fingerprint ?? 'chrome',
       };
-      // User-configured ALPN takes precedence; otherwise omit (Go/Xray uses its defaults).
+      // User-configured ALPN takes precedence; otherwise omit (Xray/Go TLS uses its defaults).
       final alpnList = server.alpn?.split(',').where((s) => s.isNotEmpty).toList();
       if (alpnList != null && alpnList.isNotEmpty) {
         tlsSettings['alpn'] = alpnList;
-      } else if (effectiveNetwork == 'splithttp') {
-        // Force HTTP/1.1 for SplitHTTP CDN compatibility.
-        // Xray v1.260327.0 uses HTTP/2 by default (ALPN empty → h2), but CDN providers
-        // (e.g. Cloudflare) may buffer HTTP/2 streaming responses indefinitely, causing
-        // downlink = 0. HTTP/1.1 uses Transfer-Encoding: chunked which CDNs pass through.
-        tlsSettings['alpn'] = ['http/1.1'];
       }
       settings['tlsSettings'] = tlsSettings;
     }
@@ -391,19 +385,11 @@ class XrayConfigBuilder {
           'path': server.path ?? '/',
           'host': server.host ?? server.address,
         };
-        // Determine upload mode. In Xray-core v1.260327.0+ the default auto-selected
-        // mode for TLS (non-Reality) is "packet-up" (multiple small POSTs, CDN-friendly).
-        // However, "packet-up" embeds the seq number in the POST path (/path/UUID/0),
-        // which older server Xray versions can't parse — they treat the whole segment as
-        // the session ID and never match GET vs POST, causing downlink = 0.
-        // "stream-up" (one streaming POST to /path/UUID, same URL as GET) is compatible
-        // with both old and new server versions AND works through CDNs.
-        // Use user-configured mode if set; otherwise default to "stream-up".
-        final resolvedMode =
-            (server.xhttpMode.isNotEmpty && server.xhttpMode != 'auto')
-                ? server.xhttpMode
-                : 'stream-up';
-        xhttpSettings['mode'] = resolvedMode;
+        // Only set mode when explicitly configured by user.
+        // Xray v1.260327.0 default (packet-up) is compatible with modern servers.
+        if (server.xhttpMode.isNotEmpty && server.xhttpMode != 'auto') {
+          xhttpSettings['mode'] = server.xhttpMode;
+        }
         settings['splithttpSettings'] = xhttpSettings;
     }
 

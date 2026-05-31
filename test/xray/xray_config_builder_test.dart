@@ -360,12 +360,12 @@ void main() {
       final settings = stream['splithttpSettings'] as Map<String, dynamic>;
       expect(settings['path'], '/download');
       expect(settings['host'], 'cdn.example.com');
-      // Default mode is 'stream-up' for cross-version server compatibility
-      expect(settings['mode'], 'stream-up');
+      // Default: no mode set (Xray uses packet-up default, matching happ/standard configs)
+      expect(settings.containsKey('mode'), isFalse);
 
-      // SplitHTTP forces HTTP/1.1 via ALPN for CDN compatibility
+      // No forced ALPN — let Xray/Go TLS use defaults (h2)
       final tls = stream['tlsSettings'] as Map<String, dynamic>;
-      expect(tls['alpn'], ['http/1.1']);
+      expect(tls.containsKey('alpn'), isFalse);
     });
 
     test('XHTTP user-configured ALPN is included in tlsSettings', () {
@@ -384,7 +384,7 @@ void main() {
       expect(tls['alpn'], ['h2']);
     });
 
-    test('XHTTP user-configured mode overrides stream-up default', () {
+    test('XHTTP user-configured mode is applied when set', () {
       final server = ServerConfig(
         id: 'test-id',
         name: 'xhttp mode test',
