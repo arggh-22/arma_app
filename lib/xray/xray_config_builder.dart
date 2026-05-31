@@ -331,17 +331,23 @@ class XrayConfigBuilder {
 
     // TLS settings
     if (effectiveSecurity == 'tls') {
+      // SplitHTTP requires standard Go TLS (no fingerprint) so that ALPN is
+      // properly negotiated. utls Chrome fingerprint hard-wires h2 in the
+      // ClientHello regardless of our alpn config, causing the server to
+      // select h2 at TLS level while Go's transport uses h1.1 → malformed
+      // response (\x00\x00\x12\x04... = HTTP/2 SETTINGS frame). Without utls,
+      // Go TLS sends only the configured ALPN and negotiates h1.1 correctly.
+      // User-set fingerprints are still respected for advanced use cases.
+      final defaultFingerprint =
+          effectiveNetwork == 'splithttp' ? '' : 'chrome';
       final tlsSettings = <String, dynamic>{
         'serverName': server.sni ?? server.address,
         'allowInsecure': false,
-        'fingerprint': server.fingerprint ?? 'chrome',
+        'fingerprint': server.fingerprint ?? defaultFingerprint,
       };
-      // User-configured ALPN takes precedence; otherwise omit for most transports.
-      // EXCEPTION: SplitHTTP requires HTTP/1.1 to avoid HTTP 400 from CDN/server.
-      // Xray v1.260327.0 defaults to h2 (ALPN empty → len=0 → "2"), but servers
-      // using Cloudflare CDN return 400 Bad Request on h2 SplitHTTP POST requests.
-      // Older Xray (used by most servers) only supports h1.1 for SplitHTTP.
-      // alpn:["http/1.1"] forces HTTP/1.1 via decideHTTPVersion (len=1, first="http/1.1").
+      // User-configured ALPN takes precedence.
+      // SplitHTTP defaults to http/1.1: h2 POST requests return 400 from
+      // servers running older Xray behind Cloudflare CDN.
       final alpnList = server.alpn?.split(',').where((s) => s.isNotEmpty).toList();
       if (alpnList != null && alpnList.isNotEmpty) {
         tlsSettings['alpn'] = alpnList;

@@ -366,6 +366,12 @@ void main() {
       // SplitHTTP forces HTTP/1.1 via ALPN — server returns 400 Bad Request on h2
       final tls = stream['tlsSettings'] as Map<String, dynamic>;
       expect(tls['alpn'], ['http/1.1']);
+
+      // SplitHTTP must NOT use Chrome fingerprint by default.
+      // utls Chrome hard-wires h2 in ClientHello regardless of ALPN config,
+      // causing TLS to negotiate h2 while Go transport uses h1.1 → malformed
+      // response. Standard Go TLS (fingerprint='') respects our ALPN correctly.
+      expect(tls['fingerprint'], '');
     });
 
     test('XHTTP user-configured ALPN is included in tlsSettings', () {
@@ -382,6 +388,40 @@ void main() {
       final tls = stream['tlsSettings'] as Map<String, dynamic>;
       // User explicitly set alpn=h2, should be included
       expect(tls['alpn'], ['h2']);
+    });
+
+    test('XHTTP user-configured fingerprint is respected', () {
+      final server = _makeServer(
+        network: 'xhttp',
+        security: 'tls',
+        fingerprint: 'firefox',
+      );
+
+      final json = jsonDecode(XrayConfigBuilder.build(server))
+          as Map<String, dynamic>;
+      final stream = (json['outbounds'] as List)[0]['streamSettings']
+          as Map<String, dynamic>;
+      final tls = stream['tlsSettings'] as Map<String, dynamic>;
+      // User explicitly set fingerprint=firefox, must be respected
+      expect(tls['fingerprint'], 'firefox');
+    });
+
+    test('non-splithttp TLS defaults to chrome fingerprint', () {
+      final server = _makeServer(
+        network: 'ws',
+        security: 'tls',
+        host: 'cdn.example.com',
+        path: '/ws',
+        sni: 'cdn.example.com',
+      );
+
+      final json = jsonDecode(XrayConfigBuilder.build(server))
+          as Map<String, dynamic>;
+      final stream = (json['outbounds'] as List)[0]['streamSettings']
+          as Map<String, dynamic>;
+      final tls = stream['tlsSettings'] as Map<String, dynamic>;
+      // Non-splithttp transports still use Chrome fingerprint by default
+      expect(tls['fingerprint'], 'chrome');
     });
 
     test('XHTTP user-configured mode is applied when set', () {
