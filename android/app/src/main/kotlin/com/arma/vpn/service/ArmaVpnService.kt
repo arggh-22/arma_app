@@ -208,26 +208,28 @@ class ArmaVpnService : VpnService() {
             val vpnService = this@ArmaVpnService
             val callback = object : CoreCallbackHandler {
                 override fun onEmitStatus(p0: Long, p1: String?): Long {
-                    Log.w(TAG, ">>> onEmitStatus(p0=$p0, p1='$p1') <<<")
-                    debugLog("onEmitStatus: p0=$p0, p1=$p1")
-                    // Protect outbound sockets from VPN routing loop
                     return if (p0 > 0) {
+                        // Socket protection request (p0 = fd to protect)
                         val protected = vpnService.protect(p0.toInt())
-                        Log.w(TAG, "protect(fd=$p0) = $protected")
-                        debugLog("protect(fd=$p0)=$protected")
+                        if (!protected) Log.w(TAG, "protect(fd=$p0) FAILED")
                         if (protected) 0L else 1L
                     } else {
+                        // Xray log message (p0 = 0, p1 = message)
+                        if (!p1.isNullOrBlank()) {
+                            Log.d(TAG, "Xray: $p1")
+                            debugLog(p1)  // Forward Xray logs to the in-app log screen
+                        }
                         0L
                     }
                 }
                 override fun shutdown(): Long {
                     Log.w(TAG, ">>> Core shutdown callback <<<")
-                    debugLog("Core shutdown callback")
+                    debugLog("[ArmaVPN] Core shutdown")
                     return 0
                 }
                 override fun startup(): Long {
                     Log.w(TAG, ">>> Core startup callback <<<")
-                    debugLog("Core startup callback")
+                    debugLog("[ArmaVPN] Core startup")
                     return 0
                 }
             }
