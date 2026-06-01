@@ -331,31 +331,34 @@ class XrayConfigBuilder {
 
     // TLS settings
     if (effectiveSecurity == 'tls') {
-      // SplitHTTP: use standard Go TLS (no fingerprint) so ALPN is respected.
-      // utls Chrome hard-wires h2 regardless of ALPN config; with standard
-      // Go TLS the ALPN we send is honoured by the TLS layer.
+      // SplitHTTP REQUIRES Chrome fingerprint (utls).
+      //
+      // Background: Cloudflare CDN and similar proxies use HTTP/2 fingerprinting
+      // (JA3 + AKAMAI h2 SETTINGS fingerprint) to detect non-browser clients.
+      // Standard Go TLS sends a different h2 SETTINGS frame than Chrome → CDN
+      // identifies it as a bot and returns 400 Bad Request on ALL requests.
+      // utls with 'chrome' fingerprint spoofs BOTH the TLS ClientHello AND the
+      // h2 SETTINGS frames to exactly match real Chrome → CDN accepts the request.
+      //
+      // ALPN: do NOT override. utls Chrome always includes ["h2","http/1.1"] in
+      // ClientHello regardless of config. Xray's decideHTTPVersion with empty
+      // config ALPN → h2 transport. Both TLS and transport agree on h2. ✓
+      //
+      // This matches the working happ reference config:
+      //   fingerprint:"chrome", alpn:[], no mode → all accepted by CDN via h2.
+      //
       // User-set fingerprints are always respected.
-      final defaultFingerprint =
-          effectiveNetwork == 'splithttp' ? '' : 'chrome';
       final tlsSettings = <String, dynamic>{
         'serverName': server.sni ?? server.address,
         'allowInsecure': false,
-        'fingerprint': server.fingerprint ?? defaultFingerprint,
+        'fingerprint': server.fingerprint ?? 'chrome',
       };
-      // User-configured ALPN takes precedence.
-      // SplitHTTP: CDN gateways (e.g. Cloudflare) often force h2 at TLS level
-      // regardless of the client ALPN offer. When Go uses h1.1 transport but
-      // TLS negotiated h2 the server sends h2 SETTINGS that h1.1 cannot parse.
-      // Omitting the ALPN override lets Xray default to h2 (empty ALPN →
-      // decideHTTPVersion → "2"), so both TLS and transport speak h2 and the
-      // session is consistent. To force h1.1 (only for servers that reject h2
-      // POST), set alpn=http/1.1 explicitly on the server entry.
+      // User-configured ALPN takes precedence; no default override for SplitHTTP.
       final alpnList =
           server.alpn?.split(',').where((s) => s.isNotEmpty).toList();
       if (alpnList != null && alpnList.isNotEmpty) {
         tlsSettings['alpn'] = alpnList;
       }
-      // No default ALPN override for SplitHTTP — let Xray use h2 (default).
       settings['tlsSettings'] = tlsSettings;
     }
 
@@ -400,17 +403,12 @@ class XrayConfigBuilder {
           'path': server.path ?? '/',
           'host': server.host ?? server.address,
         };
-        // Respect user-configured mode.
-        // Default: stream-up (single long-lived streaming POST per connection).
-        // packet-up (Xray default) sends many short POST requests per data chunk;
-        // Cloudflare CDN returns 400 Bad Request on those h2 short POSTs because
-        // the CDN or origin (older Xray) cannot handle the packet-up seq-numbered
-        // URL format over h2. stream-up uses one continuous POST stream per
-        // connection, which is simpler and accepted by older Xray servers.
-        final mode = (server.xhttpMode.isNotEmpty && server.xhttpMode != 'auto')
-            ? server.xhttpMode
-            : 'stream-up';
-        xhttpSettings['mode'] = mode;
+        // Respect user-configured mode only; no default override.
+        // Xray's built-in default (packet-up) matches the working happ reference
+        // config which uses no explicit mode field.
+        if (server.xhttpMode.isNotEmpty && server.xhttpMode != 'auto') {
+          xhttpSettings['mode'] = server.xhttpMode;
+        }
         settings['splithttpSettings'] = xhttpSettings;
     }
 

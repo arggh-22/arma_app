@@ -360,22 +360,21 @@ void main() {
       final settings = stream['splithttpSettings'] as Map<String, dynamic>;
       expect(settings['path'], '/download');
       expect(settings['host'], 'cdn.example.com');
-      // Default mode: stream-up (one streaming POST per connection).
-      // packet-up (Xray default) sends many short h2 POSTs that Cloudflare CDN
-      // and older Xray servers return 400 on. stream-up is more compatible.
-      expect(settings['mode'], 'stream-up');
+      // No default mode — Xray uses its built-in packet-up default.
+      // Matches the happ reference config (no explicit mode field).
+      expect(settings.containsKey('mode'), isFalse);
 
       final tls = stream['tlsSettings'] as Map<String, dynamic>;
 
-      // SplitHTTP does NOT force http/1.1 ALPN — CDN gateways (e.g. Cloudflare)
-      // force h2 at TLS level regardless of client ALPN offer. Letting Xray
-      // default to h2 keeps TLS and transport consistent.
+      // No default ALPN override — Xray defaults to h2 (empty alpn →
+      // decideHTTPVersion → "2"), consistent with Chrome utls h2 negotiation.
       expect(tls.containsKey('alpn'), isFalse);
 
-      // SplitHTTP must NOT use Chrome fingerprint by default.
-      // utls Chrome hard-wires h2 in ClientHello regardless of ALPN config.
-      // Standard Go TLS (fingerprint='') lets the configured ALPN be honoured.
-      expect(tls['fingerprint'], '');
+      // SplitHTTP MUST use Chrome fingerprint (utls).
+      // Cloudflare CDN uses HTTP/2 fingerprinting; standard Go TLS h2 is
+      // detected as a bot and returns 400. Chrome utls spoofs both TLS
+      // ClientHello and h2 SETTINGS to match real Chrome → CDN accepts it.
+      expect(tls['fingerprint'], 'chrome');
     });
 
     test('XHTTP user-configured ALPN is included in tlsSettings', () {
@@ -425,7 +424,7 @@ void main() {
       final stream = (json['outbounds'] as List)[0]['streamSettings']
           as Map<String, dynamic>;
       final tls = stream['tlsSettings'] as Map<String, dynamic>;
-      // Non-splithttp transports still use Chrome fingerprint by default
+      // All transports use Chrome fingerprint by default
       expect(tls['fingerprint'], 'chrome');
     });
 
