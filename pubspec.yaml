@@ -1,7 +1,7 @@
 name: arma_proxy_vpn_client
 description: "A privacy-first proxy and VPN client for Android."
 publish_to: 'none'
-version: 1.0.4+3
+version: 1.0.6+4
 
 environment:
   sdk: ^3.11.4
@@ -37,6 +37,7 @@ dependencies:
   font_awesome_flutter: any
   url_launcher: ^6.3.2
   cupertino_icons: ^1.0.8
+  package_info_plus: ^10.1.0
 
 dev_dependencies:
   flutter_test:
