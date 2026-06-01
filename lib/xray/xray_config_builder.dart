@@ -362,7 +362,13 @@ class XrayConfigBuilder {
         'fingerprint': server.fingerprint ?? 'chrome',
         'publicKey': server.publicKey ?? '',
         'shortId': server.shortId ?? '',
-        'spiderX': server.spiderX ?? '',
+        // Default spiderX to "/" (matching the verified-working Happ config);
+        // an empty spiderX is non-standard. allowInsecure/show added for parity.
+        'spiderX': (server.spiderX == null || server.spiderX!.isEmpty)
+            ? '/'
+            : server.spiderX,
+        'allowInsecure': false,
+        'show': false,
       };
     }
 

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hive_ce/hive_ce.dart';
@@ -43,6 +44,7 @@ class ConnectionNotifier extends _$ConnectionNotifier
   static const _maxFallbackAttempts = 3;
   static const _connectingTimeout = Duration(seconds: 30);
   static const _disconnectingTimeout = Duration(seconds: 10);
+  static const _reachabilityTimeout = Duration(seconds: 8);
 
   @override
   ConnectionStatus build() {
@@ -137,6 +139,23 @@ class ConnectionNotifier extends _$ConnectionNotifier
       return;
     }
 
+    // Pre-flight reachability check. Runs before the TUN is up, so this socket
+    // goes over the normal network and accurately tests whether the proxy
+    // endpoint is dialable. Catches dead/stale endpoints (e.g. a wrong IP in
+    // the key) instead of starting Xray and sitting on a fake "Connected" while
+    // every dial silently hangs. Xray dials this same address:port directly, so
+    // if we can't even open TCP here, the tunnel cannot work either.
+    final reachable = await _isServerReachable(server);
+    print('[ConnectionNotifier] reachability ${server.address}:${server.port} '
+        '= $reachable');
+    if (!reachable) {
+      state = Disconnected(
+        'Server unreachable (${server.address}:${server.port})',
+      );
+      _cancelStateTimeout();
+      return;
+    }
+
     // Read current Phase 4 settings from persistence
     final prefs = await SharedPreferences.getInstance();
     final settingsDatasource = SettingsLocalDatasource(prefs);
@@ -178,6 +197,31 @@ class ConnectionNotifier extends _$ConnectionNotifier
       print('[ConnectionNotifier] startVpn ERROR: $e');
       state = Disconnected('Error: $e');
       _cancelStateTimeout();
+    }
+  }
+
+  /// Attempt a bare TCP connection to the proxy endpoint to verify it is
+  /// reachable before bringing up the tunnel.
+  ///
+  /// Returns `true` if a TCP connection opens within [_reachabilityTimeout],
+  /// `false` on any failure (connection refused, timeout, DNS failure). A
+  /// connect-then-close is harmless to the server (indistinguishable from an
+  /// aborted connection) and is the minimum any VLESS/REALITY/XHTTP server
+  /// must accept, so a failure here is a reliable "won't work" signal.
+  Future<bool> _isServerReachable(ServerConfig server) async {
+    Socket? socket;
+    try {
+      socket = await Socket.connect(
+        server.address,
+        server.port,
+        timeout: _reachabilityTimeout,
+      );
+      return true;
+    } catch (e) {
+      print('[ConnectionNotifier] reachability check failed: $e');
+      return false;
+    } finally {
+      socket?.destroy();
     }
   }
 
