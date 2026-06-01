@@ -360,21 +360,26 @@ void main() {
       final settings = stream['splithttpSettings'] as Map<String, dynamic>;
       expect(settings['path'], '/download');
       expect(settings['host'], 'cdn.example.com');
-      // No default mode — Xray uses its built-in packet-up default.
-      // Matches the happ reference config (no explicit mode field).
-      expect(settings.containsKey('mode'), isFalse);
+      // Mirrors the verified-working Happ config: mode "auto" when the link
+      // doesn't specify one, plus the sc*/extra tuning. The xPaddingBytes
+      // "10-100" is the field that fixed the uniform origin 400.
+      expect(settings['mode'], 'auto');
+      expect(settings['scMaxConcurrentPosts'], 10);
+      expect(settings['scMaxEachPostBytes'], 1000000);
+      expect(settings['scMinPostsIntervalMs'], 30);
+      final extra = settings['extra'] as Map<String, dynamic>;
+      expect(extra['xPaddingBytes'], '10-100');
+      expect(extra['noGRPCHeader'], true);
 
       final tls = stream['tlsSettings'] as Map<String, dynamic>;
 
-      // No default ALPN override — Xray defaults to h2 (empty alpn →
-      // decideHTTPVersion → "2"), consistent with Chrome utls h2 negotiation.
-      expect(tls.containsKey('alpn'), isFalse);
+      // Happ sends an explicit empty ALPN for XHTTP (no h2/http1 restriction).
+      expect(tls['alpn'], <String>[]);
 
-      // SplitHTTP MUST use Chrome fingerprint (utls).
-      // Cloudflare CDN uses HTTP/2 fingerprinting; standard Go TLS h2 is
-      // detected as a bot and returns 400. Chrome utls spoofs both TLS
-      // ClientHello and h2 SETTINGS to match real Chrome → CDN accepts it.
-      expect(tls['fingerprint'], 'chrome');
+      // XHTTP must NOT force a uTLS fingerprint — Happ uses an empty
+      // fingerprint (native Go TLS) against this origin. Forcing "chrome"
+      // here previously caused HTTP 400 on every upload POST.
+      expect(tls['fingerprint'], '');
     });
 
     test('XHTTP user-configured ALPN is included in tlsSettings', () {

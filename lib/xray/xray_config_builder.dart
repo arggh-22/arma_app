@@ -323,6 +323,7 @@ class XrayConfigBuilder {
     // as "splithttp" (pre-rename). Both names refer to the same protocol.
     final effectiveNetwork =
         server.network == 'xhttp' ? 'splithttp' : server.network;
+    final isXhttp = effectiveNetwork == 'splithttp';
 
     final settings = <String, dynamic>{
       'network': effectiveNetwork,
@@ -331,33 +332,25 @@ class XrayConfigBuilder {
 
     // TLS settings
     if (effectiveSecurity == 'tls') {
-      // SplitHTTP REQUIRES Chrome fingerprint (utls).
-      //
-      // Background: Cloudflare CDN and similar proxies use HTTP/2 fingerprinting
-      // (JA3 + AKAMAI h2 SETTINGS fingerprint) to detect non-browser clients.
-      // Standard Go TLS sends a different h2 SETTINGS frame than Chrome → CDN
-      // identifies it as a bot and returns 400 Bad Request on ALL requests.
-      // utls with 'chrome' fingerprint spoofs BOTH the TLS ClientHello AND the
-      // h2 SETTINGS frames to exactly match real Chrome → CDN accepts the request.
-      //
-      // ALPN: do NOT override. utls Chrome always includes ["h2","http/1.1"] in
-      // ClientHello regardless of config. Xray's decideHTTPVersion with empty
-      // config ALPN → h2 transport. Both TLS and transport agree on h2. ✓
-      //
-      // This matches the working happ reference config:
-      //   fingerprint:"chrome", alpn:[], no mode → all accepted by CDN via h2.
-      //
-      // User-set fingerprints are always respected.
+      // XHTTP/SplitHTTP: mirror the verified-working Happ client exactly.
+      // Happ connects to this same origin with an EMPTY uTLS fingerprint
+      // (native Go TLS) and an empty ALPN list. Forcing fingerprint:"chrome"
+      // — as an earlier version of this builder did — made the origin reject
+      // every upload POST with HTTP 400. So for XHTTP we default to no
+      // fingerprint and an explicit empty ALPN, matching Happ. Other
+      // transports keep the Chrome default. User-set values always win.
       final tlsSettings = <String, dynamic>{
         'serverName': server.sni ?? server.address,
         'allowInsecure': false,
-        'fingerprint': server.fingerprint ?? 'chrome',
+        'fingerprint': server.fingerprint ?? (isXhttp ? '' : 'chrome'),
       };
-      // User-configured ALPN takes precedence; no default override for SplitHTTP.
       final alpnList =
           server.alpn?.split(',').where((s) => s.isNotEmpty).toList();
       if (alpnList != null && alpnList.isNotEmpty) {
         tlsSettings['alpn'] = alpnList;
+      } else if (isXhttp) {
+        // Happ sends an explicit empty ALPN array for XHTTP.
+        tlsSettings['alpn'] = <String>[];
       }
       settings['tlsSettings'] = tlsSettings;
     }
@@ -399,17 +392,27 @@ class XrayConfigBuilder {
         };
       case 'xhttp':
       case 'splithttp':
-        final xhttpSettings = <String, dynamic>{
+        // Reproduce the verified-working Happ client config for this origin.
+        // The decisive fix for the uniform HTTP 400 was xPaddingBytes:"10-100"
+        // — the origin XHTTP inbound validates the X-Padding length, and Xray's
+        // default range (100-1000) is rejected. The sc* limits, mode "auto",
+        // and extra.noGRPCHeader also match Happ. `mode` honors an explicit
+        // link/user value, otherwise "auto" (same as Happ).
+        settings['splithttpSettings'] = <String, dynamic>{
           'path': server.path ?? '/',
           'host': server.host ?? server.address,
+          'mode': server.xhttpMode.isNotEmpty ? server.xhttpMode : 'auto',
+          'scMaxConcurrentPosts': 10,
+          'scMaxEachPostBytes': 1000000,
+          'scMinPostsIntervalMs': 30,
+          'extra': <String, dynamic>{
+            'noGRPCHeader': true,
+            'scMaxConcurrentPosts': 100,
+            'scMaxEachPostBytes': 100000,
+            'scMinPostsIntervalMs': 30,
+            'xPaddingBytes': '10-100',
+          },
         };
-        // Respect user-configured mode only; no default override.
-        // Xray's built-in default (packet-up) matches the working happ reference
-        // config which uses no explicit mode field.
-        if (server.xhttpMode.isNotEmpty && server.xhttpMode != 'auto') {
-          xhttpSettings['mode'] = server.xhttpMode;
-        }
-        settings['splithttpSettings'] = xhttpSettings;
     }
 
     // TLS ClientHello fragmentation via sockopt (anti-censorship D-10)
