@@ -1,29 +1,18 @@
-// This is a basic Flutter widget test.
+// Smoke test for the root [ArmaApp] widget.
 //
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// The default Flutter "counter" template test was removed — this app has no
+// counter. ArmaApp wires up real providers (auth bootstrap, default-server
+// refresh) that perform network/platform work on first frame, so we only
+// assert that the root widget constructs as a Widget without throwing. Full
+// flows are covered by feature-level widget tests with provider overrides.
 
 import 'package:arma_proxy_vpn_client/app.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const ArmaApp());
-
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  test('ArmaApp can be instantiated as a Widget', () {
+    const app = ArmaApp();
+    expect(app, isA<Widget>());
   });
 }

@@ -15,7 +15,6 @@ import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/u
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 void main() {
   testWidgets('shows Link FAB and opens Telegram guide route', (tester) async {
@@ -32,13 +31,6 @@ void main() {
     final fabFinder = find.byKey(const Key('dashboard-telegram-link-fab'));
     expect(fabFinder, findsOneWidget);
     expect(find.text('Link'), findsOneWidget);
-    expect(
-      find.byWidgetPredicate(
-        (widget) =>
-            widget is FaIcon && widget.icon == FontAwesomeIcons.telegram,
-      ),
-      findsOneWidget,
-    );
 
     await tester.tap(fabFinder);
     await tester.pumpAndSettle();

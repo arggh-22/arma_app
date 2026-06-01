@@ -41,6 +41,13 @@ void main() {
     await tester.tap(find.text('Show all servers'));
     await tester.pumpAndSettle();
 
+    // The show-all sheet uses a lazily-built scrollable list; the 4th item
+    // may be below the fold, so scroll it into view before asserting.
+    await tester.scrollUntilVisible(
+      find.text('D'),
+      100,
+      scrollable: find.byType(Scrollable).last,
+    );
     expect(find.text('D'), findsOneWidget);
   });
 

@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/features/api/domain/entities/auth_state.dart';
-import 'package:arma_proxy_vpn_client/features/api/domain/repositories/auth_repository.dart';
 import 'package:arma_proxy_vpn_client/features/api/domain/entities/telegram_link_outcome.dart';
 import 'package:arma_proxy_vpn_client/features/api/domain/repositories/telegram_link_repository.dart';
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/auth_provider.dart';
@@ -18,27 +17,23 @@ void main() {
 
     expect(find.text('Open Telegram Bot'), findsOneWidget);
     expect(find.text('Tap Start in Telegram bot'), findsOneWidget);
-    expect(find.text('Get your Telegram ID'), findsOneWidget);
-    expect(find.byKey(const Key('telegram-id-input')), findsOneWidget);
+    expect(find.text('Get your link code'), findsOneWidget);
+    expect(find.byKey(const Key('telegram-code-input')), findsOneWidget);
     expect(find.byKey(const Key('telegram-paste-button')), findsOneWidget);
     expect(
       find.byKey(const Key('telegram-link-submit-button')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const Key('telegram-check-status-button')),
       findsOneWidget,
     );
   });
 
   testWidgets('paste action fills input from clipboard', (tester) async {
     final repository = _FakeTelegramLinkRepository();
-    await _pumpGuide(tester, repository: repository, clipboardText: '12345678');
+    await _pumpGuide(tester, repository: repository, clipboardText: '123456');
 
     await _tapPaste(tester);
     await tester.pumpAndSettle();
 
-    expect(find.text('12345678'), findsOneWidget);
+    expect(find.text('123456'), findsOneWidget);
   });
 
   testWidgets('open bot button calls launcher with fixed Telegram URL', (
@@ -58,7 +53,7 @@ void main() {
     await tester.tap(find.byKey(const Key('telegram-open-bot-button')));
     await tester.pumpAndSettle();
 
-    expect(launchedUri.toString(), 'https://t.me/devarmabot');
+    expect(launchedUri.toString(), 'https://t.me/devarmabot?start=link');
   });
 
   testWidgets('shows feedback when Telegram bot launch fails', (tester) async {
@@ -75,17 +70,30 @@ void main() {
     expect(find.text('Couldn’t open Telegram bot. Try again.'), findsOneWidget);
   });
 
-  testWidgets('linked outcome pops back to previous screen', (tester) async {
+  testWidgets('linked outcome shows success view and Done pops back', (
+    tester,
+  ) async {
     final repository = _FakeTelegramLinkRepository(
       outcome: const TelegramLinkOutcome(type: TelegramLinkOutcomeType.linked),
     );
     await _pumpGuide(tester, repository: repository);
 
     await tester.enterText(
-      find.byKey(const Key('telegram-id-input')),
+      find.byKey(const Key('telegram-code-input')),
       '123456',
     );
     await _tapSubmit(tester);
+    await tester.pumpAndSettle();
+
+    // Linked switches the screen to the inline success view (no auto-pop).
+    expect(
+      find.byKey(const Key('telegram-linked-success-view')),
+      findsOneWidget,
+    );
+    expect(find.text('Telegram Linked!'), findsOneWidget);
+    expect(find.byType(TelegramLinkGuideScreen), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('telegram-linked-done-button')));
     await tester.pumpAndSettle();
 
     expect(find.text('Open Guide'), findsOneWidget);
@@ -103,7 +111,7 @@ void main() {
     await _pumpGuide(tester, repository: repository);
 
     await tester.enterText(
-      find.byKey(const Key('telegram-id-input')),
+      find.byKey(const Key('telegram-code-input')),
       '123456',
     );
     await _tapSubmit(tester);
@@ -126,7 +134,7 @@ void main() {
     await _pumpGuide(tester, repository: repository);
 
     await tester.enterText(
-      find.byKey(const Key('telegram-id-input')),
+      find.byKey(const Key('telegram-code-input')),
       '123456',
     );
     await _tapSubmit(tester);
@@ -134,7 +142,7 @@ void main() {
 
     expect(
       tester
-          .widget<TextField>(find.byKey(const Key('telegram-id-input')))
+          .widget<TextField>(find.byKey(const Key('telegram-code-input')))
           .enabled,
       isFalse,
     );
@@ -162,12 +170,10 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('failure outcome keeps screen and allows retry submit', (
-    tester,
-  ) async {
+  testWidgets('failure outcome keeps screen and allows retry', (tester) async {
     final repository = _FakeTelegramLinkRepository(
-      responder: (id) async {
-        if (id == '123456') {
+      responder: (code) async {
+        if (code == '123456') {
           return const TelegramLinkOutcome(
             type: TelegramLinkOutcomeType.network,
           );
@@ -178,7 +184,7 @@ void main() {
     await _pumpGuide(tester, repository: repository);
 
     await tester.enterText(
-      find.byKey(const Key('telegram-id-input')),
+      find.byKey(const Key('telegram-code-input')),
       '123456',
     );
     await _tapSubmit(tester);
@@ -191,136 +197,42 @@ void main() {
     );
     expect(repository.calls, 1);
 
+    // Let the error snackbar auto-dismiss before retrying.
     await tester.pump(const Duration(seconds: 4));
     await tester.pumpAndSettle();
 
     await tester.enterText(
-      find.byKey(const Key('telegram-id-input')),
+      find.byKey(const Key('telegram-code-input')),
       '234567',
     );
     await _tapSubmit(tester);
     await tester.pumpAndSettle();
 
     expect(repository.calls, 2);
-    expect(find.byType(TelegramLinkGuideScreen), findsNothing);
-  });
-
-  testWidgets('status check in-flight disables button and shows spinner', (
-    tester,
-  ) async {
-    final repository = _FakeTelegramLinkRepository();
-    final statusCompleter = Completer<AuthState>();
-    var calls = 0;
-    await _pumpGuide(
-      tester,
-      repository: repository,
-      statusChecker: () {
-        calls++;
-        return statusCompleter.future;
-      },
-    );
-
-    await tester.tap(find.byKey(const Key('telegram-check-status-button')));
-    await tester.pump();
-
+    // Second attempt links → inline success view replaces the form.
     expect(
-      tester
-          .widget<FilledButton>(
-            find.byKey(const Key('telegram-check-status-button')),
-          )
-          .onPressed,
-      isNull,
+      find.byKey(const Key('telegram-linked-success-view')),
+      findsOneWidget,
     );
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    expect(calls, 1);
-
-    await tester.tap(find.byKey(const Key('telegram-check-status-button')));
-    await tester.pump();
-    expect(calls, 1);
-
-    statusCompleter.complete(
-      const AuthState(
-        token: 'token',
-        isAuthenticated: true,
-        isGuest: true,
-        userId: 1,
-      ),
-    );
-    await tester.pumpAndSettle();
   });
 
-  testWidgets('status check linked result pops back to dashboard', (
-    tester,
-  ) async {
-    final repository = _FakeTelegramLinkRepository();
-    await _pumpGuide(
-      tester,
-      repository: repository,
-      statusChecker: () async => const AuthState(
-        token: 'token',
-        isAuthenticated: true,
-        isGuest: false,
-        userId: 99,
-      ),
-    );
-
-    await tester.tap(find.byKey(const Key('telegram-check-status-button')));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Telegram account linked successfully.'), findsOneWidget);
-    expect(find.byType(TelegramLinkGuideScreen), findsNothing);
-  });
-
-  testWidgets('status check failure shows error and allows retry', (
-    tester,
-  ) async {
-    final repository = _FakeTelegramLinkRepository();
-    var calls = 0;
-    await _pumpGuide(
-      tester,
-      repository: repository,
-      statusChecker: () async {
-        calls++;
-        throw const AuthRepositoryException(
-          type: AuthRepositoryFailureType.authenticationFailed,
-          message: 'failed',
-        );
-      },
-    );
-
-    await tester.tap(find.byKey(const Key('telegram-check-status-button')));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(TelegramLinkGuideScreen), findsOneWidget);
-    expect(find.text('Unexpected error. Please try again.'), findsOneWidget);
-    expect(calls, 1);
-
-    final button = tester.widget<FilledButton>(
-      find.byKey(const Key('telegram-check-status-button')),
-    );
-    expect(button.onPressed, isNotNull);
-
-    await tester.tap(find.byKey(const Key('telegram-check-status-button')));
-    await tester.pumpAndSettle();
-
-    expect(calls, 2);
-    expect(find.byType(TelegramLinkGuideScreen), findsOneWidget);
-  });
-
-  testWidgets('invalid Telegram ID is blocked and does not call repository', (
+  testWidgets('invalid code is blocked and does not call repository', (
     tester,
   ) async {
     final repository = _FakeTelegramLinkRepository();
     await _pumpGuide(tester, repository: repository);
 
-    await tester.enterText(find.byKey(const Key('telegram-id-input')), '12ab');
+    await tester.enterText(
+      find.byKey(const Key('telegram-code-input')),
+      '12ab',
+    );
     await _tapSubmit(tester);
     await tester.pumpAndSettle();
 
     expect(repository.calls, 0);
     expect(find.byType(TelegramLinkGuideScreen), findsOneWidget);
     expect(
-      find.text('Telegram ID is invalid. Use 5–20 digits.'),
+      find.text('Enter the 6-digit code from the Telegram bot.'),
       findsOneWidget,
     );
   });
@@ -331,20 +243,20 @@ Future<void> _pumpGuide(
   required _FakeTelegramLinkRepository repository,
   String? clipboardText,
   TelegramUrlLauncher? launcher,
-  Future<AuthState> Function()? statusChecker,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         telegramLinkRepositoryProvider.overrideWithValue(repository),
+        // On a successful link the notifier refreshes auth in the background;
+        // stub it so no real network call happens during the test.
         authStatusRefreshProvider.overrideWithValue(
-          statusChecker ??
-              () async => const AuthState(
-                token: 'token',
-                isAuthenticated: true,
-                isGuest: true,
-                userId: 1,
-              ),
+          () async => const AuthState(
+            token: 'token',
+            isAuthenticated: true,
+            isGuest: false,
+            userId: 1,
+          ),
         ),
         telegramUrlLauncherProvider.overrideWithValue(
           launcher ?? (_) async => true,
@@ -407,7 +319,7 @@ Future<void> _tapPaste(WidgetTester tester) async {
 class _FakeTelegramLinkRepository implements TelegramLinkRepository {
   _FakeTelegramLinkRepository({
     TelegramLinkOutcome? outcome,
-    Future<TelegramLinkOutcome> Function(String telegramId)? responder,
+    Future<TelegramLinkOutcome> Function(String code)? responder,
   }) : _outcome =
            outcome ??
            const TelegramLinkOutcome(
@@ -416,7 +328,7 @@ class _FakeTelegramLinkRepository implements TelegramLinkRepository {
        _responder = responder;
 
   final TelegramLinkOutcome _outcome;
-  final Future<TelegramLinkOutcome> Function(String telegramId)? _responder;
+  final Future<TelegramLinkOutcome> Function(String code)? _responder;
   int calls = 0;
 
   @override

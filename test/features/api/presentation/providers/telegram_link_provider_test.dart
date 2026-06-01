@@ -66,7 +66,7 @@ void main() {
 
       expect(fakeRepository.calls, 1);
       expect(fakeRepository.lastCode, '123456');
-      expect(container.read(telegramLinkProvider).lastSubmittedCode, '12345');
+      expect(container.read(telegramLinkProvider).lastSubmittedCode, '123456');
     });
 
     test('submit rejects non-digit telegram ids before network call', () async {
