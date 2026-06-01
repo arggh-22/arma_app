@@ -10,7 +10,14 @@ import UIKit
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
+  private var vpnChannel: VpnChannel?
+
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    // Wire the VPN MethodChannel/EventChannel onto the implicit engine messenger.
+    if let messenger = engineBridge.pluginRegistry
+      .registrar(forPlugin: "ArmaVpnChannel")?.messenger() {
+      vpnChannel = VpnChannel(messenger: messenger)
+    }
   }
 }
