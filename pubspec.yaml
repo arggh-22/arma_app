@@ -1,7 +1,7 @@
 name: arma_proxy_vpn_client
 description: "A privacy-first proxy and VPN client for Android."
 publish_to: 'none'
-version: 1.0.6+4
+version: 1.0.7+4
 
 environment:
   sdk: ^3.11.4
