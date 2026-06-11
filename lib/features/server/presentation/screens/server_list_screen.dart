@@ -7,6 +7,8 @@ import 'package:gap/gap.dart';
 import 'package:arma_proxy_vpn_client/core/constants/app_constants.dart';
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/core/utils/clipboard_helper.dart';
+import 'package:arma_proxy_vpn_client/features/connection/domain/entities/connection_status.dart';
+import 'package:arma_proxy_vpn_client/features/connection/presentation/providers/connection_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/data/parsers/share_link_parser.dart';
 import 'package:arma_proxy_vpn_client/features/server/data/parsers/subscription_parser.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
@@ -354,9 +356,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
                         latency: latencyMap[server.id],
                         onTap: () {
                           HapticFeedback.selectionClick();
-                          ref
-                              .read(activeServerProvider.notifier)
-                              .selectServer(server);
+                          _onTapServer(server);
                         },
                         onLongPress: () {
                           HapticFeedback.mediumImpact();
@@ -378,6 +378,24 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
       padding: const EdgeInsets.only(top: 8, bottom: 88),
       children: items,
     );
+  }
+
+  /// Select a server, and — when already connected — tear down the old
+  /// tunnel and bring up the new one. Without the reconnect, tapping a
+  /// different server while connected only updated the "active" selection
+  /// in the UI; the tunnel kept running with the previous server's config,
+  /// so the app showed the new server as active while no traffic flowed.
+  Future<void> _onTapServer(ServerConfig server) async {
+    final currentSelection = ref.read(activeServerProvider);
+
+    await ref.read(activeServerProvider.notifier).selectServer(server);
+
+    final connectionState = ref.read(connectionProvider);
+    if (connectionState is Connected && currentSelection?.id != server.id) {
+      final connectionNotifier = ref.read(connectionProvider.notifier);
+      await connectionNotifier.disconnect();
+      await connectionNotifier.connect(server);
+    }
   }
 
   /// Apply filter criteria to the server list.
