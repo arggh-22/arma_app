@@ -1,19 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
+import 'package:arma_proxy_vpn_client/core/utils/link_launcher.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_servers_provider.dart';
-
-typedef SubscriptionLinkLauncher = Future<bool> Function(Uri uri);
-
-/// Opens subscription links (support / cabinet) externally. Overridable in
-/// tests to assert launches without a real browser.
-final subscriptionLinkLauncherProvider = Provider<SubscriptionLinkLauncher>(
-  (ref) =>
-      (uri) => launchUrl(uri, mode: LaunchMode.externalApplication),
-);
 
 /// Renders subscription-wide notices from the JSON subscription headers
 /// (spec §2): the `announce` banner plus `support-url` / `profile-web-page-url`
@@ -83,7 +74,7 @@ class _DefaultServersNoticeSectionState
     final messenger = ScaffoldMessenger.of(context);
     final uri = Uri.tryParse(url);
     if (uri == null) return;
-    final launch = ref.read(subscriptionLinkLauncherProvider);
+    final launch = ref.read(linkLauncherProvider);
     final opened = await launch(uri);
     if (!mounted || opened) return;
     messenger.showSnackBar(const SnackBar(content: Text('Could not open link')));

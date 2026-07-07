@@ -54,7 +54,7 @@ final class ActiveServerNotifierProvider
 }
 
 String _$activeServerNotifierHash() =>
-    r'3db8fa0b645943050e507d739a2ba1dad6b64d4e';
+    r'1404ac727bf160461d763069cfc164ef72da7834';
 
 /// Riverpod notifier for tracking the currently active/selected server.
 ///

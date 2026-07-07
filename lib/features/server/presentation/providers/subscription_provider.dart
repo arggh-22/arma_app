@@ -87,6 +87,8 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
       downloadBytes: result.userinfo?.downloadBytes,
       totalBytes: result.userinfo?.totalBytes,
       expireDate: result.userinfo?.expireDate,
+      supportUrl: result.supportUrl,
+      webPageUrl: result.profileWebPageUrl,
       autoUpdate: resolvedAutoUpdate,
     );
 
@@ -164,6 +166,8 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
       downloadBytes: result.userinfo?.downloadBytes,
       totalBytes: result.userinfo?.totalBytes,
       expireDate: result.userinfo?.expireDate,
+      supportUrl: result.supportUrl,
+      webPageUrl: result.profileWebPageUrl,
       lastUpdated: DateTime.now(),
       autoUpdate: resolvedAutoUpdate,
     );

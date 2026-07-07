@@ -21,6 +21,8 @@ _Subscription _$SubscriptionFromJson(Map<String, dynamic> json) =>
       lastUpdated: DateTime.parse(json['lastUpdated'] as String),
       addedAt: DateTime.parse(json['addedAt'] as String),
       autoUpdate: json['autoUpdate'] as bool? ?? true,
+      supportUrl: json['supportUrl'] as String?,
+      webPageUrl: json['webPageUrl'] as String?,
     );
 
 Map<String, dynamic> _$SubscriptionToJson(_Subscription instance) =>
@@ -36,4 +38,6 @@ Map<String, dynamic> _$SubscriptionToJson(_Subscription instance) =>
       'lastUpdated': instance.lastUpdated.toIso8601String(),
       'addedAt': instance.addedAt.toIso8601String(),
       'autoUpdate': instance.autoUpdate,
+      'supportUrl': instance.supportUrl,
+      'webPageUrl': instance.webPageUrl,
     };

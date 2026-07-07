@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/core/utils/byte_format.dart';
 import 'package:arma_proxy_vpn_client/core/utils/expiry_format.dart';
+import 'package:arma_proxy_vpn_client/core/utils/link_launcher.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/subscription.dart';
 
 /// Section header displaying the group name for a set of server cards.
@@ -17,7 +19,7 @@ import 'package:arma_proxy_vpn_client/features/server/domain/entities/subscripti
 ///   warning icon when <1 day or expired)
 ///
 /// For manual groups, shows the simple group name with count.
-class ServerGroupHeader extends StatelessWidget {
+class ServerGroupHeader extends ConsumerWidget {
   const ServerGroupHeader({
     super.key,
     required this.groupName,
@@ -63,11 +65,11 @@ class ServerGroupHeader extends StatelessWidget {
   final bool isPinging;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (subscription == null) {
       return _buildManualHeader(context);
     }
-    return _buildSubscriptionHeader(context);
+    return _buildSubscriptionHeader(context, ref);
   }
 
   Widget _buildManualHeader(BuildContext context) {
@@ -98,7 +100,7 @@ class ServerGroupHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildSubscriptionHeader(BuildContext context) {
+  Widget _buildSubscriptionHeader(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
@@ -245,9 +247,44 @@ class ServerGroupHeader extends StatelessWidget {
             padding: const EdgeInsets.only(left: 32, top: 4),
             child: _buildInfoRow(context, l10n, sub),
           ),
+
+          // Support / Renew links (small) — from the subscription headers.
+          if (_hasLink(sub.supportUrl) || _hasLink(sub.webPageUrl))
+            Padding(
+              padding: const EdgeInsets.only(left: 26, top: 2),
+              child: _buildLinkButtons(context, ref, sub),
+            ),
         ],
       ),
     );
+  }
+
+  static bool _hasLink(String? url) => url != null && url.trim().isNotEmpty;
+
+  Widget _buildLinkButtons(BuildContext context, WidgetRef ref, Subscription sub) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (_hasLink(sub.webPageUrl))
+          _SmallLinkButton(
+            icon: Icons.card_membership_outlined,
+            label: 'Renew',
+            onTap: () => _open(ref, sub.webPageUrl!),
+          ),
+        if (_hasLink(sub.supportUrl))
+          _SmallLinkButton(
+            icon: Icons.support_agent_outlined,
+            label: 'Support',
+            onTap: () => _open(ref, sub.supportUrl!),
+          ),
+      ],
+    );
+  }
+
+  void _open(WidgetRef ref, String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+    ref.read(linkLauncherProvider)(uri);
   }
 
   /// Whether the subscription reports any usage/allowance worth displaying.
@@ -412,6 +449,38 @@ class _IconAction extends StatelessWidget {
       visualDensity: VisualDensity.compact,
       constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
       padding: EdgeInsets.zero,
+    );
+  }
+}
+
+/// Compact text button with a leading icon for the subscription Support /
+/// Renew links in the group header.
+class _SmallLinkButton extends StatelessWidget {
+  const _SmallLinkButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return TextButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, size: 15),
+      label: Text(label),
+      style: TextButton.styleFrom(
+        foregroundColor: colorScheme.primary,
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        visualDensity: VisualDensity.compact,
+        textStyle: Theme.of(context).textTheme.labelSmall,
+      ),
     );
   }
 }

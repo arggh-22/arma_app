@@ -28,13 +28,15 @@ class SubscriptionModelAdapter extends TypeAdapter<SubscriptionModel> {
       lastUpdatedMillis: (fields[15] as num).toInt(),
       addedAtMillis: (fields[16] as num).toInt(),
       autoUpdate: fields[17] == null ? true : fields[17] as bool,
+      supportUrl: fields[18] as String?,
+      webPageUrl: fields[19] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, SubscriptionModel obj) {
     writer
-      ..writeByte(11)
+      ..writeByte(13)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -56,7 +58,11 @@ class SubscriptionModelAdapter extends TypeAdapter<SubscriptionModel> {
       ..writeByte(16)
       ..write(obj.addedAtMillis)
       ..writeByte(17)
-      ..write(obj.autoUpdate);
+      ..write(obj.autoUpdate)
+      ..writeByte(18)
+      ..write(obj.supportUrl)
+      ..writeByte(19)
+      ..write(obj.webPageUrl);
   }
 
   @override

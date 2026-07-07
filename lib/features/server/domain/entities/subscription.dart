@@ -42,6 +42,12 @@ abstract class Subscription with _$Subscription {
 
     /// Whether to auto-refresh this subscription on app launch (CONF-07).
     @Default(true) bool autoUpdate,
+
+    /// `support-url` header — opened from the "Support" action.
+    String? supportUrl,
+
+    /// `profile-web-page-url` header — opened from the "Renew"/"Cabinet" action.
+    String? webPageUrl,
   }) = _Subscription;
 
   factory Subscription.fromJson(Map<String, dynamic> json) =>

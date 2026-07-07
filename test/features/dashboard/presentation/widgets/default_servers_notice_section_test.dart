@@ -1,5 +1,6 @@
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_servers_provider.dart';
+import 'package:arma_proxy_vpn_client/core/utils/link_launcher.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/default_servers_notice_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -84,14 +85,14 @@ void main() {
 Future<void> _pump(
   WidgetTester tester,
   DefaultServersState state, {
-  SubscriptionLinkLauncher? launcher,
+  LinkLauncher? launcher,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         defaultServersProvider.overrideWith(() => _TestNotifier(state)),
         if (launcher != null)
-          subscriptionLinkLauncherProvider.overrideWithValue(launcher),
+          linkLauncherProvider.overrideWithValue(launcher),
       ],
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,

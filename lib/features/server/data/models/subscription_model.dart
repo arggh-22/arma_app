@@ -48,6 +48,12 @@ class SubscriptionModel extends HiveObject {
   @HiveField(17)
   final bool autoUpdate;
 
+  @HiveField(18)
+  final String? supportUrl;
+
+  @HiveField(19)
+  final String? webPageUrl;
+
   SubscriptionModel({
     required this.id,
     required this.name,
@@ -60,6 +66,8 @@ class SubscriptionModel extends HiveObject {
     required this.lastUpdatedMillis,
     required this.addedAtMillis,
     this.autoUpdate = true,
+    this.supportUrl,
+    this.webPageUrl,
   });
 
   /// Maps this Hive model to the domain [Subscription] entity.
@@ -78,6 +86,8 @@ class SubscriptionModel extends HiveObject {
     lastUpdated: DateTime.fromMillisecondsSinceEpoch(lastUpdatedMillis),
     addedAt: DateTime.fromMillisecondsSinceEpoch(addedAtMillis),
     autoUpdate: autoUpdate,
+    supportUrl: supportUrl,
+    webPageUrl: webPageUrl,
   );
 
   /// Creates a [SubscriptionModel] from a domain [Subscription] entity.
@@ -93,5 +103,7 @@ class SubscriptionModel extends HiveObject {
     lastUpdatedMillis: s.lastUpdated.millisecondsSinceEpoch,
     addedAtMillis: s.addedAt.millisecondsSinceEpoch,
     autoUpdate: s.autoUpdate,
+    supportUrl: s.supportUrl,
+    webPageUrl: s.webPageUrl,
   );
 }
