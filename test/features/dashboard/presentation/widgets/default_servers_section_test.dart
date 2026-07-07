@@ -7,6 +7,7 @@ import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/default_servers_section.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/active_server_provider.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/providers/latency_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/server_card.dart';
 import 'package:arma_proxy_vpn_client/features/connection/presentation/providers/connection_provider.dart';
 import 'package:arma_proxy_vpn_client/core/constants/protocol_constants.dart';
@@ -47,6 +48,27 @@ void main() {
     expect(find.byKey(const Key('protocol-filter-vless')), findsOneWidget);
     expect(find.byKey(const Key('protocol-filter-vmess')), findsNothing);
     expect(find.byKey(const Key('protocol-filter-trojan')), findsNothing);
+  });
+
+  testWidgets('Test All triggers latency testing for default servers',
+      (tester) async {
+    final latency = TestLatencyNotifier();
+    final notifier = TestDefaultServersNotifier(
+      _state(items: [_item(id: '1', name: 'A'), _item(id: '2', name: 'B')]),
+    );
+
+    await _pumpSection(
+      tester,
+      defaultServersNotifier: notifier,
+      latencyNotifier: latency,
+    );
+
+    await tester.tap(find.byKey(const Key('default-servers-test-all')));
+    await tester.pump();
+
+    expect(latency.bulkTested, [
+      ['1', '2'],
+    ]);
   });
 
   testWidgets('search filters the default servers list', (tester) async {
@@ -233,6 +255,7 @@ Future<void> _pumpSection(
   required TestDefaultServersNotifier defaultServersNotifier,
   TestActiveServerNotifier? activeServerNotifier,
   TestConnectionNotifier? connectionNotifier,
+  TestLatencyNotifier? latencyNotifier,
 }) async {
   final activeNotifier = activeServerNotifier ?? TestActiveServerNotifier();
   final connection = connectionNotifier ?? TestConnectionNotifier();
@@ -243,6 +266,8 @@ Future<void> _pumpSection(
         defaultServersProvider.overrideWith(() => defaultServersNotifier),
         activeServerProvider.overrideWith(() => activeNotifier),
         connectionProvider.overrideWith(() => connection),
+        if (latencyNotifier != null)
+          latencyProvider.overrideWith(() => latencyNotifier),
       ],
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -288,6 +313,18 @@ class TestDefaultServersNotifier extends DefaultServersNotifier {
       await onRefresh!();
     }
     state = state.copyWith(isRefreshing: false);
+  }
+}
+
+class TestLatencyNotifier extends LatencyNotifier {
+  final List<List<String>> bulkTested = [];
+
+  @override
+  Map<String, int> build() => {};
+
+  @override
+  Future<void> testAllServers(List<ServerConfig> servers) async {
+    bulkTested.add(servers.map((s) => s.id).toList());
   }
 }
 

@@ -40,6 +40,7 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
     final state = ref.watch(defaultServersProvider);
     final sortFilter = ref.watch(defaultServersSortFilterProvider);
     final latencyMap = ref.watch(latencyProvider);
+    final isBulkTesting = ref.watch(latencyProvider.notifier).isBulkTesting;
     final activeServer = ref.watch(activeServerProvider);
 
     ref.listen<DefaultServersState>(defaultServersProvider, (previous, next) {
@@ -91,6 +92,28 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
                 _OfflineBadge(label: l10n.defaultServersOfflineData),
                 const SizedBox(width: 8),
               ],
+              // Test All — populates latency so the Working/Failed filters work.
+              if (allConfigs.isNotEmpty)
+                Semantics(
+                  label: l10n.testAllServers,
+                  child: isBulkTesting
+                      ? const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : IconButton(
+                          key: const Key('default-servers-test-all'),
+                          icon: const Icon(Icons.speed),
+                          tooltip: l10n.testAllServers,
+                          onPressed: () => ref
+                              .read(latencyProvider.notifier)
+                              .testAllServers(allConfigs),
+                        ),
+                ),
               IconButton(
                 tooltip: l10n.defaultServersRefreshSemantics,
                 onPressed: () =>
