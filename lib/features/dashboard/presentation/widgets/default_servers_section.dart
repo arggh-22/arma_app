@@ -183,7 +183,7 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
           else
             for (final config in visibleConfigs)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                 child: DebugLongPressWrapper(
                   onDebugLongPress: kDebugMode
                       ? () => Navigator.of(context).push(

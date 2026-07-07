@@ -324,7 +324,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
         final server = groupServers[j];
         items.add(
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
             child: isMultiSelectActive
                 ? ServerCard(
                     server: server,

@@ -60,14 +60,18 @@ class ServerCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     final isActive = isSelected && !isMultiSelect;
+    // Unselected cards still get a subtle fill + hairline border so adjacent
+    // items read as separate cards (not one merged block) in both themes.
     final Color bg = isMultiSelect && isChecked
         ? colorScheme.primary.withValues(alpha: 0.18)
         : isActive
         ? colorScheme.primary.withValues(alpha: isDark ? 0.10 : 0.06)
-        : (isDark ? ArmaTokens.glassFill(0.04) : Colors.transparent);
+        : (isDark
+            ? ArmaTokens.glassFill(0.05)
+            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.45));
     final Color borderColor = isActive
         ? colorScheme.primary.withValues(alpha: 0.55)
-        : (isDark ? ArmaTokens.glassBorder(0.06) : Colors.transparent);
+        : colorScheme.outlineVariant.withValues(alpha: isDark ? 0.45 : 0.9);
 
     return Semantics(
       label:
