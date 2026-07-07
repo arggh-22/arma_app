@@ -135,17 +135,6 @@ class ServerCard extends StatelessWidget {
                               const Gap(6),
                               const _JsonBadge(),
                             ],
-                            const Gap(8),
-                            Expanded(
-                              child: Text(
-                                '${server.address}:${server.port}',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
                           ],
                         ),
                       ],
