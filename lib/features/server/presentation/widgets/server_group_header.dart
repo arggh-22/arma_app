@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
+import 'package:arma_proxy_vpn_client/features/api/presentation/providers/auth_provider.dart';
 import 'package:arma_proxy_vpn_client/core/utils/byte_format.dart';
 import 'package:arma_proxy_vpn_client/core/utils/expiry_format.dart';
 import 'package:arma_proxy_vpn_client/core/utils/link_launcher.dart';
@@ -105,6 +106,13 @@ class ServerGroupHeader extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final sub = subscription!;
+
+    // Notice shown under the sub name: the subscription's own `announce`
+    // header if present, otherwise the global API announcement (the same
+    // "if VPN doesn't work, refresh" notice shown on the home dashboard).
+    final globalNotice =
+        ref.watch(authStateProvider).asData?.value.announcementText;
+    final notice = _hasLink(sub.announcement) ? sub.announcement! : globalNotice;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -232,13 +240,12 @@ class ServerGroupHeader extends ConsumerWidget {
             ],
           ),
 
-          // Admin notice (`announce` header) — full text under the sub name,
-          // before the usage bar.
-          if (_hasLink(sub.announcement)) ...[
+          // Notice — full text under the sub name, before the usage bar.
+          if (_hasLink(notice)) ...[
             const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.only(left: 32),
-              child: _buildAnnouncement(context, sub.announcement!),
+              child: _buildAnnouncement(context, notice!),
             ),
           ],
 

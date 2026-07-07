@@ -1,10 +1,19 @@
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/core/utils/link_launcher.dart';
+import 'package:arma_proxy_vpn_client/features/api/domain/entities/auth_state.dart';
+import 'package:arma_proxy_vpn_client/features/api/presentation/providers/auth_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/subscription.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/server_group_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+class _TestAuthState extends AuthStateNotifier {
+  _TestAuthState(this._state);
+  final AuthState _state;
+  @override
+  Future<AuthState> build() async => _state;
+}
 
 const _gb = 1073741824;
 
@@ -33,11 +42,15 @@ Future<void> _pump(
   WidgetTester tester,
   Subscription? sub, {
   LinkLauncher? launcher,
+  String? globalNotice,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         if (launcher != null) linkLauncherProvider.overrideWithValue(launcher),
+        authStateProvider.overrideWith(
+          () => _TestAuthState(AuthState(announcementText: globalNotice)),
+        ),
       ],
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -55,7 +68,7 @@ Future<void> _pump(
       ),
     ),
   );
-  await tester.pump();
+  await tester.pumpAndSettle();
 }
 
 void main() {
@@ -120,13 +133,27 @@ void main() {
     expect(find.text('Renew'), findsNothing);
   });
 
-  testWidgets('shows the announcement text in full', (tester) async {
+  testWidgets('shows the subscription announcement text in full',
+      (tester) async {
     await _pump(
       tester,
       _sub(announcement: 'Scheduled maintenance from 2:00 to 4:00 UTC tonight.'),
     );
     expect(
       find.text('Scheduled maintenance from 2:00 to 4:00 UTC tonight.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('falls back to the global API announcement under the sub name',
+      (tester) async {
+    await _pump(
+      tester,
+      _sub(),
+      globalNotice: 'Если не работает VPN — обновите подписку сверху.',
+    );
+    expect(
+      find.text('Если не работает VPN — обновите подписку сверху.'),
       findsOneWidget,
     );
   });
