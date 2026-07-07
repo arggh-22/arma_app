@@ -10,8 +10,9 @@ import 'package:arma_proxy_vpn_client/shared/widgets/glass_card.dart';
 
 /// Card widget showing the currently active/selected server.
 ///
-/// Displays server name, protocol badge, and address:port when a server
-/// is selected. Tapping navigates to the server list tab.
+/// Displays server name, protocol badge, and its group name (or the app
+/// brand name for default servers) when a server is selected. Tapping
+/// navigates to the server list tab.
 /// Shows "No server selected" fallback otherwise.
 class ActiveServerCard extends ConsumerWidget {
   const ActiveServerCard({super.key});
@@ -76,12 +77,20 @@ class ActiveServerCard extends ConsumerWidget {
                           Text(
                             server.name,
                             style: theme.textTheme.titleMedium,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           Text(
-                            '${server.address}:${server.port}',
+                            // Default servers show the app/brand name; imported
+                            // servers show their subscription/group name.
+                            server.id.startsWith('default-api')
+                                ? l10n.appName
+                                : server.groupName,
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: colorScheme.onSurfaceVariant,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
