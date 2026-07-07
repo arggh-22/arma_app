@@ -48,6 +48,9 @@ abstract class Subscription with _$Subscription {
 
     /// `profile-web-page-url` header — opened from the "Renew"/"Cabinet" action.
     String? webPageUrl,
+
+    /// `announce` header (decoded) — an admin notice shown with the subscription.
+    String? announcement,
   }) = _Subscription;
 
   factory Subscription.fromJson(Map<String, dynamic> json) =>

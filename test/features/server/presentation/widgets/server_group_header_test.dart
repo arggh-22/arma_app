@@ -13,6 +13,7 @@ Subscription _sub({
   int? downloadBytes,
   String? supportUrl,
   String? webPageUrl,
+  String? announcement,
 }) =>
     Subscription(
       id: 'sub-1',
@@ -22,6 +23,7 @@ Subscription _sub({
       downloadBytes: downloadBytes,
       supportUrl: supportUrl,
       webPageUrl: webPageUrl,
+      announcement: announcement,
       expireDate: DateTime.now().add(const Duration(days: 12)),
       lastUpdated: DateTime.utc(2026, 1, 1),
       addedAt: DateTime.utc(2026, 1, 1),
@@ -116,5 +118,16 @@ void main() {
     await _pump(tester, _sub());
     expect(find.text('Support'), findsNothing);
     expect(find.text('Renew'), findsNothing);
+  });
+
+  testWidgets('shows the announcement text in full', (tester) async {
+    await _pump(
+      tester,
+      _sub(announcement: 'Scheduled maintenance from 2:00 to 4:00 UTC tonight.'),
+    );
+    expect(
+      find.text('Scheduled maintenance from 2:00 to 4:00 UTC tonight.'),
+      findsOneWidget,
+    );
   });
 }

@@ -232,6 +232,16 @@ class ServerGroupHeader extends ConsumerWidget {
             ],
           ),
 
+          // Admin notice (`announce` header) — full text under the sub name,
+          // before the usage bar.
+          if (_hasLink(sub.announcement)) ...[
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.only(left: 32),
+              child: _buildAnnouncement(context, sub.announcement!),
+            ),
+          ],
+
           // Data usage — a progress bar for capped plans, or a "used" line for
           // unlimited plans (no `total` in subscription-userinfo).
           if (_hasUsageInfo(sub)) ...[
@@ -260,6 +270,39 @@ class ServerGroupHeader extends ConsumerWidget {
   }
 
   static bool _hasLink(String? url) => url != null && url.trim().isNotEmpty;
+
+  /// Admin notice banner showing the subscription's `announce` text in full.
+  Widget _buildAnnouncement(BuildContext context, String text) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: colorScheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.campaign_outlined,
+            size: 16,
+            color: colorScheme.onSecondaryContainer,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text.trim(),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSecondaryContainer,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildLinkButtons(BuildContext context, WidgetRef ref, Subscription sub) {
     return Row(

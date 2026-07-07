@@ -28,7 +28,8 @@ mixin _$Subscription {
  DateTime get addedAt;/// Whether to auto-refresh this subscription on app launch (CONF-07).
  bool get autoUpdate;/// `support-url` header — opened from the "Support" action.
  String? get supportUrl;/// `profile-web-page-url` header — opened from the "Renew"/"Cabinet" action.
- String? get webPageUrl;
+ String? get webPageUrl;/// `announce` header (decoded) — an admin notice shown with the subscription.
+ String? get announcement;
 /// Create a copy of Subscription
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -41,16 +42,16 @@ $SubscriptionCopyWith<Subscription> get copyWith => _$SubscriptionCopyWithImpl<S
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Subscription&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.url, url) || other.url == url)&&(identical(other.userAgent, userAgent) || other.userAgent == userAgent)&&(identical(other.uploadBytes, uploadBytes) || other.uploadBytes == uploadBytes)&&(identical(other.downloadBytes, downloadBytes) || other.downloadBytes == downloadBytes)&&(identical(other.totalBytes, totalBytes) || other.totalBytes == totalBytes)&&(identical(other.expireDate, expireDate) || other.expireDate == expireDate)&&(identical(other.lastUpdated, lastUpdated) || other.lastUpdated == lastUpdated)&&(identical(other.addedAt, addedAt) || other.addedAt == addedAt)&&(identical(other.autoUpdate, autoUpdate) || other.autoUpdate == autoUpdate)&&(identical(other.supportUrl, supportUrl) || other.supportUrl == supportUrl)&&(identical(other.webPageUrl, webPageUrl) || other.webPageUrl == webPageUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Subscription&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.url, url) || other.url == url)&&(identical(other.userAgent, userAgent) || other.userAgent == userAgent)&&(identical(other.uploadBytes, uploadBytes) || other.uploadBytes == uploadBytes)&&(identical(other.downloadBytes, downloadBytes) || other.downloadBytes == downloadBytes)&&(identical(other.totalBytes, totalBytes) || other.totalBytes == totalBytes)&&(identical(other.expireDate, expireDate) || other.expireDate == expireDate)&&(identical(other.lastUpdated, lastUpdated) || other.lastUpdated == lastUpdated)&&(identical(other.addedAt, addedAt) || other.addedAt == addedAt)&&(identical(other.autoUpdate, autoUpdate) || other.autoUpdate == autoUpdate)&&(identical(other.supportUrl, supportUrl) || other.supportUrl == supportUrl)&&(identical(other.webPageUrl, webPageUrl) || other.webPageUrl == webPageUrl)&&(identical(other.announcement, announcement) || other.announcement == announcement));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,url,userAgent,uploadBytes,downloadBytes,totalBytes,expireDate,lastUpdated,addedAt,autoUpdate,supportUrl,webPageUrl);
+int get hashCode => Object.hash(runtimeType,id,name,url,userAgent,uploadBytes,downloadBytes,totalBytes,expireDate,lastUpdated,addedAt,autoUpdate,supportUrl,webPageUrl,announcement);
 
 @override
 String toString() {
-  return 'Subscription(id: $id, name: $name, url: $url, userAgent: $userAgent, uploadBytes: $uploadBytes, downloadBytes: $downloadBytes, totalBytes: $totalBytes, expireDate: $expireDate, lastUpdated: $lastUpdated, addedAt: $addedAt, autoUpdate: $autoUpdate, supportUrl: $supportUrl, webPageUrl: $webPageUrl)';
+  return 'Subscription(id: $id, name: $name, url: $url, userAgent: $userAgent, uploadBytes: $uploadBytes, downloadBytes: $downloadBytes, totalBytes: $totalBytes, expireDate: $expireDate, lastUpdated: $lastUpdated, addedAt: $addedAt, autoUpdate: $autoUpdate, supportUrl: $supportUrl, webPageUrl: $webPageUrl, announcement: $announcement)';
 }
 
 
@@ -61,7 +62,7 @@ abstract mixin class $SubscriptionCopyWith<$Res>  {
   factory $SubscriptionCopyWith(Subscription value, $Res Function(Subscription) _then) = _$SubscriptionCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String url, String userAgent, int? uploadBytes, int? downloadBytes, int? totalBytes, DateTime? expireDate, DateTime lastUpdated, DateTime addedAt, bool autoUpdate, String? supportUrl, String? webPageUrl
+ String id, String name, String url, String userAgent, int? uploadBytes, int? downloadBytes, int? totalBytes, DateTime? expireDate, DateTime lastUpdated, DateTime addedAt, bool autoUpdate, String? supportUrl, String? webPageUrl, String? announcement
 });
 
 
@@ -78,7 +79,7 @@ class _$SubscriptionCopyWithImpl<$Res>
 
 /// Create a copy of Subscription
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? url = null,Object? userAgent = null,Object? uploadBytes = freezed,Object? downloadBytes = freezed,Object? totalBytes = freezed,Object? expireDate = freezed,Object? lastUpdated = null,Object? addedAt = null,Object? autoUpdate = null,Object? supportUrl = freezed,Object? webPageUrl = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? url = null,Object? userAgent = null,Object? uploadBytes = freezed,Object? downloadBytes = freezed,Object? totalBytes = freezed,Object? expireDate = freezed,Object? lastUpdated = null,Object? addedAt = null,Object? autoUpdate = null,Object? supportUrl = freezed,Object? webPageUrl = freezed,Object? announcement = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -93,6 +94,7 @@ as DateTime,addedAt: null == addedAt ? _self.addedAt : addedAt // ignore: cast_n
 as DateTime,autoUpdate: null == autoUpdate ? _self.autoUpdate : autoUpdate // ignore: cast_nullable_to_non_nullable
 as bool,supportUrl: freezed == supportUrl ? _self.supportUrl : supportUrl // ignore: cast_nullable_to_non_nullable
 as String?,webPageUrl: freezed == webPageUrl ? _self.webPageUrl : webPageUrl // ignore: cast_nullable_to_non_nullable
+as String?,announcement: freezed == announcement ? _self.announcement : announcement // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -178,10 +180,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String url,  String userAgent,  int? uploadBytes,  int? downloadBytes,  int? totalBytes,  DateTime? expireDate,  DateTime lastUpdated,  DateTime addedAt,  bool autoUpdate,  String? supportUrl,  String? webPageUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String url,  String userAgent,  int? uploadBytes,  int? downloadBytes,  int? totalBytes,  DateTime? expireDate,  DateTime lastUpdated,  DateTime addedAt,  bool autoUpdate,  String? supportUrl,  String? webPageUrl,  String? announcement)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Subscription() when $default != null:
-return $default(_that.id,_that.name,_that.url,_that.userAgent,_that.uploadBytes,_that.downloadBytes,_that.totalBytes,_that.expireDate,_that.lastUpdated,_that.addedAt,_that.autoUpdate,_that.supportUrl,_that.webPageUrl);case _:
+return $default(_that.id,_that.name,_that.url,_that.userAgent,_that.uploadBytes,_that.downloadBytes,_that.totalBytes,_that.expireDate,_that.lastUpdated,_that.addedAt,_that.autoUpdate,_that.supportUrl,_that.webPageUrl,_that.announcement);case _:
   return orElse();
 
 }
@@ -199,10 +201,10 @@ return $default(_that.id,_that.name,_that.url,_that.userAgent,_that.uploadBytes,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String url,  String userAgent,  int? uploadBytes,  int? downloadBytes,  int? totalBytes,  DateTime? expireDate,  DateTime lastUpdated,  DateTime addedAt,  bool autoUpdate,  String? supportUrl,  String? webPageUrl)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String url,  String userAgent,  int? uploadBytes,  int? downloadBytes,  int? totalBytes,  DateTime? expireDate,  DateTime lastUpdated,  DateTime addedAt,  bool autoUpdate,  String? supportUrl,  String? webPageUrl,  String? announcement)  $default,) {final _that = this;
 switch (_that) {
 case _Subscription():
-return $default(_that.id,_that.name,_that.url,_that.userAgent,_that.uploadBytes,_that.downloadBytes,_that.totalBytes,_that.expireDate,_that.lastUpdated,_that.addedAt,_that.autoUpdate,_that.supportUrl,_that.webPageUrl);case _:
+return $default(_that.id,_that.name,_that.url,_that.userAgent,_that.uploadBytes,_that.downloadBytes,_that.totalBytes,_that.expireDate,_that.lastUpdated,_that.addedAt,_that.autoUpdate,_that.supportUrl,_that.webPageUrl,_that.announcement);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -219,10 +221,10 @@ return $default(_that.id,_that.name,_that.url,_that.userAgent,_that.uploadBytes,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String url,  String userAgent,  int? uploadBytes,  int? downloadBytes,  int? totalBytes,  DateTime? expireDate,  DateTime lastUpdated,  DateTime addedAt,  bool autoUpdate,  String? supportUrl,  String? webPageUrl)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String url,  String userAgent,  int? uploadBytes,  int? downloadBytes,  int? totalBytes,  DateTime? expireDate,  DateTime lastUpdated,  DateTime addedAt,  bool autoUpdate,  String? supportUrl,  String? webPageUrl,  String? announcement)?  $default,) {final _that = this;
 switch (_that) {
 case _Subscription() when $default != null:
-return $default(_that.id,_that.name,_that.url,_that.userAgent,_that.uploadBytes,_that.downloadBytes,_that.totalBytes,_that.expireDate,_that.lastUpdated,_that.addedAt,_that.autoUpdate,_that.supportUrl,_that.webPageUrl);case _:
+return $default(_that.id,_that.name,_that.url,_that.userAgent,_that.uploadBytes,_that.downloadBytes,_that.totalBytes,_that.expireDate,_that.lastUpdated,_that.addedAt,_that.autoUpdate,_that.supportUrl,_that.webPageUrl,_that.announcement);case _:
   return null;
 
 }
@@ -234,7 +236,7 @@ return $default(_that.id,_that.name,_that.url,_that.userAgent,_that.uploadBytes,
 @JsonSerializable()
 
 class _Subscription implements Subscription {
-  const _Subscription({required this.id, required this.name, required this.url, this.userAgent = '', this.uploadBytes, this.downloadBytes, this.totalBytes, this.expireDate, required this.lastUpdated, required this.addedAt, this.autoUpdate = true, this.supportUrl, this.webPageUrl});
+  const _Subscription({required this.id, required this.name, required this.url, this.userAgent = '', this.uploadBytes, this.downloadBytes, this.totalBytes, this.expireDate, required this.lastUpdated, required this.addedAt, this.autoUpdate = true, this.supportUrl, this.webPageUrl, this.announcement});
   factory _Subscription.fromJson(Map<String, dynamic> json) => _$SubscriptionFromJson(json);
 
 /// Unique identifier (UUID v4).
@@ -263,6 +265,8 @@ class _Subscription implements Subscription {
 @override final  String? supportUrl;
 /// `profile-web-page-url` header — opened from the "Renew"/"Cabinet" action.
 @override final  String? webPageUrl;
+/// `announce` header (decoded) — an admin notice shown with the subscription.
+@override final  String? announcement;
 
 /// Create a copy of Subscription
 /// with the given fields replaced by the non-null parameter values.
@@ -277,16 +281,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Subscription&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.url, url) || other.url == url)&&(identical(other.userAgent, userAgent) || other.userAgent == userAgent)&&(identical(other.uploadBytes, uploadBytes) || other.uploadBytes == uploadBytes)&&(identical(other.downloadBytes, downloadBytes) || other.downloadBytes == downloadBytes)&&(identical(other.totalBytes, totalBytes) || other.totalBytes == totalBytes)&&(identical(other.expireDate, expireDate) || other.expireDate == expireDate)&&(identical(other.lastUpdated, lastUpdated) || other.lastUpdated == lastUpdated)&&(identical(other.addedAt, addedAt) || other.addedAt == addedAt)&&(identical(other.autoUpdate, autoUpdate) || other.autoUpdate == autoUpdate)&&(identical(other.supportUrl, supportUrl) || other.supportUrl == supportUrl)&&(identical(other.webPageUrl, webPageUrl) || other.webPageUrl == webPageUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Subscription&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.url, url) || other.url == url)&&(identical(other.userAgent, userAgent) || other.userAgent == userAgent)&&(identical(other.uploadBytes, uploadBytes) || other.uploadBytes == uploadBytes)&&(identical(other.downloadBytes, downloadBytes) || other.downloadBytes == downloadBytes)&&(identical(other.totalBytes, totalBytes) || other.totalBytes == totalBytes)&&(identical(other.expireDate, expireDate) || other.expireDate == expireDate)&&(identical(other.lastUpdated, lastUpdated) || other.lastUpdated == lastUpdated)&&(identical(other.addedAt, addedAt) || other.addedAt == addedAt)&&(identical(other.autoUpdate, autoUpdate) || other.autoUpdate == autoUpdate)&&(identical(other.supportUrl, supportUrl) || other.supportUrl == supportUrl)&&(identical(other.webPageUrl, webPageUrl) || other.webPageUrl == webPageUrl)&&(identical(other.announcement, announcement) || other.announcement == announcement));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,url,userAgent,uploadBytes,downloadBytes,totalBytes,expireDate,lastUpdated,addedAt,autoUpdate,supportUrl,webPageUrl);
+int get hashCode => Object.hash(runtimeType,id,name,url,userAgent,uploadBytes,downloadBytes,totalBytes,expireDate,lastUpdated,addedAt,autoUpdate,supportUrl,webPageUrl,announcement);
 
 @override
 String toString() {
-  return 'Subscription(id: $id, name: $name, url: $url, userAgent: $userAgent, uploadBytes: $uploadBytes, downloadBytes: $downloadBytes, totalBytes: $totalBytes, expireDate: $expireDate, lastUpdated: $lastUpdated, addedAt: $addedAt, autoUpdate: $autoUpdate, supportUrl: $supportUrl, webPageUrl: $webPageUrl)';
+  return 'Subscription(id: $id, name: $name, url: $url, userAgent: $userAgent, uploadBytes: $uploadBytes, downloadBytes: $downloadBytes, totalBytes: $totalBytes, expireDate: $expireDate, lastUpdated: $lastUpdated, addedAt: $addedAt, autoUpdate: $autoUpdate, supportUrl: $supportUrl, webPageUrl: $webPageUrl, announcement: $announcement)';
 }
 
 
@@ -297,7 +301,7 @@ abstract mixin class _$SubscriptionCopyWith<$Res> implements $SubscriptionCopyWi
   factory _$SubscriptionCopyWith(_Subscription value, $Res Function(_Subscription) _then) = __$SubscriptionCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String url, String userAgent, int? uploadBytes, int? downloadBytes, int? totalBytes, DateTime? expireDate, DateTime lastUpdated, DateTime addedAt, bool autoUpdate, String? supportUrl, String? webPageUrl
+ String id, String name, String url, String userAgent, int? uploadBytes, int? downloadBytes, int? totalBytes, DateTime? expireDate, DateTime lastUpdated, DateTime addedAt, bool autoUpdate, String? supportUrl, String? webPageUrl, String? announcement
 });
 
 
@@ -314,7 +318,7 @@ class __$SubscriptionCopyWithImpl<$Res>
 
 /// Create a copy of Subscription
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? url = null,Object? userAgent = null,Object? uploadBytes = freezed,Object? downloadBytes = freezed,Object? totalBytes = freezed,Object? expireDate = freezed,Object? lastUpdated = null,Object? addedAt = null,Object? autoUpdate = null,Object? supportUrl = freezed,Object? webPageUrl = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? url = null,Object? userAgent = null,Object? uploadBytes = freezed,Object? downloadBytes = freezed,Object? totalBytes = freezed,Object? expireDate = freezed,Object? lastUpdated = null,Object? addedAt = null,Object? autoUpdate = null,Object? supportUrl = freezed,Object? webPageUrl = freezed,Object? announcement = freezed,}) {
   return _then(_Subscription(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -329,6 +333,7 @@ as DateTime,addedAt: null == addedAt ? _self.addedAt : addedAt // ignore: cast_n
 as DateTime,autoUpdate: null == autoUpdate ? _self.autoUpdate : autoUpdate // ignore: cast_nullable_to_non_nullable
 as bool,supportUrl: freezed == supportUrl ? _self.supportUrl : supportUrl // ignore: cast_nullable_to_non_nullable
 as String?,webPageUrl: freezed == webPageUrl ? _self.webPageUrl : webPageUrl // ignore: cast_nullable_to_non_nullable
+as String?,announcement: freezed == announcement ? _self.announcement : announcement // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

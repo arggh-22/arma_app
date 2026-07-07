@@ -89,6 +89,7 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
       expireDate: result.userinfo?.expireDate,
       supportUrl: result.supportUrl,
       webPageUrl: result.profileWebPageUrl,
+      announcement: result.announcement,
       autoUpdate: resolvedAutoUpdate,
     );
 
@@ -168,6 +169,7 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
       expireDate: result.userinfo?.expireDate,
       supportUrl: result.supportUrl,
       webPageUrl: result.profileWebPageUrl,
+      announcement: result.announcement,
       lastUpdated: DateTime.now(),
       autoUpdate: resolvedAutoUpdate,
     );
