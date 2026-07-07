@@ -14,6 +14,7 @@ import 'package:arma_proxy_vpn_client/features/connection/presentation/widgets/c
 import 'package:arma_proxy_vpn_client/features/connection/presentation/widgets/traffic_stats_card.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/active_server_card.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/connect_button.dart';
+import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/default_servers_notice_section.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/default_servers_section.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/ui_preferences_provider.dart';
 
@@ -217,6 +218,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                       const Gap(16),
                     ],
+                    const DefaultServersNoticeSection(),
                     const DefaultServersSection(),
                   ],
                 ),

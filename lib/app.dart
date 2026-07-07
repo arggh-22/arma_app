@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/auth_bootstrap_provider.dart';
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/default_server_refresh_scheduler_provider.dart';
+import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_servers_provider.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_server_startup_selection_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -73,6 +74,15 @@ class _ArmaAppState extends ConsumerState<ArmaApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _triggerDefaultServerAutoUpdateRecovery();
+      _maybeForceRefreshDefaultServers();
+    }
+  }
+
+  /// Honors the subscription `profile-update-always` header (spec §2): when the
+  /// last fetch reported it, pull a fresh config each time the app is reopened.
+  void _maybeForceRefreshDefaultServers() {
+    if (ref.read(defaultServersProvider).profileUpdateAlways) {
+      unawaited(ref.read(defaultServersProvider.notifier).refresh());
     }
   }
 

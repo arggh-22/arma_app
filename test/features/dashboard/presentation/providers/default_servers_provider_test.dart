@@ -145,6 +145,45 @@ void main() {
       expect(fetchUrls, [subUrl]);
     });
 
+    test('captures subscription notice headers into state', () async {
+      final container = ProviderContainer(
+        overrides: [
+          defaultServerRefreshServiceProvider.overrideWithValue(
+            _service(
+              cacheDatasource: cacheDatasource,
+              settingsDatasource: settingsDatasource,
+              fetchKeys: () async => [_sampleKey()],
+            ),
+          ),
+          defaultServerKeysProvider.overrideWith((ref) => _legacyPathGuard()),
+          defaultServerCacheDatasourceProvider.overrideWithValue(
+            cacheDatasource,
+          ),
+          defaultServersSubscriptionServiceProvider.overrideWithValue(
+            _subscriptionService(
+              fetch: (subscription) async => SubscriptionFetchResult(
+                servers: [_subscriptionServer('resolved')],
+                announcement: 'Maintenance tonight',
+                supportUrl: 'https://t.me/support',
+                profileWebPageUrl: 'https://cabinet.example.com',
+                profileUpdateAlways: true,
+              ),
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.read(defaultServersProvider);
+      await _settle();
+      final state = container.read(defaultServersProvider);
+
+      expect(state.announcement, 'Maintenance tonight');
+      expect(state.supportUrl, 'https://t.me/support');
+      expect(state.webPageUrl, 'https://cabinet.example.com');
+      expect(state.profileUpdateAlways, isTrue);
+    });
+
     test(
       'falls back to keyBody mapping when one subscription_url fetch fails',
       () async {

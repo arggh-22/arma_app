@@ -66,6 +66,10 @@ class DefaultServersState {
     required this.lastFailureType,
     required this.hasPendingRetry,
     required this.retryAttempt,
+    this.announcement,
+    this.supportUrl,
+    this.webPageUrl,
+    this.profileUpdateAlways = false,
   });
 
   const DefaultServersState.initial()
@@ -74,7 +78,11 @@ class DefaultServersState {
       isOfflineData = false,
       lastFailureType = null,
       hasPendingRetry = false,
-      retryAttempt = 0;
+      retryAttempt = 0,
+      announcement = null,
+      supportUrl = null,
+      webPageUrl = null,
+      profileUpdateAlways = false;
 
   final List<DefaultServerItem> items;
   final bool isRefreshing;
@@ -82,6 +90,19 @@ class DefaultServersState {
   final DefaultServersFailureType? lastFailureType;
   final bool hasPendingRetry;
   final int retryAttempt;
+
+  /// Admin notice from the subscription `announce` header (spec §2), decoded.
+  final String? announcement;
+
+  /// `support-url` header — opened from the "Support" action.
+  final String? supportUrl;
+
+  /// `profile-web-page-url` header — opened from the "Renew"/"Cabinet" action.
+  final String? webPageUrl;
+
+  /// `profile-update-always` header — force a fresh fetch whenever the app is
+  /// (re)opened (spec §2).
+  final bool profileUpdateAlways;
 
   DefaultServersState copyWith({
     List<DefaultServerItem>? items,
@@ -91,6 +112,10 @@ class DefaultServersState {
     bool resetFailureType = false,
     bool? hasPendingRetry,
     int? retryAttempt,
+    String? announcement,
+    String? supportUrl,
+    String? webPageUrl,
+    bool? profileUpdateAlways,
   }) {
     return DefaultServersState(
       items: items ?? this.items,
@@ -101,6 +126,10 @@ class DefaultServersState {
           : lastFailureType ?? this.lastFailureType,
       hasPendingRetry: hasPendingRetry ?? this.hasPendingRetry,
       retryAttempt: retryAttempt ?? this.retryAttempt,
+      announcement: announcement ?? this.announcement,
+      supportUrl: supportUrl ?? this.supportUrl,
+      webPageUrl: webPageUrl ?? this.webPageUrl,
+      profileUpdateAlways: profileUpdateAlways ?? this.profileUpdateAlways,
     );
   }
 }
@@ -127,14 +156,18 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
       final refreshResult = await ref
           .read(defaultServerRefreshServiceProvider)
           .refreshNow();
-      final items = await _mapItems(refreshResult.keys);
+      final mapped = await _mapItems(refreshResult.keys);
 
       state = state.copyWith(
-        items: items,
+        items: mapped.items,
         isRefreshing: false,
         isOfflineData: false,
         resetFailureType: true,
         hasPendingRetry: false,
+        announcement: mapped.announcement,
+        supportUrl: mapped.supportUrl,
+        webPageUrl: mapped.webPageUrl,
+        profileUpdateAlways: mapped.profileUpdateAlways,
       );
     } on Object catch (error) {
       final failureType = _toFailureType(error);
@@ -164,9 +197,13 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
     }
   }
 
-  Future<List<DefaultServerItem>> _mapItems(List<DefaultServerKey> keys) async {
+  Future<_MappedDefaultServers> _mapItems(List<DefaultServerKey> keys) async {
     final service = ref.read(defaultServersSubscriptionServiceProvider);
     final allItems = <DefaultServerItem>[];
+    String? announcement;
+    String? supportUrl;
+    String? webPageUrl;
+    var profileUpdateAlways = false;
 
     for (final key in keys) {
       try {
@@ -174,12 +211,29 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
         allItems.addAll(
           DefaultServerItemMapper.mapResolved(key, resolved.servers),
         );
+        // Notices/links are subscription-wide; keep the first non-empty one.
+        announcement ??= _blankToNull(resolved.announcement);
+        supportUrl ??= _blankToNull(resolved.supportUrl);
+        webPageUrl ??= _blankToNull(resolved.profileWebPageUrl);
+        profileUpdateAlways = profileUpdateAlways || resolved.profileUpdateAlways;
       } on Object {
         allItems.addAll(DefaultServerItemMapper.mapAll(key));
       }
     }
 
-    return allItems;
+    return _MappedDefaultServers(
+      items: allItems,
+      announcement: announcement,
+      supportUrl: supportUrl,
+      webPageUrl: webPageUrl,
+      profileUpdateAlways: profileUpdateAlways,
+    );
+  }
+
+  static String? _blankToNull(String? value) {
+    if (value == null) return null;
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? null : trimmed;
   }
 
   Subscription _toSyntheticSubscription(DefaultServerKey key) {
@@ -326,4 +380,21 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
 
     return current;
   }
+}
+
+/// Result of mapping API keys → dashboard items plus subscription-wide notices.
+class _MappedDefaultServers {
+  const _MappedDefaultServers({
+    required this.items,
+    this.announcement,
+    this.supportUrl,
+    this.webPageUrl,
+    this.profileUpdateAlways = false,
+  });
+
+  final List<DefaultServerItem> items;
+  final String? announcement;
+  final String? supportUrl;
+  final String? webPageUrl;
+  final bool profileUpdateAlways;
 }
