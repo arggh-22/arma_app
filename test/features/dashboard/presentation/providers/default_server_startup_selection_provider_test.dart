@@ -5,12 +5,13 @@ import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/active_server_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/latency_provider.dart';
+import 'package:arma_proxy_vpn_client/features/settings/domain/entities/ping_type.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('defaultServerStartupSelectionProvider', () {
-    test('refreshes, latency-tests, then selects the fastest server', () async {
+    test('TCP-sweeps then selects the first working server', () async {
       final defaultNotifier = _TestDefaultServersNotifier(
         itemsAfterRefresh: [
           _item(id: 'default-api-1', name: 'One'),
@@ -19,10 +20,11 @@ void main() {
         ],
       );
       final activeNotifier = _TestActiveServerNotifier();
+      // First server is down; the second is the first *working* one.
       final latencyNotifier = _TestLatencyNotifier({
-        'default-api-1': 200,
-        'default-api-2': 50, // fastest
-        'default-api-3': 300,
+        'default-api-1': -1,
+        'default-api-2': 120,
+        'default-api-3': 40,
       });
 
       final container = ProviderContainer(
@@ -39,11 +41,14 @@ void main() {
           .autoSelectBestServer();
 
       expect(defaultNotifier.refreshCalls, 1);
+      // Startup uses a fast TCP sweep regardless of the configured type.
+      expect(latencyNotifier.sweepType, PingType.tcpConnect);
       expect(latencyNotifier.testedIds, [
         'default-api-1',
         'default-api-2',
         'default-api-3',
       ]);
+      // First reachable in backend order (not the absolute lowest latency).
       expect(activeNotifier.selectedIds, ['default-api-2']);
     });
 
@@ -183,12 +188,17 @@ class _TestLatencyNotifier extends LatencyNotifier {
 
   final Map<String, int> latencies;
   final List<String> testedIds = [];
+  PingType? sweepType;
 
   @override
   Map<String, int> build() => {};
 
   @override
-  Future<void> testAllServers(List<ServerConfig> servers) async {
+  Future<void> testAllServersWith(
+    List<ServerConfig> servers,
+    PingType type,
+  ) async {
+    sweepType = type;
     testedIds.addAll(servers.map((s) => s.id));
     state = {...state, ...latencies};
   }

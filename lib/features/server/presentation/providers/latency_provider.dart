@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:arma_proxy_vpn_client/features/connection/data/datasources/vpn_platform_service.dart';
 import 'package:arma_proxy_vpn_client/features/server/data/services/latency_probe.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
+import 'package:arma_proxy_vpn_client/features/settings/domain/entities/ping_type.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/ping_type_provider.dart';
 
 part 'latency_provider.g.dart';
@@ -34,12 +35,19 @@ class LatencyNotifier extends _$LatencyNotifier {
     return delay;
   }
 
-  /// Test all servers with concurrency limit of 3 (SERV-04, D-09).
-  /// Results update progressively as each test completes.
-  Future<void> testAllServers(List<ServerConfig> servers) async {
+  /// Test all servers with the currently selected ping type (SERV-04, D-09).
+  Future<void> testAllServers(List<ServerConfig> servers) =>
+      testAllServersWith(servers, ref.read(pingTypeProvider));
+
+  /// Test all servers with an explicit [type] (e.g. a fast TCP sweep on
+  /// startup), concurrency limit of 3. Results update progressively.
+  Future<void> testAllServersWith(
+    List<ServerConfig> servers,
+    PingType type,
+  ) async {
     if (_isBulkTesting) return;
     _isBulkTesting = true;
-    final probe = _probe;
+    final probe = latencyProbeFor(type, _platformService);
 
     // Mark all as in-progress
     final inProgress = <String, int>{};
