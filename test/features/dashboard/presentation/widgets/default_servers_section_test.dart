@@ -7,6 +7,7 @@ import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/default_servers_section.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/active_server_provider.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/server_card.dart';
 import 'package:arma_proxy_vpn_client/features/connection/presentation/providers/connection_provider.dart';
 import 'package:arma_proxy_vpn_client/core/constants/protocol_constants.dart';
 import 'package:flutter/material.dart';
@@ -14,56 +15,52 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('shows top 3 preview and opens show-all sheet', (tester) async {
+  testWidgets('renders all default servers as cards', (tester) async {
     final notifier = TestDefaultServersNotifier(
-      DefaultServersState(
-        items: [
-          _item(id: '1', name: 'A'),
-          _item(id: '2', name: 'B'),
-          _item(id: '3', name: 'C'),
-          _item(id: '4', name: 'D'),
-        ],
-        isRefreshing: false,
-        isOfflineData: false,
-        lastFailureType: null,
-        hasPendingRetry: false,
-        retryAttempt: 0,
-      ),
+      _state(items: [
+        _item(id: '1', name: 'A'),
+        _item(id: '2', name: 'B'),
+        _item(id: '3', name: 'C'),
+        _item(id: '4', name: 'D'),
+      ]),
     );
 
     await _pumpSection(tester, defaultServersNotifier: notifier);
 
+    expect(find.byType(ServerCard), findsNWidgets(4));
     expect(find.text('A'), findsOneWidget);
-    expect(find.text('B'), findsOneWidget);
-    expect(find.text('C'), findsOneWidget);
-    expect(find.text('D'), findsNothing);
-
-    await tester.tap(find.text('Show all servers'));
-    await tester.pumpAndSettle();
-
-    // The show-all sheet uses a lazily-built scrollable list; the 4th item
-    // may be below the fold, so scroll it into view before asserting.
-    await tester.scrollUntilVisible(
-      find.text('D'),
-      100,
-      scrollable: find.byType(Scrollable).last,
-    );
     expect(find.text('D'), findsOneWidget);
   });
 
+  testWidgets('search filters the default servers list', (tester) async {
+    final notifier = TestDefaultServersNotifier(
+      _state(items: [
+        _item(id: 'us', name: 'USA'),
+        _item(id: 'de', name: 'Germany'),
+      ]),
+    );
+
+    await _pumpSection(tester, defaultServersNotifier: notifier);
+
+    expect(find.text('USA'), findsOneWidget);
+    expect(find.text('Germany'), findsOneWidget);
+
+    await tester.enterText(
+      find.byKey(const Key('server-search-field')),
+      'usa',
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('USA'), findsOneWidget);
+    expect(find.text('Germany'), findsNothing);
+  });
+
   testWidgets(
-    'refresh action shows spinner while keeping current rows visible',
+    'refresh action shows spinner while keeping current cards visible',
     (tester) async {
       final refreshCompleter = Completer<void>();
       final notifier = TestDefaultServersNotifier(
-        DefaultServersState(
-          items: [_item(id: '1', name: 'Visible')],
-          isRefreshing: false,
-          isOfflineData: false,
-          lastFailureType: null,
-          hasPendingRetry: false,
-          retryAttempt: 0,
-        ),
+        _state(items: [_item(id: '1', name: 'Visible')]),
         onRefresh: () => refreshCompleter.future,
       );
 
@@ -81,13 +78,9 @@ void main() {
 
   testWidgets('shows offline badge and empty-state guidance', (tester) async {
     final notifier = TestDefaultServersNotifier(
-      DefaultServersState(
+      _state(
         items: const [],
-        isRefreshing: false,
-        isOfflineData: false,
         lastFailureType: DefaultServersFailureType.offline,
-        hasPendingRetry: false,
-        retryAttempt: 0,
       ),
     );
 
@@ -95,22 +88,18 @@ void main() {
 
     expect(find.text('No default servers available'), findsOneWidget);
     expect(
-      find.text('No connection and no cached servers yet. Tap Refresh when online.'),
+      find.text(
+        'No connection and no cached servers yet. Tap Refresh when online.',
+      ),
       findsOneWidget,
     );
   });
 
-  testWidgets('shows timeout failure snackbar on refresh failure', (tester) async {
+  testWidgets('shows timeout failure snackbar on refresh failure',
+      (tester) async {
     late TestDefaultServersNotifier notifier;
     notifier = TestDefaultServersNotifier(
-      DefaultServersState(
-        items: [_item(id: '1', name: 'X')],
-        isRefreshing: false,
-        isOfflineData: false,
-        lastFailureType: null,
-        hasPendingRetry: false,
-        retryAttempt: 0,
-      ),
+      _state(items: [_item(id: '1', name: 'X')]),
       onRefresh: () async {
         notifier.state = notifier.state.copyWith(
           lastFailureType: DefaultServersFailureType.timeout,
@@ -129,53 +118,32 @@ void main() {
     );
   });
 
-  testWidgets('matching active server tile gets selected visual highlight', (
-    tester,
-  ) async {
+  testWidgets('matching active server card shows selected indicator',
+      (tester) async {
     final selectedServer = _serverConfig(id: 'sel', name: 'Selected');
     final notifier = TestDefaultServersNotifier(
-      DefaultServersState(
-        items: [
-          _item(id: 'sel', name: 'Selected', serverConfig: selectedServer),
-          _item(id: 'other', name: 'Other'),
-        ],
-        isRefreshing: false,
-        isOfflineData: false,
-        lastFailureType: null,
-        hasPendingRetry: false,
-        retryAttempt: 0,
-      ),
+      _state(items: [
+        _item(id: 'sel', name: 'Selected', serverConfig: selectedServer),
+        _item(id: 'other', name: 'Other'),
+      ]),
     );
 
     await _pumpSection(
       tester,
       defaultServersNotifier: notifier,
-      activeServerNotifier: TestActiveServerNotifier(initialServer: selectedServer),
+      activeServerNotifier: TestActiveServerNotifier(
+        initialServer: selectedServer,
+      ),
     );
 
-    final selectedMaterial = _tileMaterialForName(tester, 'Selected');
-    final otherMaterial = _tileMaterialForName(tester, 'Other');
-    final theme = Theme.of(tester.element(find.byType(DefaultServersSection)));
-
-    final selectedShape = selectedMaterial.shape as RoundedRectangleBorder;
-    final otherShape = otherMaterial.shape as RoundedRectangleBorder;
-
-    expect(selectedShape.side.width, greaterThan(0));
-    expect(selectedMaterial.color, isNot(theme.colorScheme.surfaceContainerLow));
-    expect(otherShape.side.width, equals(0));
-    expect(otherMaterial.color, theme.colorScheme.surfaceContainerLow);
+    expect(find.byType(ServerCard), findsNWidgets(2));
+    // Selected card renders the active checkmark; only one is selected.
+    expect(find.byIcon(Icons.check_circle), findsOneWidget);
   });
 
   testWidgets('disconnected tap selects active server only', (tester) async {
     final defaultNotifier = TestDefaultServersNotifier(
-      DefaultServersState(
-        items: [_item(id: 'new', name: 'New server')],
-        isRefreshing: false,
-        isOfflineData: false,
-        lastFailureType: null,
-        hasPendingRetry: false,
-        retryAttempt: 0,
-      ),
+      _state(items: [_item(id: 'new', name: 'New server')]),
     );
     final activeNotifier = TestActiveServerNotifier();
     final connectionNotifier = TestConnectionNotifier();
@@ -200,16 +168,9 @@ void main() {
       final oldServer = _serverConfig(id: 'old', name: 'Old server');
       final newServer = _serverConfig(id: 'new', name: 'New server');
       final defaultNotifier = TestDefaultServersNotifier(
-        DefaultServersState(
-          items: [
-            _item(id: 'new', name: 'New server', serverConfig: newServer),
-          ],
-          isRefreshing: false,
-          isOfflineData: false,
-          lastFailureType: null,
-          hasPendingRetry: false,
-          retryAttempt: 0,
-        ),
+        _state(items: [
+          _item(id: 'new', name: 'New server', serverConfig: newServer),
+        ]),
       );
       final activeNotifier = TestActiveServerNotifier(initialServer: oldServer);
       final connectionNotifier = TestConnectionNotifier(
@@ -234,39 +195,19 @@ void main() {
     },
   );
 
-  testWidgets('non-active items remain non-interactive', (tester) async {
+  testWidgets('inactive servers are not rendered', (tester) async {
     final defaultNotifier = TestDefaultServersNotifier(
-      DefaultServersState(
-        items: [
-          _item(
-            id: 'expired',
-            name: 'Expired server',
-            status: 'expired',
-            isActive: false,
-          ),
-        ],
-        isRefreshing: false,
-        isOfflineData: false,
-        lastFailureType: null,
-        hasPendingRetry: false,
-        retryAttempt: 0,
-      ),
-    );
-    final activeNotifier = TestActiveServerNotifier();
-    final connectionNotifier = TestConnectionNotifier();
-
-    await _pumpSection(
-      tester,
-      defaultServersNotifier: defaultNotifier,
-      activeServerNotifier: activeNotifier,
-      connectionNotifier: connectionNotifier,
+      _state(items: [
+        _item(id: 'expired', name: 'Expired server', isActive: false),
+      ]),
     );
 
-    await tester.tap(find.text('Expired server'));
-    await tester.pumpAndSettle();
+    await _pumpSection(tester, defaultServersNotifier: defaultNotifier);
 
-    expect(activeNotifier.selectedIds, isEmpty);
-    expect(connectionNotifier.events, isEmpty);
+    expect(find.text('Expired server'), findsNothing);
+    expect(find.byType(ServerCard), findsNothing);
+    // Falls back to the empty-state guidance.
+    expect(find.text('No default servers available'), findsOneWidget);
   });
 }
 
@@ -290,7 +231,9 @@ Future<void> _pumpSection(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: const Scaffold(
-          body: DefaultServersSection(),
+          body: SingleChildScrollView(
+            child: DefaultServersSection(),
+          ),
         ),
       ),
     ),
@@ -298,9 +241,18 @@ Future<void> _pumpSection(
   await tester.pump();
 }
 
-Material _tileMaterialForName(WidgetTester tester, String name) {
-  final candidate = find.ancestor(of: find.text(name), matching: find.byType(Material));
-  return tester.widget<Material>(candidate.first);
+DefaultServersState _state({
+  required List<DefaultServerItem> items,
+  DefaultServersFailureType? lastFailureType,
+}) {
+  return DefaultServersState(
+    items: items,
+    isRefreshing: false,
+    isOfflineData: false,
+    lastFailureType: lastFailureType,
+    hasPendingRetry: false,
+    retryAttempt: 0,
+  );
 }
 
 class TestDefaultServersNotifier extends DefaultServersNotifier {

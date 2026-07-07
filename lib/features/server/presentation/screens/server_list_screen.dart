@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,14 +20,13 @@ import 'package:arma_proxy_vpn_client/features/server/presentation/providers/ser
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/sort_filter_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/subscription_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/screens/server_xray_config_screen.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/server_sort_filter.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/debug_long_press_wrapper.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/empty_server_state.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/import_fab.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/server_card.dart';
-import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/server_list_default_servers_section.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/server_group_header.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/sort_filter_bar.dart';
-import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_servers_provider.dart';
 
 /// Server list screen — full integration of Phase 3 features.
 ///
@@ -55,7 +53,6 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     final serversAsync = ref.watch(serverListProvider);
     final activeServer = ref.watch(activeServerProvider);
     final multiSelect = ref.watch(multiSelectProvider);
-    final defaultServersState = ref.watch(defaultServersProvider);
     final isMultiSelectActive = multiSelect.isNotEmpty;
 
     return Scaffold(
@@ -82,9 +79,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
           ),
         ),
         data: (servers) {
-          final hasVisibleDefaults =
-              !isMultiSelectActive && defaultServersState.items.isNotEmpty;
-          if (servers.isEmpty && !hasVisibleDefaults) {
+          if (servers.isEmpty) {
             return EmptyServerState(
               onImportTap: () => _importFromClipboard(context, ref),
             );
@@ -93,7 +88,14 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
           return Column(
             children: [
               // Sort/filter bar (hidden in multi-select mode)
-              if (!isMultiSelectActive) const SortFilterBar(),
+              if (!isMultiSelectActive)
+                SortFilterBar(
+                  state: ref.watch(sortFilterProvider),
+                  onSort: ref.read(sortFilterProvider.notifier).setSort,
+                  onFilter: ref.read(sortFilterProvider.notifier).setFilter,
+                  onQuery: ref.read(sortFilterProvider.notifier).setQuery,
+                  onProtocol: ref.read(sortFilterProvider.notifier).setProtocol,
+                ),
 
               // Grouped server list with pull-to-refresh
               Expanded(
@@ -239,10 +241,10 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     final subscriptions = ref.watch(subscriptionProvider);
 
     // Apply status filter, protocol quick-filter, and search query
-    final filteredServers = _applyFilter(servers, sortFilter, latencyMap);
+    final filteredServers = applyServerFilter(servers, sortFilter, latencyMap);
 
     // Apply sort
-    final sortedServers = _applySort(
+    final sortedServers = applyServerSort(
       filteredServers,
       sortFilter.sort,
       latencyMap,
@@ -258,12 +260,6 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
 
     // Build flat list of widgets: headers + cards with spacing
     final items = <Widget>[];
-    if (!isMultiSelectActive) {
-      items.add(const ServerListDefaultServersSection());
-      if (groupEntries.isNotEmpty) {
-        items.add(const Gap(8));
-      }
-    }
 
     for (var i = 0; i < groupEntries.length; i++) {
       if (i > 0) {
@@ -443,72 +439,6 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
       await connectionNotifier.disconnect();
       await connectionNotifier.connect(server);
     }
-  }
-
-  /// Apply status filter, protocol quick-filter, and search query.
-  List<ServerConfig> _applyFilter(
-    List<ServerConfig> servers,
-    SortFilterState sortFilter,
-    Map<String, int> latencyMap,
-  ) {
-    var result = switch (sortFilter.filter) {
-      FilterCriteria.all => servers,
-      FilterCriteria.working => servers.where((s) {
-        final latency = latencyMap[s.id];
-        return latency != null && latency > 0 && latency <= 300;
-      }).toList(),
-      FilterCriteria.failed => servers.where((s) {
-        final latency = latencyMap[s.id];
-        return latency == -1 || (latency != null && latency > 300);
-      }).toList(),
-    };
-
-    if (sortFilter.protocol != null) {
-      result = result.where((s) => s.protocol == sortFilter.protocol).toList();
-    }
-
-    final query = sortFilter.query.trim().toLowerCase();
-    if (query.isNotEmpty) {
-      result = result.where((s) {
-        return s.name.toLowerCase().contains(query) ||
-            s.address.toLowerCase().contains(query) ||
-            s.groupName.toLowerCase().contains(query);
-      }).toList();
-    }
-
-    return result;
-  }
-
-  /// Apply sort criteria to the server list.
-  List<ServerConfig> _applySort(
-    List<ServerConfig> servers,
-    SortCriteria sort,
-    Map<String, int> latencyMap,
-  ) {
-    final sorted = [...servers];
-    switch (sort) {
-      case SortCriteria.defaultOrder:
-        // Keep persisted subscription/import order from storage.
-        break;
-      case SortCriteria.name:
-        sorted.sort((a, b) => a.name.compareTo(b.name));
-      case SortCriteria.latency:
-        sorted.sort((a, b) {
-          final la = latencyMap[a.id];
-          final lb = latencyMap[b.id];
-          // Untested servers go last
-          if (la == null && lb == null) return 0;
-          if (la == null) return 1;
-          if (lb == null) return -1;
-          // Failed (-1) after successful, testing (-2) after failed
-          if (la < 0 && lb > 0) return 1;
-          if (la > 0 && lb < 0) return -1;
-          return la.compareTo(lb);
-        });
-      case SortCriteria.protocol:
-        sorted.sort((a, b) => a.protocol.label.compareTo(b.protocol.label));
-    }
-    return sorted;
   }
 
   /// Pull-to-refresh: triggers subscription auto-update.

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
+import 'package:arma_proxy_vpn_client/core/utils/expiry_format.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/subscription.dart';
 
 /// Section header displaying the group name for a set of server cards.
@@ -11,7 +12,8 @@ import 'package:arma_proxy_vpn_client/features/server/domain/entities/subscripti
 /// - Subscription name in primary color
 /// - 3-dot PopupMenu (Refresh / Delete All / Copy URL)
 /// - Data usage progress bar with text
-/// - Expiry countdown (red when <3 days)
+/// - Expiry countdown (month/week/day/hour/minute; red when <3 days,
+///   warning icon when <1 day or expired)
 ///
 /// For manual groups, shows the simple group name with count.
 class ServerGroupHeader extends StatelessWidget {
@@ -310,17 +312,41 @@ class ServerGroupHeader extends StatelessWidget {
         ),
       );
     } else {
-      final daysLeft = expireDate.difference(DateTime.now()).inDays;
-      final isUrgent = daysLeft >= 0 && daysLeft <= 3;
-      final expiryText = daysLeft >= 0 ? '  ·  expires ${daysLeft}d' : '  ·  expired';
+      final expiry = describeExpiry(expireDate);
+      final expiryColor = expiry.isUrgent || expiry.isCritical
+          ? colorScheme.error
+          : colorScheme.onSurfaceVariant;
 
       parts.add(TextSpan(
-        text: expiryText,
+        text: '  ·  ',
         style: theme.textTheme.bodySmall?.copyWith(
-          color: isUrgent || daysLeft < 0
-              ? colorScheme.error
-              : colorScheme.onSurfaceVariant,
-          fontWeight: isUrgent ? FontWeight.bold : null,
+          color: colorScheme.onSurfaceVariant,
+        ),
+      ));
+
+      // Warning icon when less than a day remains (or expired).
+      if (expiry.isCritical) {
+        parts.add(
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: Icon(
+                Icons.warning_amber_rounded,
+                size: 14,
+                color: colorScheme.error,
+              ),
+            ),
+          ),
+        );
+      }
+
+      parts.add(TextSpan(
+        text: 'expires ${expiry.label}',
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: expiryColor,
+          fontWeight:
+              (expiry.isUrgent || expiry.isCritical) ? FontWeight.bold : null,
         ),
       ));
     }

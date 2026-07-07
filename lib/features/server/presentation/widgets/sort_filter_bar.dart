@@ -1,34 +1,48 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:arma_proxy_vpn_client/core/constants/protocol_constants.dart';
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/core/theme/app_colors.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/sort_filter_provider.dart';
 
-/// Search + quick-filter controls for the server list (design: Servers
+/// Search + quick-filter controls for a server list (design: Servers
 /// Management screen §2).
 ///
 /// - Pill-shaped search field ("Search servers...")
 /// - Protocol quick-filter chips: All, VLESS, VMess, Trojan, SS, Hysteria2
 /// - Status chips: Working, Failed
 /// - Sort menu (Default, Name, Latency, Protocol)
-class SortFilterBar extends ConsumerStatefulWidget {
-  const SortFilterBar({super.key});
+///
+/// Provider-agnostic: callers pass the current [state] and mutation callbacks,
+/// so the same bar drives both the Servers tab and the home default servers
+/// list from their own independent providers.
+class SortFilterBar extends StatefulWidget {
+  const SortFilterBar({
+    super.key,
+    required this.state,
+    required this.onSort,
+    required this.onFilter,
+    required this.onQuery,
+    required this.onProtocol,
+  });
+
+  final SortFilterState state;
+  final ValueChanged<SortCriteria> onSort;
+  final ValueChanged<FilterCriteria> onFilter;
+  final ValueChanged<String> onQuery;
+  final ValueChanged<ProtocolType?> onProtocol;
 
   @override
-  ConsumerState<SortFilterBar> createState() => _SortFilterBarState();
+  State<SortFilterBar> createState() => _SortFilterBarState();
 }
 
-class _SortFilterBarState extends ConsumerState<SortFilterBar> {
+class _SortFilterBarState extends State<SortFilterBar> {
   late final TextEditingController _searchController;
 
   @override
   void initState() {
     super.initState();
-    _searchController = TextEditingController(
-      text: ref.read(sortFilterProvider).query,
-    );
+    _searchController = TextEditingController(text: widget.state.query);
   }
 
   @override
@@ -42,8 +56,7 @@ class _SortFilterBarState extends ConsumerState<SortFilterBar> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final sortFilter = ref.watch(sortFilterProvider);
-    final notifier = ref.read(sortFilterProvider.notifier);
+    final sortFilter = widget.state;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
@@ -57,7 +70,7 @@ class _SortFilterBarState extends ConsumerState<SortFilterBar> {
                 child: TextField(
                   key: const Key('server-search-field'),
                   controller: _searchController,
-                  onChanged: notifier.setQuery,
+                  onChanged: widget.onQuery,
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
                     hintText: l10n.searchServersHint,
@@ -72,7 +85,7 @@ class _SortFilterBarState extends ConsumerState<SortFilterBar> {
                             icon: const Icon(Icons.close, size: 18),
                             onPressed: () {
                               _searchController.clear();
-                              notifier.setQuery('');
+                              widget.onQuery('');
                             },
                           ),
                     isDense: true,
@@ -103,7 +116,7 @@ class _SortFilterBarState extends ConsumerState<SortFilterBar> {
                 icon: Icon(Icons.tune, color: colorScheme.onSurfaceVariant),
                 tooltip: l10n.sortByDefault,
                 initialValue: sortFilter.sort,
-                onSelected: notifier.setSort,
+                onSelected: widget.onSort,
                 itemBuilder: (context) => [
                   PopupMenuItem(
                     value: SortCriteria.defaultOrder,
@@ -138,7 +151,7 @@ class _SortFilterBarState extends ConsumerState<SortFilterBar> {
                   label: l10n.filterAll,
                   selected: sortFilter.protocol == null,
                   accent: colorScheme.primary,
-                  onTap: () => notifier.setProtocol(null),
+                  onTap: () => widget.onProtocol(null),
                 ),
                 for (final protocol in ProtocolType.values)
                   _filterChip(
@@ -146,7 +159,7 @@ class _SortFilterBarState extends ConsumerState<SortFilterBar> {
                     label: protocol.label,
                     selected: sortFilter.protocol == protocol,
                     accent: AppColors.protocolColor(protocol),
-                    onTap: () => notifier.setProtocol(
+                    onTap: () => widget.onProtocol(
                       sortFilter.protocol == protocol ? null : protocol,
                     ),
                   ),
@@ -164,7 +177,7 @@ class _SortFilterBarState extends ConsumerState<SortFilterBar> {
                   label: l10n.filterWorking,
                   selected: sortFilter.filter == FilterCriteria.working,
                   accent: colorScheme.primary,
-                  onTap: () => notifier.setFilter(
+                  onTap: () => widget.onFilter(
                     sortFilter.filter == FilterCriteria.working
                         ? FilterCriteria.all
                         : FilterCriteria.working,
@@ -175,7 +188,7 @@ class _SortFilterBarState extends ConsumerState<SortFilterBar> {
                   label: l10n.filterFailed,
                   selected: sortFilter.filter == FilterCriteria.failed,
                   accent: colorScheme.error,
-                  onTap: () => notifier.setFilter(
+                  onTap: () => widget.onFilter(
                     sortFilter.filter == FilterCriteria.failed
                         ? FilterCriteria.all
                         : FilterCriteria.failed,

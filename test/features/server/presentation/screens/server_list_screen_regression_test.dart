@@ -17,7 +17,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets(
-    'imported groups still collapse and expand with defaults visible',
+    'imported groups collapse and expand (defaults not on servers tab)',
     (tester) async {
       await _pumpScreen(
         tester,
@@ -28,7 +28,8 @@ void main() {
         defaults: [_item(id: 'default-1', name: 'Default 1')],
       );
 
-      expect(find.text('Default 1'), findsOneWidget);
+      // Default servers are no longer shown on the Servers tab.
+      expect(find.text('Default 1'), findsNothing);
       expect(find.text('Imported 1'), findsOneWidget);
       expect(find.text('Imported 2'), findsOneWidget);
 
@@ -45,7 +46,6 @@ void main() {
 
       expect(find.text('Imported 1'), findsNothing);
       expect(find.text('Imported 2'), findsNothing);
-      expect(find.text('Default 1'), findsOneWidget);
 
       await tester.tap(
         find.descendant(
@@ -61,7 +61,7 @@ void main() {
   );
 
   testWidgets(
-    'imported groups stay interactive while grouped defaults are visible',
+    'default servers are not rendered on the servers tab',
     (tester) async {
       await _pumpScreen(
         tester,
@@ -85,22 +85,11 @@ void main() {
         ],
       );
 
-      expect(find.text('Default Group A (2)'), findsOneWidget);
-
-      final importedHeader = find.byKey(
-        const ValueKey('server-group-header-Imported'),
-      );
-      await tester.tap(
-        find.descendant(
-          of: importedHeader,
-          matching: find.byIcon(Icons.expand_less),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.text('Imported 1'), findsNothing);
-      expect(find.text('Imported 2'), findsNothing);
-      expect(find.text('Default Group A (2)'), findsOneWidget);
+      expect(find.text('Default Group A (2)'), findsNothing);
+      expect(find.text('Default 1'), findsNothing);
+      expect(find.text('Default 2'), findsNothing);
+      expect(find.text('Imported 1'), findsOneWidget);
+      expect(find.text('Imported 2'), findsOneWidget);
     },
   );
 
