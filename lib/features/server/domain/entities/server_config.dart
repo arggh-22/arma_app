@@ -104,6 +104,17 @@ abstract class ServerConfig with _$ServerConfig {
     /// Group name for UI grouping.
     @Default('Manual') String groupName,
 
+    /// Subtitle / badge text from a JSON subscription's `meta.serverDescription`
+    /// (e.g. "VLESS • XHTTP • REALITY"). Null for non-JSON sources.
+    String? serverDescription,
+
+    /// Full, ready-to-run Xray config JSON for this profile, from a JSON
+    /// subscription entry. When set, the connection uses it verbatim (only the
+    /// local inbound is swapped for the app's TUN) instead of rebuilding from
+    /// the fields above — this preserves balancers, burstObservatory, xhttp,
+    /// and post-quantum encryption that the field-based builder can't express.
+    String? rawConfig,
+
     /// Timestamp when the config was added.
     required DateTime addedAt,
   }) = _ServerConfig;

@@ -113,6 +113,18 @@ class ServerCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        if (server.serverDescription != null &&
+                            server.serverDescription!.isNotEmpty) ...[
+                          const Gap(2),
+                          Text(
+                            server.serverDescription!,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                         const Gap(4),
                         Row(
                           children: [

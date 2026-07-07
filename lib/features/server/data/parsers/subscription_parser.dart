@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:arma_proxy_vpn_client/features/server/data/parsers/clash_parser.dart';
+import 'package:arma_proxy_vpn_client/features/server/data/parsers/json_subscription_parser.dart';
 import 'package:arma_proxy_vpn_client/features/server/data/parsers/share_link_parser.dart';
 import 'package:arma_proxy_vpn_client/features/server/data/parsers/sip008_parser.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
@@ -26,7 +27,17 @@ class SubscriptionParser {
     final trimmed = body.trim();
     if (trimmed.isEmpty) return [];
 
-    // 1. SIP008 JSON detection — starts with [ or {
+    // 1a. ARMA JSON subscription — a JSON array of full Xray config objects
+    // (each with `outbounds`/`remarks`). Checked before SIP008 since both
+    // start with `[`.
+    if (trimmed.startsWith('[')) {
+      final jsonResult = JsonSubscriptionParser.tryParse(trimmed);
+      if (jsonResult != null && jsonResult.isNotEmpty) {
+        return jsonResult;
+      }
+    }
+
+    // 1b. SIP008 JSON detection — starts with [ or {
     if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
       final sip008Result = Sip008Parser.tryParse(trimmed);
       if (sip008Result != null && sip008Result.isNotEmpty) {

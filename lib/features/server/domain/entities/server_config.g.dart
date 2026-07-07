@@ -39,6 +39,8 @@ _ServerConfig _$ServerConfigFromJson(Map<String, dynamic> json) =>
       insecure: json['insecure'] as bool? ?? false,
       subscriptionId: json['subscriptionId'] as String?,
       groupName: json['groupName'] as String? ?? 'Manual',
+      serverDescription: json['serverDescription'] as String?,
+      rawConfig: json['rawConfig'] as String?,
       addedAt: DateTime.parse(json['addedAt'] as String),
     );
 
@@ -75,6 +77,8 @@ Map<String, dynamic> _$ServerConfigToJson(_ServerConfig instance) =>
       'insecure': instance.insecure,
       'subscriptionId': instance.subscriptionId,
       'groupName': instance.groupName,
+      'serverDescription': instance.serverDescription,
+      'rawConfig': instance.rawConfig,
       'addedAt': instance.addedAt.toIso8601String(),
     };
 

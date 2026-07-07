@@ -20,11 +20,28 @@ class SubscriptionFetchResult {
   /// Optional update interval in hours from subscription metadata.
   final int? profileUpdateIntervalHours;
 
+  /// `profile-update-always` header: if true, the app should force a fresh
+  /// fetch every time it opens (spec §2).
+  final bool profileUpdateAlways;
+
+  /// `support-url` header: opened from a "Support" / "Contact" action.
+  final String? supportUrl;
+
+  /// `profile-web-page-url` header: personal cabinet / renew-subscription page.
+  final String? profileWebPageUrl;
+
+  /// `announce` header (Base64-decoded): admin notice to show as a banner.
+  final String? announcement;
+
   const SubscriptionFetchResult({
     required this.servers,
     this.userinfo,
     this.profileTitle,
     this.profileUpdateIntervalHours,
+    this.profileUpdateAlways = false,
+    this.supportUrl,
+    this.profileWebPageUrl,
+    this.announcement,
   });
 }
 
@@ -74,7 +91,7 @@ class SubscriptionService {
     };
 
     final response = await http
-        .get(Uri.parse(subscription.url), headers: headers)
+        .get(_withJsonFormat(subscription.url), headers: headers)
         .timeout(_timeout);
 
     if (response.statusCode != 200) {
@@ -119,7 +136,44 @@ class SubscriptionService {
       userinfo: userinfo,
       profileTitle: profileTitle,
       profileUpdateIntervalHours: profileUpdateIntervalHours,
+      profileUpdateAlways:
+          (response.headers['profile-update-always']?.trim().toLowerCase()) ==
+              'true',
+      supportUrl: response.headers['support-url']?.trim(),
+      profileWebPageUrl: response.headers['profile-web-page-url']?.trim(),
+      announcement: _decodeAnnouncement(response.headers['announce']),
     );
+  }
+
+  /// Decodes the `announce` header. Per spec it is Base64-encoded (raw, no
+  /// `base64:` prefix), but we tolerate a prefixed or already-plain value too.
+  String? _decodeAnnouncement(String? value) {
+    if (value == null) return null;
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+
+    final prefixed = _parseMaybeBase64Value(trimmed);
+    if (prefixed != null && prefixed != trimmed) return prefixed;
+
+    try {
+      final decoded = utf8.decode(base64Decode(base64.normalize(trimmed)));
+      if (decoded.trim().isNotEmpty) return decoded.trim();
+    } catch (_) {
+      // Not valid Base64 — fall through to the raw value.
+    }
+    return trimmed;
+  }
+
+  /// Requests the JSON subscription format (spec §1). Adds `format=json` to the
+  /// query while preserving any existing parameters; harmless for servers that
+  /// ignore it, and the parser auto-detects the returned format regardless.
+  static Uri _withJsonFormat(String url) {
+    final uri = Uri.parse(url);
+    if (uri.queryParameters['format'] == 'json') return uri;
+    return uri.replace(queryParameters: {
+      ...uri.queryParameters,
+      'format': 'json',
+    });
   }
 
   String? _extractProfileTitle(Map<String, String> headers, String body) {

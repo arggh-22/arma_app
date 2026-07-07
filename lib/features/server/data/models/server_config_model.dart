@@ -117,6 +117,12 @@ class ServerConfigModel extends HiveObject {
   @HiveField(47)
   final bool insecure;
 
+  @HiveField(48)
+  final String? serverDescription;
+
+  @HiveField(49)
+  final String? rawConfig;
+
   ServerConfigModel({
     required this.id,
     required this.name,
@@ -150,6 +156,8 @@ class ServerConfigModel extends HiveObject {
     this.upMbps,
     this.downMbps,
     this.insecure = false,
+    this.serverDescription,
+    this.rawConfig,
   });
 
   /// Maps this Hive model to the domain [ServerConfig] entity.
@@ -186,6 +194,8 @@ class ServerConfigModel extends HiveObject {
       insecure: insecure,
       subscriptionId: subscriptionId,
       groupName: groupName,
+      serverDescription: serverDescription,
+      rawConfig: rawConfig,
       addedAt: DateTime.fromMillisecondsSinceEpoch(addedAtMillis),
     );
   }
@@ -227,6 +237,8 @@ extension ServerConfigModelMapper on ServerConfigModel {
       insecure: config.insecure,
       subscriptionId: config.subscriptionId,
       groupName: config.groupName,
+      serverDescription: config.serverDescription,
+      rawConfig: config.rawConfig,
       addedAtMillis: config.addedAt.millisecondsSinceEpoch,
     );
   }

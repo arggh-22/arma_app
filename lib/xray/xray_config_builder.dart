@@ -26,6 +26,16 @@ class XrayConfigBuilder {
   /// `StartLoop(json, tunFd)`.
   static String build(ServerConfig server, {VpnSettings? settings}) {
     final s = settings ?? const VpnSettings();
+
+    // JSON-subscription profiles ship a complete, ready-to-run Xray config
+    // (multi-server balancers, burstObservatory, xhttp, PQ encryption). Use it
+    // verbatim, swapping only the local inbound for the app's TUN inbound.
+    final raw = server.rawConfig;
+    if (raw != null && raw.trim().isNotEmpty) {
+      final merged = _mergeRawConfigForTun(raw, s);
+      if (merged != null) return merged;
+    }
+
     final config = <String, dynamic>{
       'log': _buildLog(),
       'stats': <String, dynamic>{},
@@ -64,6 +74,12 @@ class XrayConfigBuilder {
   ///   doesn't run initCoreEnv, so geo data files are unavailable)
   /// - Uses only the proxy outbound (all traffic goes through the proxy)
   static String buildForLatencyTest(ServerConfig server) {
+    final raw = server.rawConfig;
+    if (raw != null && raw.trim().isNotEmpty) {
+      final latency = _latencyFromRawConfig(raw);
+      if (latency != null) return latency;
+    }
+
     final config = <String, dynamic>{
       'log': {'loglevel': 'warning'},
       'outbounds': [
@@ -72,6 +88,65 @@ class XrayConfigBuilder {
       ],
     };
     return jsonEncode(config);
+  }
+
+  /// Merges a raw JSON-subscription config for VPN use: keeps the server's
+  /// outbounds/routing/dns/balancer/burstObservatory, replaces the local
+  /// socks/http inbounds with the app's TUN inbound, and ensures stats+policy
+  /// are present so traffic stats (QueryStats) keep working.
+  ///
+  /// Returns `null` if [raw] is not a usable JSON object.
+  static String? _mergeRawConfigForTun(String raw, VpnSettings s) {
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map<String, dynamic>) return null;
+      final outbounds = decoded['outbounds'];
+      if (outbounds is! List || outbounds.isEmpty) return null;
+
+      final config = Map<String, dynamic>.from(decoded);
+      config['log'] = _buildLog();
+      config['stats'] = <String, dynamic>{};
+      config['policy'] = _buildPolicy();
+      config['inbounds'] = [
+        _buildTunInbound(sniffingEnabled: s.sniffingEnabled),
+      ];
+      return jsonEncode(config);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Builds a latency-test config from a raw JSON-subscription config: takes
+  /// the primary proxy outbound (preserving xhttp/PQ settings) plus a direct
+  /// outbound, with no inbounds or geo routing (MeasureDelay constraints).
+  static String? _latencyFromRawConfig(String raw) {
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map<String, dynamic>) return null;
+      final outbounds = decoded['outbounds'];
+      if (outbounds is! List) return null;
+
+      Map<String, dynamic>? proxy;
+      for (final o in outbounds) {
+        if (o is! Map<String, dynamic>) continue;
+        final proto = o['protocol'];
+        if (proto == 'freedom' || proto == 'blackhole') continue;
+        proxy ??= Map<String, dynamic>.from(o);
+        if (o['tag'] == 'proxy') {
+          proxy = Map<String, dynamic>.from(o);
+          break;
+        }
+      }
+      if (proxy == null) return null;
+
+      final config = <String, dynamic>{
+        'log': {'loglevel': 'warning'},
+        'outbounds': [proxy, _buildDirectOutbound()],
+      };
+      return jsonEncode(config);
+    } catch (_) {
+      return null;
+    }
   }
 
   static Map<String, dynamic> _buildLog() {
