@@ -20,6 +20,7 @@ class SortFilterBar extends StatefulWidget {
   const SortFilterBar({
     super.key,
     required this.state,
+    required this.availableProtocols,
     required this.onSort,
     required this.onFilter,
     required this.onQuery,
@@ -27,6 +28,11 @@ class SortFilterBar extends StatefulWidget {
   });
 
   final SortFilterState state;
+
+  /// Protocols present in the listed servers. Only chips for these protocols
+  /// are shown — a protocol absent from the list gets no filter chip.
+  final Set<ProtocolType> availableProtocols;
+
   final ValueChanged<SortCriteria> onSort;
   final ValueChanged<FilterCriteria> onFilter;
   final ValueChanged<String> onQuery;
@@ -154,15 +160,16 @@ class _SortFilterBarState extends State<SortFilterBar> {
                   onTap: () => widget.onProtocol(null),
                 ),
                 for (final protocol in ProtocolType.values)
-                  _filterChip(
-                    key: Key('protocol-filter-${protocol.name}'),
-                    label: protocol.label,
-                    selected: sortFilter.protocol == protocol,
-                    accent: AppColors.protocolColor(protocol),
-                    onTap: () => widget.onProtocol(
-                      sortFilter.protocol == protocol ? null : protocol,
+                  if (widget.availableProtocols.contains(protocol))
+                    _filterChip(
+                      key: Key('protocol-filter-${protocol.name}'),
+                      label: protocol.label,
+                      selected: sortFilter.protocol == protocol,
+                      accent: AppColors.protocolColor(protocol),
+                      onTap: () => widget.onProtocol(
+                        sortFilter.protocol == protocol ? null : protocol,
+                      ),
                     ),
-                  ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 6),
                   child: VerticalDivider(

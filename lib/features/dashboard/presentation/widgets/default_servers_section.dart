@@ -124,6 +124,9 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
         else ...[
           SortFilterBar(
             state: sortFilter,
+            availableProtocols: {
+              for (final config in allConfigs) config.protocol,
+            },
             onSort: notifier.setSort,
             onFilter: notifier.setFilter,
             onQuery: notifier.setQuery,

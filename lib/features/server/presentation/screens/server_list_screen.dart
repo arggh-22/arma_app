@@ -91,6 +91,9 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
               if (!isMultiSelectActive)
                 SortFilterBar(
                   state: ref.watch(sortFilterProvider),
+                  availableProtocols: {
+                    for (final server in servers) server.protocol,
+                  },
                   onSort: ref.read(sortFilterProvider.notifier).setSort,
                   onFilter: ref.read(sortFilterProvider.notifier).setFilter,
                   onQuery: ref.read(sortFilterProvider.notifier).setQuery,

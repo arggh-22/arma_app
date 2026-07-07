@@ -32,6 +32,23 @@ void main() {
     expect(find.text('D'), findsOneWidget);
   });
 
+  testWidgets('only shows protocol chips present in the list', (tester) async {
+    // All default configs are VLESS, so only the VLESS chip should appear.
+    final notifier = TestDefaultServersNotifier(
+      _state(items: [
+        _item(id: '1', name: 'A'),
+        _item(id: '2', name: 'B'),
+      ]),
+    );
+
+    await _pumpSection(tester, defaultServersNotifier: notifier);
+
+    expect(find.byKey(const Key('protocol-filter-all')), findsOneWidget);
+    expect(find.byKey(const Key('protocol-filter-vless')), findsOneWidget);
+    expect(find.byKey(const Key('protocol-filter-vmess')), findsNothing);
+    expect(find.byKey(const Key('protocol-filter-trojan')), findsNothing);
+  });
+
   testWidgets('search filters the default servers list', (tester) async {
     final notifier = TestDefaultServersNotifier(
       _state(items: [
