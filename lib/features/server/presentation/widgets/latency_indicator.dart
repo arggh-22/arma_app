@@ -5,7 +5,7 @@ import 'package:arma_proxy_vpn_client/features/server/domain/latency_level.dart'
 /// Inline latency display widget per UI-SPEC §6 and Health Check spec §3.
 ///
 /// Shows latency values with color-coded text:
-/// - **null (untested):** dash in onSurfaceVariant
+/// - **null (untested):** tappable ping icon (network_check)
 /// - **-2 (testing):** small circular progress indicator
 /// - **-1 (failed) / 600+ ms:** gray "Timeout"
 /// - **0-120ms (excellent):** green text
@@ -46,20 +46,19 @@ class LatencyIndicator extends StatelessWidget {
   }
 
   String get _semanticsLabel {
-    if (latency == null) return 'Untested';
+    if (latency == null) return 'Tap to test latency';
     if (latency == -2) return 'Testing';
     if (latency == -1) return 'Failed';
     return '${latency}ms latency';
   }
 
   Widget _buildContent(ThemeData theme, ColorScheme colorScheme) {
-    // Untested
+    // Untested — show a tappable "ping" icon so it's clear you can test.
     if (latency == null) {
-      return Text(
-        '—',
-        style: theme.textTheme.labelMedium?.copyWith(
-          color: colorScheme.onSurfaceVariant,
-        ),
+      return Icon(
+        Icons.network_check,
+        size: 18,
+        color: colorScheme.onSurfaceVariant,
       );
     }
 
