@@ -44,7 +44,10 @@ class ServerListScreen extends ConsumerStatefulWidget {
 }
 
 class _ServerListScreenState extends ConsumerState<ServerListScreen> {
-  final Set<String> _collapsedGroups = {};
+  /// Accordion state: only one subscription group is expanded at a time.
+  /// `null` = default (first group open); `''` = all collapsed; otherwise the
+  /// key of the single open group.
+  String? _expandedGroup;
   final Set<String> _refreshingSubscriptions = {};
   final Set<String> _pingingSubscriptions = {};
 
@@ -281,6 +284,12 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
       (a, b) => groupTimestamp(b.value).compareTo(groupTimestamp(a.value)),
     );
 
+    // Accordion: resolve the single open group. Default to the first (top)
+    // group; `''` means the user collapsed all.
+    final openGroupKey = _expandedGroup == null
+        ? (groupEntries.isNotEmpty ? groupEntries.first.key : null)
+        : (_expandedGroup!.isEmpty ? null : _expandedGroup);
+
     // Build flat list of widgets: headers + cards with spacing
     final items = <Widget>[];
 
@@ -300,7 +309,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
             .firstOrNull;
       }
 
-      final isCollapsed = _collapsedGroups.contains(entry.key);
+      final isCollapsed = entry.key != openGroupKey;
 
       items.add(
         ServerGroupHeader(
@@ -315,11 +324,9 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
           isPinging: _pingingSubscriptions.contains(firstServer.subscriptionId),
           onToggleCollapse: () {
             setState(() {
-              if (isCollapsed) {
-                _collapsedGroups.remove(entry.key);
-              } else {
-                _collapsedGroups.add(entry.key);
-              }
+              // Open this group (collapsing every other), or collapse it if
+              // it's already the open one.
+              _expandedGroup = isCollapsed ? entry.key : '';
             });
           },
           onRefresh: subscription != null

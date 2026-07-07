@@ -101,4 +101,43 @@ void main() {
     // 'Beta' (sub added later) must appear above 'Alpha' despite storage order.
     expect(betaY, lessThan(alphaY));
   });
+
+  testWidgets('expanding one group collapses the others (accordion)',
+      (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          serverListProvider.overrideWith(() => _Servers()),
+          subscriptionProvider.overrideWith(() => _Subs()),
+          activeServerProvider.overrideWith(() => _Active()),
+          latencyProvider.overrideWith(() => _Latency()),
+          sortFilterProvider.overrideWith(() => _SortFilter()),
+          multiSelectProvider.overrideWith(() => MultiSelectNotifier()),
+          defaultServersProvider.overrideWith(() => _Defaults()),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: ServerListScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Default: only the top (newest) group 'Beta' is expanded.
+    expect(find.text('b1'), findsOneWidget);
+    expect(find.text('a1'), findsNothing);
+
+    // Expand 'Alpha' → it opens and 'Beta' collapses.
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('server-group-header-Alpha')),
+        matching: find.byIcon(Icons.expand_more),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('a1'), findsOneWidget);
+    expect(find.text('b1'), findsNothing);
+  });
 }
