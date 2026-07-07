@@ -67,6 +67,11 @@ class SubscriptionService {
   /// Maximum response body size in bytes — 5MB (T-03-15).
   static const _maxBodySize = 5 * 1024 * 1024;
 
+  /// HTTP client. Injectable for testing; defaults to a shared client.
+  final http.Client _client;
+
+  SubscriptionService({http.Client? client}) : _client = client ?? http.Client();
+
   /// Fetch a subscription URL, parse the body, and return servers + userinfo.
   ///
   /// Uses the subscription's custom User-Agent if set, otherwise falls back
@@ -90,9 +95,7 @@ class SubscriptionService {
       'X-Ver-Os': '16',
     };
 
-    final response = await http
-        .get(_withJsonFormat(subscription.url), headers: headers)
-        .timeout(_timeout);
+    final response = await _fetchWithJsonFallback(subscription.url, headers);
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -164,9 +167,27 @@ class SubscriptionService {
     return trimmed;
   }
 
-  /// Requests the JSON subscription format (spec §1). Adds `format=json` to the
-  /// query while preserving any existing parameters; harmless for servers that
-  /// ignore it, and the parser auto-detects the returned format regardless.
+  /// Fetches the subscription, preferring the JSON format (spec §1).
+  ///
+  /// Requests `?format=json` first; if the server rejects the extra query
+  /// param with a non-200 (some providers 400/404 on unknown params), retries
+  /// the original URL untouched. The parser auto-detects whichever format
+  /// comes back, so share-link/base64 subscriptions still work.
+  Future<http.Response> _fetchWithJsonFallback(
+    String url,
+    Map<String, String> headers,
+  ) async {
+    final jsonUri = _withJsonFormat(url);
+    final jsonResponse =
+        await _client.get(jsonUri, headers: headers).timeout(_timeout);
+    if (jsonResponse.statusCode == 200) return jsonResponse;
+
+    final original = Uri.parse(url);
+    if (jsonUri == original) return jsonResponse;
+    return _client.get(original, headers: headers).timeout(_timeout);
+  }
+
+  /// Adds `format=json` to the query while preserving any existing parameters.
   static Uri _withJsonFormat(String url) {
     final uri = Uri.parse(url);
     if (uri.queryParameters['format'] == 'json') return uri;

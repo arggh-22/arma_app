@@ -476,11 +476,30 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
 
   /// Refresh a single subscription.
   Future<void> _onRefreshSubscription(String subscriptionId) async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
     setState(() => _refreshingSubscriptions.add(subscriptionId));
     try {
-      await ref
+      final count = await ref
           .read(subscriptionProvider.notifier)
           .refreshSubscription(subscriptionId);
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.importedServersCount(count)),
+          duration: AppConstants.snackBarDurationDefault,
+        ),
+      );
+    } catch (_) {
+      // Subscription servers can fail (expired token, 4xx, offline). Surface a
+      // message instead of letting the exception crash the app.
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.subscriptionFetchError),
+          duration: AppConstants.snackBarDurationDefault,
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() => _refreshingSubscriptions.remove(subscriptionId));
