@@ -232,7 +232,7 @@ class ServerGroupHeader extends StatelessWidget {
 
           // Data usage progress bar
           if (sub.totalBytes != null && sub.totalBytes! > 0) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.only(left: 32),
               child: _buildDataUsageBar(context, sub),

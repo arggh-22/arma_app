@@ -1,3 +1,4 @@
+import 'package:arma_proxy_vpn_client/core/utils/app_snackbar.dart';
 import 'package:arma_proxy_vpn_client/core/utils/byte_format.dart';
 import 'package:arma_proxy_vpn_client/features/connection/domain/entities/connection_status.dart';
 import 'package:arma_proxy_vpn_client/features/connection/presentation/providers/connection_provider.dart';
@@ -51,9 +52,7 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
       if (currentFailure == null || previousFailure == currentFailure) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_failureMessage(l10n, currentFailure))),
-      );
+      showAppSnackBar(context, message: _failureMessage(l10n, currentFailure));
     });
 
     // Connectable default servers as ServerConfigs, then filtered + sorted

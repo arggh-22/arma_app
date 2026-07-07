@@ -103,7 +103,7 @@ class _ArmaAppState extends ConsumerState<ArmaApp> with WidgetsBindingObserver {
   Future<void> _runRandomDefaultServerSelection() async {
     await ref
         .read(defaultServerStartupSelectionProvider)
-        .autoSelectRandomServer();
+        .autoSelectBestServer();
   }
 
   Future<void> _requestNotificationPermission() async {

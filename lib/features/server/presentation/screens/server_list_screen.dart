@@ -5,6 +5,7 @@ import 'package:gap/gap.dart';
 
 import 'package:arma_proxy_vpn_client/core/constants/app_constants.dart';
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
+import 'package:arma_proxy_vpn_client/core/utils/app_snackbar.dart';
 import 'package:arma_proxy_vpn_client/core/utils/clipboard_helper.dart';
 import 'package:arma_proxy_vpn_client/features/connection/domain/entities/connection_status.dart';
 import 'package:arma_proxy_vpn_client/features/connection/presentation/providers/connection_provider.dart';
@@ -322,9 +323,16 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
       items.add(const Gap(2));
       for (var j = 0; j < groupServers.length; j++) {
         final server = groupServers[j];
+        // Indent cards from the left so they read as nested under the
+        // group/subscription header.
         items.add(
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+            padding: const EdgeInsets.only(
+              left: 24,
+              right: 8,
+              top: 5,
+              bottom: 5,
+            ),
             child: isMultiSelectActive
                 ? ServerCard(
                     server: server,
@@ -448,12 +456,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
   Future<void> _onPullToRefresh(AppLocalizations l10n) async {
     await ref.read(subscriptionProvider.notifier).refreshAllAutoUpdate();
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.subscriptionRefreshNoChange),
-        duration: AppConstants.snackBarDurationDefault,
-      ),
-    );
+    showAppSnackBar(context, message: l10n.subscriptionRefreshNoChange);
   }
 
   /// Best Server: select the server with the lowest latency.
@@ -477,29 +480,18 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
   /// Refresh a single subscription.
   Future<void> _onRefreshSubscription(String subscriptionId) async {
     final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
     setState(() => _refreshingSubscriptions.add(subscriptionId));
     try {
       final count = await ref
           .read(subscriptionProvider.notifier)
           .refreshSubscription(subscriptionId);
       if (!mounted) return;
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(l10n.importedServersCount(count)),
-          duration: AppConstants.snackBarDurationDefault,
-        ),
-      );
+      showAppSnackBar(context, message: l10n.importedServersCount(count));
     } catch (_) {
       // Subscription servers can fail (expired token, 4xx, offline). Surface a
       // message instead of letting the exception crash the app.
       if (!mounted) return;
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(l10n.subscriptionFetchError),
-          duration: AppConstants.snackBarDurationDefault,
-        ),
-      );
+      showAppSnackBar(context, message: l10n.subscriptionFetchError);
     } finally {
       if (mounted) {
         setState(() => _refreshingSubscriptions.remove(subscriptionId));
@@ -547,18 +539,16 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     ref.read(serverListProvider.notifier).deleteServer(server.id);
 
     // Show undo snackbar
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${server.name} deleted'),
-        duration: AppConstants.snackBarDurationLong,
-        action: SnackBarAction(
-          label: l10n.undo,
-          onPressed: () {
-            // Re-add the server to restore it
-            ref.read(serverListProvider.notifier).addServer(server);
-          },
-        ),
+    showAppSnackBar(
+      context,
+      message: '${server.name} deleted',
+      duration: AppConstants.snackBarDurationLong,
+      action: SnackBarAction(
+        label: l10n.undo,
+        onPressed: () {
+          // Re-add the server to restore it
+          ref.read(serverListProvider.notifier).addServer(server);
+        },
       ),
     );
   }
@@ -653,11 +643,10 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     if (!context.mounted) return;
 
     if (text == null || text.isEmpty) {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(l10n.parseErrorEmptyClipboard),
-          duration: AppConstants.snackBarDurationLong,
-        ),
+      showAppSnackBar(
+        context,
+        message: l10n.parseErrorEmptyClipboard,
+        duration: AppConstants.snackBarDurationLong,
       );
       return;
     }
@@ -688,34 +677,20 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
             .read(subscriptionProvider.notifier)
             .addSubscription(url: trimmed, name: '', userAgent: 'arma');
         if (!context.mounted) return;
-        messenger.clearSnackBars();
 
         if (importedCount <= 0) {
-          messenger.showSnackBar(
-            SnackBar(
-              content: Text(l10n.parseErrorInvalidLink),
-              duration: AppConstants.snackBarDurationDefault,
-            ),
-          );
+          showAppSnackBar(context, message: l10n.parseErrorInvalidLink);
           return;
         }
 
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(l10n.importedServersCount(importedCount)),
-            duration: AppConstants.snackBarDurationDefault,
-            backgroundColor: Colors.green.shade700,
-          ),
+        showAppSnackBar(
+          context,
+          message: l10n.importedServersCount(importedCount),
+          backgroundColor: Colors.green.shade700,
         );
       } catch (_) {
         if (!context.mounted) return;
-        messenger.clearSnackBars();
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(l10n.subscriptionFetchError),
-            duration: AppConstants.snackBarDurationDefault,
-          ),
-        );
+        showAppSnackBar(context, message: l10n.subscriptionFetchError);
       }
       return;
     }
@@ -738,12 +713,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
         }).toList();
 
         if (newConfigs.isEmpty) {
-          messenger.showSnackBar(
-            SnackBar(
-              content: Text(l10n.duplicateServer),
-              duration: AppConstants.snackBarDurationDefault,
-            ),
-          );
+          showAppSnackBar(context, message: l10n.duplicateServer);
           return;
         }
 
@@ -752,21 +722,18 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
         }
 
         if (!context.mounted) return;
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(l10n.importedServersCount(newConfigs.length)),
-            duration: AppConstants.snackBarDurationDefault,
-            backgroundColor: Colors.green.shade700,
-          ),
+        showAppSnackBar(
+          context,
+          message: l10n.importedServersCount(newConfigs.length),
+          backgroundColor: Colors.green.shade700,
         );
         return;
       }
 
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(l10n.parseErrorInvalidLink),
-          duration: AppConstants.snackBarDurationLong,
-        ),
+      showAppSnackBar(
+        context,
+        message: l10n.parseErrorInvalidLink,
+        duration: AppConstants.snackBarDurationLong,
       );
       return;
     }
@@ -783,25 +750,17 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     );
 
     if (isDuplicate) {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(l10n.duplicateServer),
-          duration: AppConstants.snackBarDurationDefault,
-        ),
-      );
+      showAppSnackBar(context, message: l10n.duplicateServer);
       return;
     }
 
     await ref.read(serverListProvider.notifier).addServer(config);
 
     if (!context.mounted) return;
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text('${l10n.importSuccess} — ${config.name}'),
-        duration: AppConstants.snackBarDurationDefault,
-        backgroundColor: Colors.green.shade700,
-        action: SnackBarAction(label: l10n.viewAction, onPressed: () {}),
-      ),
+    showAppSnackBar(
+      context,
+      message: '${l10n.importSuccess} — ${config.name}',
+      backgroundColor: Colors.green.shade700,
     );
   }
 }
