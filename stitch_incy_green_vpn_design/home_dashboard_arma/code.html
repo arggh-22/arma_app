@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Arma VPN - Secure Your Connection</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#673d00",
+                        "on-primary": "#3c0091",
+                        "surface-container-lowest": "#0f0d15",
+                        "surface-variant": "#37333d",
+                        "error": "#ffb4ab",
+                        "on-error": "#690005",
+                        "outline-variant": "#494454",
+                        "secondary-fixed-dim": "#4cd7f6",
+                        "outline": "#958ea0",
+                        "surface-container-high": "#2c2832",
+                        "tertiary-fixed-dim": "#ffb869",
+                        "on-surface": "#e7e0ed",
+                        "primary-fixed-dim": "#d0bcff",
+                        "on-secondary-fixed-variant": "#004e5c",
+                        "on-primary-fixed-variant": "#5516be",
+                        "primary-fixed": "#e9ddff",
+                        "on-tertiary-container": "#3f2300",
+                        "primary": "#d0bcff",
+                        "secondary": "#4cd7f6",
+                        "inverse-on-surface": "#322f39",
+                        "on-secondary-fixed": "#001f26",
+                        "surface-bright": "#3b3742",
+                        "tertiary": "#ffb869",
+                        "surface": "#15121b",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-fixed": "#23005c",
+                        "on-secondary-container": "#00424e",
+                        "surface-container-highest": "#37333d",
+                        "inverse-primary": "#6d3bd7",
+                        "surface-container": "#211e27",
+                        "on-tertiary-fixed": "#2c1700",
+                        "surface-dim": "#15121b",
+                        "inverse-surface": "#e7e0ed",
+                        "background": "#15121b",
+                        "on-secondary": "#003640",
+                        "tertiary-container": "#ca801e",
+                        "tertiary-fixed": "#ffdcbb",
+                        "primary-container": "#a078ff",
+                        "secondary-fixed": "#acedff",
+                        "on-primary-container": "#340080",
+                        "error-container": "#93000a",
+                        "on-tertiary": "#482900",
+                        "on-background": "#e7e0ed",
+                        "surface-tint": "#d0bcff",
+                        "secondary-container": "#03b5d3",
+                        "on-surface-variant": "#cbc3d7",
+                        "surface-container-low": "#1d1a23"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "container-padding": "20px",
+                        "xl": "32px",
+                        "xs": "4px",
+                        "gutter": "16px",
+                        "nav-float-bottom": "32px",
+                        "lg": "24px",
+                        "sm": "8px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "headline-md": ["Montserrat"],
+                        "headline-xl": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #15121b;
+            color: #e7e0ed;
+            overflow-x: hidden;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .connection-button-shadow {
+            box-shadow: 0 0 50px -10px rgba(139, 92, 246, 0.4);
+        }
+        .connection-button-active {
+            box-shadow: 0 0 80px 10px rgba(139, 92, 246, 0.6);
+        }
+        .pulse-animation {
+            animation: pulse-glow 2s infinite ease-in-out;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.05); }
+        }
+        .glow-border {
+            box-shadow: inset 0 0 10px rgba(208, 188, 255, 0.2);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="font-body-md text-body-md antialiased">
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-white/10 flex items-center justify-between px-md h-16 w-full shadow-[0_4px_20px_-5px_rgba(139,92,246,0.3)]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="shield_with_heart" style="font-variation-settings: 'FILL' 1;">shield_with_heart</span>
+<h1 class="font-headline-md text-headline-md font-bold tracking-tighter text-primary dark:text-primary">Arma</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform" data-icon="notifications">notifications</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/30">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAERizt545E2lQ5evwysHi8T5DZ9SQMbkZK8Gf7ds7nyXmHQ-ro9uy6t7_js__UuclNCB1uXddaLzdPC4oFr2vtOJsCjBraLtdDxEeybxx_Ai10EWppVgL6SZORrk39pAcvDVjg8TYcVMM2iDcb-bOdYzlzOFJoFdyLucOvLIHTihbSPmtXI3zd5E0EHMq7Mlr7TZ5M2sG0XLDZ5C22FvTrxnQl3UWZEts1T1KRGJv2CLClQt6LZqNZoEUwChFl6x_wNdm3SpOnIhU"/>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-32 px-container-padding space-y-xl max-w-2xl mx-auto">
+<!-- Hero Connection Section -->
+<section class="flex flex-col items-center justify-center py-10 relative">
+<!-- Atmospheric Glow Background -->
+<div class="absolute -z-10 w-64 h-64 bg-primary/20 rounded-full blur-[100px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
+<div class="relative group cursor-pointer transition-all duration-500" id="connection-trigger">
+<!-- Inner Pulse Circles -->
+<div class="absolute inset-0 rounded-full bg-primary/10 pulse-animation"></div>
+<!-- Main Connection Button -->
+<div class="w-64 h-64 rounded-full glass flex flex-col items-center justify-center connection-button-shadow relative z-10 border-white/20 hover:border-primary/50 transition-colors duration-500">
+<span class="material-symbols-outlined text-6xl text-on-surface-variant/50 transition-colors duration-500" data-icon="power_settings_new" id="power-icon">power_settings_new</span>
+<div class="mt-4 text-center">
+<p class="font-headline-md text-headline-md text-on-surface-variant/70 tracking-widest uppercase" id="status-text">DISCONNECTED</p>
+</div>
+</div>
+</div>
+<p class="mt-8 text-on-surface-variant/80 font-label-md text-label-md animate-bounce">Tap to secure connection</p>
+</section>
+<!-- Subscription Section -->
+<section class="space-y-md">
+<div class="flex justify-between items-end">
+<h2 class="font-headline-md text-headline-md text-on-surface uppercase tracking-wider">Your Subscriptions</h2>
+<a class="text-primary font-label-sm text-label-sm hover:underline" href="#">View All</a>
+</div>
+<!-- Premium Subscription Card -->
+<div class="glass rounded-3xl p-lg space-y-md relative overflow-hidden group">
+<!-- Subtle Gradient Overlay -->
+<div class="absolute top-0 right-0 p-lg opacity-20">
+<span class="material-symbols-outlined text-6xl text-primary" data-icon="workspace_premium" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">Arma Premium Sub</h3>
+<div class="flex gap-2 mt-2">
+<span class="px-3 py-1 rounded-full bg-secondary-container/30 text-secondary text-label-sm font-label-sm border border-secondary/20">12 Servers</span>
+<span class="px-3 py-1 rounded-full bg-primary-container/20 text-primary text-label-sm font-label-sm border border-primary/20">Multi-protocol</span>
+</div>
+</div>
+</div>
+<div class="space-y-sm pt-4">
+<div class="flex justify-between text-label-sm font-label-sm text-on-surface-variant">
+<span>Data Usage</span>
+<span>4.2 GB / Unlimited</span>
+</div>
+<div class="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[42%] shadow-[0_0_10px_rgba(139,92,246,0.8)]"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Integrated Recommended Servers -->
+<section class="space-y-md">
+<h3 class="font-headline-md text-headline-md text-on-surface-variant/60 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="recommend">recommend</span>
+                Recommended Servers
+            </h3>
+<div class="grid grid-cols-1 gap-md">
+<!-- Server Row 1 -->
+<div class="glass flex items-center justify-between p-md rounded-2xl border-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center overflow-hidden">
+<img alt="Japan Flag" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCc7X8lRcp5SzB3sYYGPTPft5vF3ENb4iZhEa7gMqGSpVz8TZ4TftkZ95RwRIRyA9s4Etqyzgn0Bi1U6euWPTAOwNfvUzXoO-QL1HdgBnC2zGTgeu_BzbqchhxSWdldSbDCf2pDg2kVQ-WvnkpLjQCdez-bSArpxIVrVOzURO2Y1CWW3yBx2JzCUq4rgksytsg3C6XxbOuRcxxGx3GcGNkShdNQPbSWOjicau-QSU5wCmYy7Dj_9-4kGYYsvJSg97JkQXdsjW2LNII"/>
+</div>
+<div>
+<p class="font-body-md text-body-md font-semibold text-on-surface">Tokyo-01-Pro</p>
+<span class="text-label-sm font-label-sm text-secondary/70">VLESS</span>
+</div>
+</div>
+<div class="text-right">
+<div class="flex items-center gap-1 justify-end text-tertiary">
+<span class="material-symbols-outlined text-sm" data-icon="bolt" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<span class="text-label-md font-label-md font-bold">42ms</span>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant/50">Optimal Load</span>
+</div>
+</div>
+<!-- Server Row 2 -->
+<div class="glass flex items-center justify-between p-md rounded-2xl border-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center overflow-hidden">
+<img alt="USA Flag" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0pGqmWMd5s-qNS-jD7N_vJGz5ynWfXnLh1jkSh55nm39WVTpqUmF_FlC6oUCx2Z42dShV8Ab3qSxCIWipvZIUMbBaTTyNuaE5OKZ9vz1WCNYK4mVujLDRAA9QcC83EyKQDZ6SSkbFybt2jV9YiVGVZl8dasxjd9lQ0EcObEcVNsUX_cr-_qhgCCUz9697r8zVn4ebbYWUsodBD2PSoY3izcujvoONBp13Lg3q38Bz0Uws1Zxk2QPvgD-6b7iD_OulW3uiKL3eG5w"/>
+</div>
+<div>
+<p class="font-body-md text-body-md font-semibold text-on-surface">LA-Direct-04</p>
+<span class="text-label-sm font-label-sm text-secondary/70">Shadowsocks</span>
+</div>
+</div>
+<div class="text-right">
+<div class="flex items-center gap-1 justify-end text-on-surface-variant">
+<span class="material-symbols-outlined text-sm" data-icon="bolt">bolt</span>
+<span class="text-label-md font-label-md font-bold">118ms</span>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant/50">Medium Load</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Aesthetic Card with Shader Placeholder Effect -->
+<section class="h-48 rounded-3xl overflow-hidden relative glass border-none">
+
+<div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent p-lg flex flex-col justify-end">
+<h4 class="font-headline-md text-headline-md text-primary">Neural Routing Active</h4>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Your traffic is encrypted using military-grade post-quantum algorithms.</p>
+</div>
+</section>
+</main>
+<!-- Floating Bottom Navigation -->
+<nav class="fixed bottom-nav-float-bottom left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full border border-white/10 bg-surface-container/60 dark:bg-surface-container/60 backdrop-blur-[20px] z-50 flex justify-around items-center py-sm px-lg shadow-[0_8px_32px_0_rgba(139,92,246,0.2)]">
+<button class="flex flex-col items-center justify-center text-primary dark:text-primary drop-shadow-[0_0_8px_rgba(208,188,255,0.8)] transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:bg-white/5 rounded-full transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="dns">dns</span>
+<span class="font-label-md text-label-md">Servers</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:bg-white/5 rounded-full transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</button>
+</nav>
+<script>
+        const trigger = document.getElementById('connection-trigger');
+        const statusText = document.getElementById('status-text');
+        const powerIcon = document.getElementById('power-icon');
+        const buttonDiv = trigger.querySelector('.w-64');
+        let isConnected = false;
+
+        trigger.addEventListener('click', () => {
+            isConnected = !isConnected;
+            
+            if (isConnected) {
+                statusText.innerText = 'CONNECTING...';
+                statusText.classList.add('animate-pulse');
+                
+                setTimeout(() => {
+                    statusText.innerText = 'CONNECTED';
+                    statusText.classList.remove('animate-pulse');
+                    statusText.classList.replace('text-on-surface-variant/70', 'text-primary');
+                    powerIcon.classList.replace('text-on-surface-variant/50', 'text-primary');
+                    powerIcon.style.fontVariationSettings = "'FILL' 1";
+                    buttonDiv.classList.add('connection-button-active');
+                    buttonDiv.classList.add('border-primary');
+                }, 1500);
+            } else {
+                statusText.innerText = 'DISCONNECTED';
+                statusText.classList.replace('text-primary', 'text-on-surface-variant/70');
+                powerIcon.classList.replace('text-primary', 'text-on-surface-variant/50');
+                powerIcon.style.fontVariationSettings = "'FILL' 0";
+                buttonDiv.classList.remove('connection-button-active');
+                buttonDiv.classList.remove('border-primary');
+            }
+        });
+    </script>
+</body></html>

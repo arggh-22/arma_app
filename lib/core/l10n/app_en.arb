@@ -326,5 +326,23 @@
   "telegramLinkDoneAction": "Done",
   "dashboardTelegramFabLabel": "Telegram",
   "dashboardAnnouncementTitle": "Announcement",
-  "dashboardAnnouncementReadMore": "Read more"
+  "dashboardAnnouncementReadMore": "Read more",
+  "navHome": "Home",
+  "tapToConnect": "Tap to secure connection",
+  "tapToDisconnect": "Tap to disconnect",
+  "disconnecting": "Disconnecting",
+  "searchServersHint": "Search servers...",
+  "serversCountSubtitle": "{serverCount} servers · {providerCount} providers",
+  "@serversCountSubtitle": {
+    "placeholders": {
+      "serverCount": {
+        "type": "int"
+      },
+      "providerCount": {
+        "type": "int"
+      }
+    }
+  },
+  "searchNoResults": "No servers match your search or filters",
+  "routingSettingsSubtitle": "Domain rules & per-app proxy"
 }

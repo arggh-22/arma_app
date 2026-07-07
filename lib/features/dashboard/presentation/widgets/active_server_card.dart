@@ -4,8 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:gap/gap.dart';
 
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
-import 'package:arma_proxy_vpn_client/core/theme/app_colors.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/active_server_provider.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/protocol_badge.dart';
+import 'package:arma_proxy_vpn_client/shared/widgets/glass_card.dart';
 
 /// Card widget showing the currently active/selected server.
 ///
@@ -22,37 +23,24 @@ class ActiveServerCard extends ConsumerWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isSelected = server != null;
-    final cardColor = isSelected
-        ? Color.alphaBlend(
-            colorScheme.primary.withValues(alpha: 0.08),
-            colorScheme.surfaceContainerLow,
-          )
-        : colorScheme.surfaceContainerLow;
-    final cardBorder = isSelected
-        ? BorderSide(
-            color: colorScheme.primary.withValues(alpha: 0.7),
-            width: 1.5,
-          )
-        : BorderSide.none;
 
-    return Card(
-      color: cardColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: cardBorder,
-      ),
-      child: InkWell(
-        onTap: () {
-          // Navigate to servers tab (index 1)
-          final shell = StatefulNavigationShell.maybeOf(context);
-          if (shell != null) {
-            shell.goBranch(1);
-          } else {
-            context.go('/servers');
-          }
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
+    return GlassCard(
+      glow: isSelected,
+      fillAlpha: isSelected ? 0.08 : 0.05,
+      borderColor: isSelected
+          ? colorScheme.primary.withValues(alpha: 0.55)
+          : null,
+      padding: EdgeInsets.zero,
+      onTap: () {
+        // Navigate to servers tab (index 1)
+        final shell = StatefulNavigationShell.maybeOf(context);
+        if (shell != null) {
+          shell.goBranch(1);
+        } else {
+          context.go('/servers');
+        }
+      },
+      child: Padding(
           padding: const EdgeInsets.all(16),
           child: server == null
               ? Row(
@@ -78,22 +66,7 @@ class ActiveServerCard extends ConsumerWidget {
                 )
               : Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.protocolColor(server.protocol),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        server.protocol.label,
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+                    ProtocolBadge(protocol: server.protocol),
                     const Gap(8),
                     Expanded(
                       child: Column(
@@ -119,7 +92,6 @@ class ActiveServerCard extends ConsumerWidget {
                     ),
                   ],
                 ),
-        ),
       ),
     );
   }

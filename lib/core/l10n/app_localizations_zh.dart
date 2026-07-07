@@ -720,4 +720,30 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dashboardAnnouncementReadMore => 'Read more';
+
+  @override
+  String get navHome => '首页';
+
+  @override
+  String get tapToConnect => '点击以保护连接';
+
+  @override
+  String get tapToDisconnect => '点击断开连接';
+
+  @override
+  String get disconnecting => '正在断开';
+
+  @override
+  String get searchServersHint => '搜索服务器...';
+
+  @override
+  String serversCountSubtitle(int serverCount, int providerCount) {
+    return '$serverCount 个服务器 · $providerCount 个提供商';
+  }
+
+  @override
+  String get searchNoResults => '没有符合搜索或筛选条件的服务器';
+
+  @override
+  String get routingSettingsSubtitle => '域名规则和分应用代理';
 }

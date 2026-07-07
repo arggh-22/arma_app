@@ -112,7 +112,13 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
           );
         },
       ),
-      floatingActionButton: isMultiSelectActive ? null : const ImportFab(),
+      // Lift the FAB clear of the floating pill nav.
+      floatingActionButton: isMultiSelectActive
+          ? null
+          : const Padding(
+              padding: EdgeInsets.only(bottom: 84),
+              child: ImportFab(),
+            ),
     );
   }
 
@@ -126,8 +132,25 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     final isBulkTesting = ref.watch(latencyProvider.notifier).isBulkTesting;
     final hasLatencyData = latencyMap.values.any((v) => v > 0);
 
+    final servers = serversAsync.value ?? const <ServerConfig>[];
+    final providerCount = servers.map((s) => s.groupName).toSet().length;
+
     return AppBar(
-      title: Text(l10n.servers, style: Theme.of(context).textTheme.titleLarge),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(l10n.servers),
+          if (servers.isNotEmpty)
+            Text(
+              l10n.serversCountSubtitle(servers.length, providerCount),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                letterSpacing: 0.4,
+              ),
+            ),
+        ],
+      ),
       actions: [
         // Best Server button
         IconButton(
@@ -215,12 +238,8 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     final latencyMap = ref.watch(latencyProvider);
     final subscriptions = ref.watch(subscriptionProvider);
 
-    // Apply filter
-    final filteredServers = _applyFilter(
-      servers,
-      sortFilter.filter,
-      latencyMap,
-    );
+    // Apply status filter, protocol quick-filter, and search query
+    final filteredServers = _applyFilter(servers, sortFilter, latencyMap);
 
     // Apply sort
     final sortedServers = _applySort(
@@ -374,8 +393,36 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
       }
     }
 
+    // Empty search/filter result hint (servers exist, none match).
+    if (groupEntries.isEmpty && servers.isNotEmpty) {
+      items.add(
+        Padding(
+          key: const Key('server-filter-empty-hint'),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+          child: Column(
+            children: [
+              Icon(
+                Icons.search_off,
+                size: 40,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              const Gap(12),
+              Text(
+                AppLocalizations.of(context)!.searchNoResults,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return ListView(
-      padding: const EdgeInsets.only(top: 8, bottom: 88),
+      // Bottom padding clears the floating pill nav + import FAB.
+      padding: const EdgeInsets.only(top: 8, bottom: 140),
       children: items,
     );
   }
@@ -398,26 +445,38 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     }
   }
 
-  /// Apply filter criteria to the server list.
+  /// Apply status filter, protocol quick-filter, and search query.
   List<ServerConfig> _applyFilter(
     List<ServerConfig> servers,
-    FilterCriteria filter,
+    SortFilterState sortFilter,
     Map<String, int> latencyMap,
   ) {
-    switch (filter) {
-      case FilterCriteria.all:
-        return servers;
-      case FilterCriteria.working:
-        return servers.where((s) {
-          final latency = latencyMap[s.id];
-          return latency != null && latency > 0 && latency <= 300;
-        }).toList();
-      case FilterCriteria.failed:
-        return servers.where((s) {
-          final latency = latencyMap[s.id];
-          return latency == -1 || (latency != null && latency > 300);
-        }).toList();
+    var result = switch (sortFilter.filter) {
+      FilterCriteria.all => servers,
+      FilterCriteria.working => servers.where((s) {
+        final latency = latencyMap[s.id];
+        return latency != null && latency > 0 && latency <= 300;
+      }).toList(),
+      FilterCriteria.failed => servers.where((s) {
+        final latency = latencyMap[s.id];
+        return latency == -1 || (latency != null && latency > 300);
+      }).toList(),
+    };
+
+    if (sortFilter.protocol != null) {
+      result = result.where((s) => s.protocol == sortFilter.protocol).toList();
     }
+
+    final query = sortFilter.query.trim().toLowerCase();
+    if (query.isNotEmpty) {
+      result = result.where((s) {
+        return s.name.toLowerCase().contains(query) ||
+            s.address.toLowerCase().contains(query) ||
+            s.groupName.toLowerCase().contains(query);
+      }).toList();
+    }
+
+    return result;
   }
 
   /// Apply sort criteria to the server list.

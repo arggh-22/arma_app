@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 
+import 'package:arma_proxy_vpn_client/core/theme/app_theme.dart';
+
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/latency_indicator.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/protocol_badge.dart';
@@ -55,40 +57,39 @@ class ServerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
+    final isActive = isSelected && !isMultiSelect;
     final Color bg = isMultiSelect && isChecked
-        ? colorScheme.primaryContainer
-        : (isSelected && !isMultiSelect
-            ? colorScheme.primary.withValues(alpha: 0.06)
-            : Colors.transparent);
+        ? colorScheme.primary.withValues(alpha: 0.18)
+        : isActive
+        ? colorScheme.primary.withValues(alpha: isDark ? 0.10 : 0.06)
+        : (isDark ? ArmaTokens.glassFill(0.04) : Colors.transparent);
+    final Color borderColor = isActive
+        ? colorScheme.primary.withValues(alpha: 0.55)
+        : (isDark ? ArmaTokens.glassBorder(0.06) : Colors.transparent);
 
     return Semantics(
       label: '${server.name}, ${server.protocol.label}, tap to select',
       child: Material(
         color: bg,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         child: Container(
-          decoration: isSelected && !isMultiSelect
-              ? BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border(
-                    left: BorderSide(
-                      color: colorScheme.primary,
-                      width: 4,
-                    ),
-                  ),
-                )
-              : null,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: borderColor),
+            boxShadow: isActive
+                ? ArmaTokens.ambientGlow(alpha: 0.12, blur: 16, spread: 0)
+                : null,
+          ),
           child: InkWell(
             onTap: isMultiSelect ? onToggleSelect : onTap,
             onLongPress: onLongPress,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
             child: Padding(
-              padding: EdgeInsets.only(
-                left: isSelected && !isMultiSelect ? 8 : 12,
-                right: 12,
-                top: 8,
-                bottom: 8,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
               ),
               child: Row(
                 children: [

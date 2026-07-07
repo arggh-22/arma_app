@@ -36,20 +36,17 @@ final goRouter = GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/routing',
-              builder: (context, state) => const RoutingScreen(),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
               path: '/settings',
               builder: (context, state) => const SettingsScreen(),
             ),
           ],
         ),
       ],
+    ),
+    // Routing & per-app proxy is reached from Settings (3-tab bottom nav).
+    GoRoute(
+      path: '/routing',
+      builder: (context, state) => const RoutingScreen(),
     ),
     GoRoute(
       path: '/logs',

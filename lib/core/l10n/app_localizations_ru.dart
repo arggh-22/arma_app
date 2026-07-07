@@ -748,4 +748,32 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get dashboardAnnouncementReadMore => 'Read more';
+
+  @override
+  String get navHome => 'Главная';
+
+  @override
+  String get tapToConnect => 'Нажмите, чтобы защитить соединение';
+
+  @override
+  String get tapToDisconnect => 'Нажмите, чтобы отключиться';
+
+  @override
+  String get disconnecting => 'Отключение';
+
+  @override
+  String get searchServersHint => 'Поиск серверов...';
+
+  @override
+  String serversCountSubtitle(int serverCount, int providerCount) {
+    return '$serverCount серверов · $providerCount провайдеров';
+  }
+
+  @override
+  String get searchNoResults =>
+      'Нет серверов, соответствующих поиску или фильтрам';
+
+  @override
+  String get routingSettingsSubtitle =>
+      'Правила доменов и прокси для приложений';
 }

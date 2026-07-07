@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Arma VPN - Servers</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed-variant": "#673d00",
+                    "on-primary": "#3c0091",
+                    "surface-container-lowest": "#0f0d15",
+                    "surface-variant": "#37333d",
+                    "error": "#ffb4ab",
+                    "on-error": "#690005",
+                    "outline-variant": "#494454",
+                    "secondary-fixed-dim": "#4cd7f6",
+                    "outline": "#958ea0",
+                    "surface-container-high": "#2c2832",
+                    "tertiary-fixed-dim": "#ffb869",
+                    "on-surface": "#e7e0ed",
+                    "primary": "#d0bcff",
+                    "secondary": "#4cd7f6",
+                    "inverse-on-surface": "#322f39",
+                    "on-secondary-fixed": "#001f26",
+                    "surface-bright": "#3b3742",
+                    "tertiary": "#ffb869",
+                    "surface": "#15121b",
+                    "on-error-container": "#ffdad6",
+                    "on-primary-fixed": "#23005c",
+                    "on-secondary-container": "#00424e",
+                    "surface-container-highest": "#37333d",
+                    "inverse-primary": "#6d3bd7",
+                    "surface-container": "#211e27",
+                    "on-tertiary-fixed": "#2c1700",
+                    "surface-dim": "#15121b",
+                    "inverse-surface": "#e7e0ed",
+                    "background": "#15121b",
+                    "on-secondary": "#003640",
+                    "tertiary-container": "#ca801e",
+                    "tertiary-fixed": "#ffdcbb",
+                    "primary-container": "#a078ff",
+                    "secondary-fixed": "#acedff",
+                    "on-primary-container": "#340080",
+                    "error-container": "#93000a",
+                    "on-tertiary": "#482900",
+                    "on-background": "#e7e0ed",
+                    "surface-tint": "#d0bcff",
+                    "secondary-container": "#03b5d3",
+                    "on-surface-variant": "#cbc3d7",
+                    "surface-container-low": "#1d1a23"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "md": "16px",
+                    "container-padding": "20px",
+                    "xl": "32px",
+                    "xs": "4px",
+                    "gutter": "16px",
+                    "nav-float-bottom": "32px",
+                    "lg": "24px",
+                    "sm": "8px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "headline-md": ["Montserrat"],
+                    "headline-xl": ["Montserrat"],
+                    "label-md": ["Inter"],
+                    "headline-lg-mobile": ["Montserrat"],
+                    "label-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg": ["Montserrat"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-pill {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glow-indigo {
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+        }
+        .status-pulse {
+            animation: pulse-glow 2s infinite;
+        }
+        @keyframes pulse-glow {
+            0% { opacity: 0.5; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 0.5; transform: scale(0.95); }
+        }
+        body {
+            background-color: #15121b;
+            color: #e7e0ed;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen pb-40">
+<!-- Top AppBar Component -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-white/10 shadow-[0_4px_20px_-5px_rgba(139,92,246,0.3)]">
+<div class="flex items-center justify-between px-md h-16 w-full">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" data-icon="shield_with_heart">shield_with_heart</span>
+<h1 class="font-headline-md text-headline-md font-bold tracking-tighter text-primary dark:text-primary">Arma</h1>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform" data-icon="account_circle">account_circle</button>
+</div>
+</header>
+<main class="pt-20 px-4 md:px-container-padding max-w-4xl mx-auto space-y-6">
+<!-- Header Section -->
+<section class="flex items-end justify-between pt-4">
+<div>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-background">Servers</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant/60">128 Secure Nodes Available</p>
+</div>
+<button class="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center glow-indigo active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+</section>
+<!-- Search Pill -->
+<div class="glass-pill rounded-full flex items-center px-4 py-3 gap-3">
+<span class="material-symbols-outlined text-on-surface-variant/50" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md w-full placeholder:text-on-surface-variant/40" placeholder="Search servers or countries..." type="text"/>
+<span class="material-symbols-outlined text-on-surface-variant/50" data-icon="tune">tune</span>
+</div>
+<!-- Subscription Groups (Bento-ish Layout) -->
+<div class="grid grid-cols-1 gap-6">
+<!-- Group Card: Global Pro Sub -->
+<div class="glass-card rounded-xl p-md space-y-4">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-secondary-container/20 flex items-center justify-center border border-secondary/20">
+<span class="material-symbols-outlined text-secondary" data-icon="public">public</span>
+</div>
+<div>
+<h3 class="font-headline-md text-body-lg text-on-surface">Global Pro Sub</h3>
+<span class="font-label-sm text-label-sm text-secondary">45 servers active</span>
+</div>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant/50 hover:text-on-surface transition-colors" data-icon="more_vert">more_vert</button>
+</div>
+<!-- Usage Bar -->
+<div class="space-y-2">
+<div class="flex justify-between font-label-sm text-label-sm text-on-surface-variant/70">
+<span>Data Consumption</span>
+<span>245GB / 1TB</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary glow-indigo w-[24.5%]"></div>
+</div>
+</div>
+<!-- Nested Server List -->
+<div class="space-y-1 mt-6">
+<p class="font-label-sm text-on-surface-variant/40 px-2 uppercase tracking-widest text-[10px]">Active Cluster</p>
+<!-- Server Row 1 -->
+<div class="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined text-2xl" data-icon="dns">dns</span>
+<div class="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-secondary status-pulse shadow-[0_0_8px_rgba(76,215,246,0.8)]"></div>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-body-md font-semibold text-on-surface">US-West-01</span>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">Hysteria2</span>
+</div>
+<div class="flex items-center gap-3 text-label-sm text-on-surface-variant/60">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm" data-icon="speed">speed</span> 42ms</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm" data-icon="group">group</span> 12%</span>
+</div>
+</div>
+</div>
+<div class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-10 h-5 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary glow-indigo"></div>
+</div>
+</div>
+<!-- Server Row 2 -->
+<div class="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined text-2xl" data-icon="dns">dns</span>
+<div class="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-secondary status-pulse shadow-[0_0_8px_rgba(76,215,246,0.8)]"></div>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-body-md font-semibold text-on-surface">SG-Cloud-9</span>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-secondary/10 text-secondary border border-secondary/20">VLESS</span>
+</div>
+<div class="flex items-center gap-3 text-label-sm text-on-surface-variant/60">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm" data-icon="speed">speed</span> 128ms</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm" data-icon="group">group</span> 45%</span>
+</div>
+</div>
+</div>
+<div class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-10 h-5 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+</div>
+</div>
+<!-- Server Row 3 -->
+<div class="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group cursor-pointer opacity-60">
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined text-2xl" data-icon="dns">dns</span>
+<div class="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-on-surface-variant/20"></div>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-body-md font-semibold text-on-surface">EU-Frank-04</span>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-white/10 text-white/40 border border-white/10">SS</span>
+</div>
+<div class="flex items-center gap-3 text-label-sm text-on-surface-variant/60">
+<span class="flex items-center gap-1 text-error"><span class="material-symbols-outlined text-sm" data-icon="error">error</span> Offline</span>
+</div>
+</div>
+</div>
+<div class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" disabled="" type="checkbox"/>
+<div class="w-10 h-5 bg-surface-container-high/40 rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/20 after:rounded-full after:h-4 after:w-4"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Additional Mini Group Card -->
+<div class="glass-card rounded-xl p-md flex items-center justify-between opacity-80 border-dashed border-white/20">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant/50" data-icon="cloud_off">cloud_off</span>
+<div>
+<h3 class="font-label-md text-on-surface-variant/60">Legacy Shadowsocks Group</h3>
+<span class="font-label-sm text-[10px] text-on-surface-variant/40">Expired 2 days ago</span>
+</div>
+</div>
+<button class="px-3 py-1.5 rounded-full border border-primary/30 text-primary text-label-sm">Renew</button>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-nav-float-bottom left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full bg-surface-container/60 dark:bg-surface-container/60 backdrop-blur-[20px] border border-white/10 shadow-[0_8px_32px_0_rgba(139,92,246,0.2)] z-50 flex justify-around items-center py-sm px-lg">
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:bg-white/5 rounded-full transition-all p-2 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-label-sm mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary drop-shadow-[0_0_8px_rgba(208,188,255,0.8)] hover:bg-white/5 rounded-full transition-all p-2 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dns" style="font-variation-settings: 'FILL' 1;">dns</span>
+<span class="font-label-md text-label-sm mt-1">Servers</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:bg-white/5 rounded-full transition-all p-2 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-sm mt-1">Settings</span>
+</a>
+</nav>
+<script>
+        // Micro-interactions for toggles
+        document.querySelectorAll('input[type="checkbox"]').forEach(toggle => {
+            toggle.addEventListener('change', (e) => {
+                const parentRow = e.target.closest('.group');
+                if (e.target.checked) {
+                    parentRow.classList.add('bg-primary/5');
+                    parentRow.classList.remove('bg-white/5');
+                } else {
+                    parentRow.classList.remove('bg-primary/5');
+                    parentRow.classList.add('bg-white/5');
+                }
+            });
+        });
+
+        // Add some atmospheric peripheral glow logic
+        const bgGlow = document.createElement('div');
+        bgGlow.className = 'fixed inset-0 pointer-events-none z-[-1] overflow-hidden';
+        bgGlow.innerHTML = `
+            <div class="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full"></div>
+            <div class="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-secondary/5 blur-[150px] rounded-full"></div>
+        `;
+        document.body.appendChild(bgGlow);
+    </script>
+</body></html>

@@ -743,4 +743,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dashboardAnnouncementReadMore => 'Read more';
+
+  @override
+  String get navHome => 'Home';
+
+  @override
+  String get tapToConnect => 'Tap to secure connection';
+
+  @override
+  String get tapToDisconnect => 'Tap to disconnect';
+
+  @override
+  String get disconnecting => 'Disconnecting';
+
+  @override
+  String get searchServersHint => 'Search servers...';
+
+  @override
+  String serversCountSubtitle(int serverCount, int providerCount) {
+    return '$serverCount servers · $providerCount providers';
+  }
+
+  @override
+  String get searchNoResults => 'No servers match your search or filters';
+
+  @override
+  String get routingSettingsSubtitle => 'Domain rules & per-app proxy';
 }

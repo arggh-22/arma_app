@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:arma_proxy_vpn_client/core/theme/app_theme.dart';
+
 /// Inline latency display widget per UI-SPEC §6.
 ///
 /// Shows latency values with color-coded text:
@@ -85,16 +87,25 @@ class LatencyIndicator extends StatelessWidget {
     // Success — color coded by latency range
     final Color textColor;
     if (latency! <= 150) {
-      textColor = Colors.green;
+      textColor = ArmaTokens.success;
     } else if (latency! <= 300) {
-      textColor = Colors.orange;
+      textColor = ArmaTokens.warning;
     } else {
       textColor = colorScheme.error;
     }
 
-    return Text(
-      '${latency}ms',
-      style: theme.textTheme.labelMedium?.copyWith(color: textColor),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.bolt, size: 12, color: textColor),
+        Text(
+          '${latency}ms',
+          style: theme.textTheme.labelMedium?.copyWith(
+            color: textColor,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }

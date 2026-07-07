@@ -35,11 +35,14 @@ class SubscriptionFetchResult {
 /// - Extracts bandwidth/expiry from `subscription-userinfo` header (D-03)
 /// - Enforces 15s timeout and 5MB body size limit (T-03-15)
 class SubscriptionService {
-  /// Default User-Agent mimics a standard mobile browser to avoid
-  /// provider fingerprinting (T-03-14).
-  static const _defaultUserAgent =
-      'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 '
-      '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36';
+  /// Default User-Agent identifies this app as a VPN client.
+  ///
+  /// Subscription backends content-negotiate on User-Agent: a browser-like
+  /// UA (e.g. `Mozilla/... Chrome/...`) makes the arma backend 302-redirect
+  /// to an HTML landing page instead of serving the base64 subscription,
+  /// so the parser sees HTML and finds zero servers. A recognized client UA
+  /// (`arma`) is required to receive the actual server list.
+  static const _defaultUserAgent = 'arma';
 
   /// HTTP request timeout (T-03-15).
   static const _timeout = Duration(seconds: 15);

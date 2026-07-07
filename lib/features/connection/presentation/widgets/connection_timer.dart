@@ -58,9 +58,16 @@ class _ConnectionTimerState extends ConsumerState<ConnectionTimer> {
     final seconds = (_elapsed.inSeconds % 60).toString().padLeft(2, '0');
     final timeStr = '$hours:$minutes:$seconds';
 
+    final theme = Theme.of(context);
     return Text(
       timeStr,
-      style: Theme.of(context).textTheme.headlineMedium,
+      style: theme.textTheme.headlineMedium?.copyWith(
+        fontFeatures: const [FontFeature.tabularFigures()],
+        // Muted until an active session is being timed.
+        color: _elapsed == Duration.zero
+            ? theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5)
+            : theme.colorScheme.onSurface,
+      ),
     );
   }
 }

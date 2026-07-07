@@ -342,8 +342,12 @@ class TestMultiSelectNotifier extends MultiSelectNotifier {
 
 class TestSortFilterNotifier extends SortFilterNotifier {
   @override
-  ({SortCriteria sort, FilterCriteria filter}) build() =>
-      (sort: SortCriteria.defaultOrder, filter: FilterCriteria.all);
+  SortFilterState build() => (
+    sort: SortCriteria.defaultOrder,
+    filter: FilterCriteria.all,
+    query: '',
+    protocol: null,
+  );
 }
 
 class TestLatencyNotifier extends LatencyNotifier {

@@ -3,6 +3,7 @@ import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/active_server_card.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/active_server_provider.dart';
+import 'package:arma_proxy_vpn_client/shared/widgets/glass_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,10 +14,10 @@ void main() {
   ) async {
     await _pumpCard(tester, server: null);
 
-    final card = tester.widget<Card>(find.byType(Card));
-    final shape = card.shape as RoundedRectangleBorder;
+    final card = tester.widget<GlassCard>(find.byType(GlassCard));
 
-    expect(shape.side.width, equals(0));
+    expect(card.glow, isFalse);
+    expect(card.borderColor, isNull);
   });
 
   testWidgets('selected server gets parked highlight border and tinted surface', (
@@ -34,12 +35,16 @@ void main() {
       ),
     );
 
-    final card = tester.widget<Card>(find.byType(Card));
-    final shape = card.shape as RoundedRectangleBorder;
+    final card = tester.widget<GlassCard>(find.byType(GlassCard));
     final theme = Theme.of(tester.element(find.byType(ActiveServerCard)));
 
-    expect(shape.side.width, greaterThan(0));
-    expect(card.color, isNot(theme.colorScheme.surfaceContainerLow));
+    expect(card.glow, isTrue);
+    expect(card.borderColor, isNotNull);
+    expect(
+      card.borderColor!.toARGB32() & 0x00FFFFFF,
+      theme.colorScheme.primary.toARGB32() & 0x00FFFFFF,
+    );
+    expect(card.fillAlpha, greaterThan(0.05));
   });
 }
 

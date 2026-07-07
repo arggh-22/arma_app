@@ -746,4 +746,31 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get dashboardAnnouncementReadMore => 'Read more';
+
+  @override
+  String get navHome => 'خانه';
+
+  @override
+  String get tapToConnect => 'برای ایمن‌سازی اتصال ضربه بزنید';
+
+  @override
+  String get tapToDisconnect => 'برای قطع اتصال ضربه بزنید';
+
+  @override
+  String get disconnecting => 'در حال قطع اتصال';
+
+  @override
+  String get searchServersHint => 'جستجوی سرورها...';
+
+  @override
+  String serversCountSubtitle(int serverCount, int providerCount) {
+    return '$serverCount سرور · $providerCount ارائه‌دهنده';
+  }
+
+  @override
+  String get searchNoResults =>
+      'هیچ سروری با جستجو یا فیلترهای شما مطابقت ندارد';
+
+  @override
+  String get routingSettingsSubtitle => 'قوانین دامنه و پروکسی برای هر برنامه';
 }

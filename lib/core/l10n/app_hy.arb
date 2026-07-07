@@ -326,5 +326,13 @@
   "telegramLinkDoneAction": "Done",
   "dashboardTelegramFabLabel": "Telegram",
   "dashboardAnnouncementTitle": "Announcement",
-  "dashboardAnnouncementReadMore": "Read more"
+  "dashboardAnnouncementReadMore": "Read more",
+  "navHome": "Գլխավոր",
+  "tapToConnect": "Հպեք՝ կապը պաշտպանելու համար",
+  "tapToDisconnect": "Հպեք՝ անջատվելու համար",
+  "disconnecting": "Անջատվում է",
+  "searchServersHint": "Որոնել սերվերներ...",
+  "serversCountSubtitle": "{serverCount} սերվեր · {providerCount} մատակարար",
+  "searchNoResults": "Ձեր որոնմանը կամ զտիչներին համապատասխանող սերվերներ չկան",
+  "routingSettingsSubtitle": "Դոմենի կանոններ և հավելվածների պրոքսի"
 }

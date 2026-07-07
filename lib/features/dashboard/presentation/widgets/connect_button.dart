@@ -2,21 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
+import 'package:arma_proxy_vpn_client/core/theme/app_theme.dart';
 import 'package:arma_proxy_vpn_client/features/connection/domain/entities/connection_status.dart';
 import 'package:arma_proxy_vpn_client/features/connection/presentation/providers/connection_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/active_server_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/server_list_provider.dart';
 
-/// Animated circular connect button for the Dashboard.
+/// Hero connect control — a massive glowing circle that morphs between
+/// connection states (design: Home Dashboard hero tunnel element).
 ///
-/// Visual states (D-03):
-///   - Disconnected: grey circle, no animation
-///   - Connecting: teal circle with pulsing scale + shimmer, repeating
-///   - Connected: teal circle with solid glow shadow
-///   - Disconnecting: grey circle, no animation
+/// Visual states:
+///   - Disconnected: dark glass circle, muted power glyph, "DISCONNECTED"
+///   - Connecting: indigo ring pulsing around a shield glyph, "CONNECTING"
+///   - Connected: solid Electric Indigo glow, shield glyph, "CONNECTED"
+///   - Disconnecting: faded connected state
 ///
-/// 120dp diameter with power icon. Tapping calls connect/disconnect
-/// via [ConnectionNotifier].
+/// Tapping calls connect/disconnect via [ConnectionNotifier].
 class ConnectButton extends ConsumerWidget {
   const ConnectButton({super.key});
 
@@ -24,37 +26,55 @@ class ConnectButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final status = ref.watch(connectionProvider);
     final activeServer = ref.watch(activeServerProvider);
+    final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final (buttonColor, glowColor, isAnimating, semanticLabel) = switch (status) {
-      Disconnected() => (
-        Colors.grey.shade600,
-        null as Color?,
-        false,
-        'Connect',
-      ),
-      Connecting() => (
-        colorScheme.primary,
-        null as Color?,
-        true,
-        'Connecting',
-      ),
-      Connected() => (
-        colorScheme.primary,
-        colorScheme.primary.withValues(alpha: 0.4) as Color?,
-        false,
-        'Disconnect',
-      ),
-      Disconnecting() => (
-        colorScheme.primary,
-        null as Color?,
-        false,
-        'Disconnecting',
-      ),
-    };
+    final diameter = (MediaQuery.sizeOf(context).width * 0.55).clamp(
+      180.0,
+      240.0,
+    );
 
-    // Fade opacity for disconnecting state
-    final targetOpacity = status is Disconnecting ? 0.4 : 1.0;
+    final (statusWord, icon, ringColor, glowAlpha, isPulsing, semanticLabel) =
+        switch (status) {
+          Disconnected() => (
+            l10n.notConnected.toUpperCase(),
+            Icons.power_settings_new,
+            colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+            0.12,
+            false,
+            'Connect',
+          ),
+          Connecting() => (
+            l10n.connecting.toUpperCase(),
+            Icons.shield_outlined,
+            colorScheme.primary,
+            0.30,
+            true,
+            'Connecting',
+          ),
+          Connected() => (
+            l10n.connected.toUpperCase(),
+            Icons.shield,
+            colorScheme.primary,
+            0.45,
+            false,
+            'Disconnect',
+          ),
+          Disconnecting() => (
+            l10n.disconnecting.toUpperCase(),
+            Icons.shield_outlined,
+            colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+            0.10,
+            false,
+            'Disconnecting',
+          ),
+        };
+
+    final isActive = status is Connected || status is Connecting;
+    final contentColor = isActive
+        ? (isDark ? Colors.white : colorScheme.primary)
+        : colorScheme.onSurfaceVariant;
 
     Future<void> handleTap() async {
       switch (status) {
@@ -87,57 +107,90 @@ class ConnectButton extends ConsumerWidget {
 
     return Semantics(
       label: semanticLabel,
+      button: true,
       child: GestureDetector(
         onTap: status is Disconnecting ? null : () => handleTap(),
         child: AnimatedOpacity(
-          opacity: targetOpacity,
+          opacity: status is Disconnecting ? 0.45 : 1.0,
           duration: const Duration(milliseconds: 600),
           curve: Curves.easeOut,
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            width: 120,
-            height: 120,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOut,
+            width: diameter,
+            height: diameter,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: buttonColor,
-              boxShadow: glowColor != null
-                  ? [
-                      BoxShadow(
-                        color: glowColor,
-                        blurRadius: 20,
-                        spreadRadius: 5,
-                      ),
-                    ]
-                  : null,
+              gradient: RadialGradient(
+                colors: isDark
+                    ? [
+                        ArmaTokens.indigoDeep.withValues(
+                          alpha: isActive ? 0.55 : 0.18,
+                        ),
+                        ArmaTokens.deepNavy.withValues(alpha: 0.9),
+                      ]
+                    : [
+                        colorScheme.primary.withValues(
+                          alpha: isActive ? 0.30 : 0.08,
+                        ),
+                        colorScheme.surface,
+                      ],
+              ),
+              border: Border.all(color: ringColor, width: 2),
+              boxShadow: ArmaTokens.ambientGlow(
+                color: isActive ? ArmaTokens.indigo : ArmaTokens.glow,
+                alpha: glowAlpha,
+                blur: 60,
+                spread: 8,
+              ),
             ),
-            child: const Icon(
-              Icons.power_settings_new,
-              color: Colors.white,
-              size: 48,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  transitionBuilder: (child, animation) =>
+                      ScaleTransition(scale: animation, child: child),
+                  child: Icon(
+                    icon,
+                    key: ValueKey(icon),
+                    color: contentColor,
+                    size: diameter * 0.22,
+                  ),
+                ),
+                SizedBox(height: diameter * 0.07),
+                Text(
+                  statusWord,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: contentColor,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 3,
+                  ),
+                ),
+              ],
             ),
-          ),
-        )
-            .animate(target: isAnimating ? 1 : 0)
-            .scaleXY(
-              begin: 1.0,
-              end: 1.05,
-              duration: 800.ms,
-              curve: Curves.easeInOut,
-            )
-            .then()
-            .scaleXY(
-              begin: 1.05,
-              end: 1.0,
-              duration: 800.ms,
-              curve: Curves.easeInOut,
-            )
-            .animate(
-              onPlay: isAnimating ? (c) => c.repeat() : null,
-            )
-            .shimmer(
-              duration: 1500.ms,
-              color: colorScheme.primary.withValues(alpha: 0.3),
-            ),
+          )
+              .animate(target: isPulsing ? 1 : 0)
+              .scaleXY(
+                begin: 1.0,
+                end: 1.04,
+                duration: 800.ms,
+                curve: Curves.easeInOut,
+              )
+              .then()
+              .scaleXY(
+                begin: 1.04,
+                end: 1.0,
+                duration: 800.ms,
+                curve: Curves.easeInOut,
+              )
+              .animate(onPlay: isPulsing ? (c) => c.repeat() : null)
+              .shimmer(
+                duration: 1500.ms,
+                color: colorScheme.primary.withValues(alpha: 0.25),
+              ),
+        ),
       ),
     );
   }

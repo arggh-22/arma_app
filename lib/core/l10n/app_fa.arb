@@ -326,5 +326,13 @@
   "telegramLinkDoneAction": "انجام شد",
   "dashboardTelegramFabLabel": "Telegram",
   "dashboardAnnouncementTitle": "Announcement",
-  "dashboardAnnouncementReadMore": "Read more"
+  "dashboardAnnouncementReadMore": "Read more",
+  "navHome": "خانه",
+  "tapToConnect": "برای ایمن‌سازی اتصال ضربه بزنید",
+  "tapToDisconnect": "برای قطع اتصال ضربه بزنید",
+  "disconnecting": "در حال قطع اتصال",
+  "searchServersHint": "جستجوی سرورها...",
+  "serversCountSubtitle": "{serverCount} سرور · {providerCount} ارائه‌دهنده",
+  "searchNoResults": "هیچ سروری با جستجو یا فیلترهای شما مطابقت ندارد",
+  "routingSettingsSubtitle": "قوانین دامنه و پروکسی برای هر برنامه"
 }

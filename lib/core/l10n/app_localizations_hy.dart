@@ -748,4 +748,31 @@ class AppLocalizationsHy extends AppLocalizations {
 
   @override
   String get dashboardAnnouncementReadMore => 'Read more';
+
+  @override
+  String get navHome => 'Գլխավոր';
+
+  @override
+  String get tapToConnect => 'Հպեք՝ կապը պաշտպանելու համար';
+
+  @override
+  String get tapToDisconnect => 'Հպեք՝ անջատվելու համար';
+
+  @override
+  String get disconnecting => 'Անջատվում է';
+
+  @override
+  String get searchServersHint => 'Որոնել սերվերներ...';
+
+  @override
+  String serversCountSubtitle(int serverCount, int providerCount) {
+    return '$serverCount սերվեր · $providerCount մատակարար';
+  }
+
+  @override
+  String get searchNoResults =>
+      'Ձեր որոնմանը կամ զտիչներին համապատասխանող սերվերներ չկան';
+
+  @override
+  String get routingSettingsSubtitle => 'Դոմենի կանոններ և հավելվածների պրոքսի';
 }

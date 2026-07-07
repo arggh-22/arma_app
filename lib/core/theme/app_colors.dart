@@ -2,29 +2,30 @@ import 'package:flutter/material.dart';
 
 import 'package:arma_proxy_vpn_client/core/constants/protocol_constants.dart';
 
-/// Protocol badge colors for visual identification in server cards.
+/// Protocol accent colors for visual identification in server cards.
 ///
-/// Each protocol gets a distinct, accessible color on both light and dark
-/// backgrounds (white text overlay).
+/// Tuned for the cyber-noir glass design: each protocol gets a bright
+/// accent rendered as colored text inside a translucent capsule
+/// (see [ProtocolBadge]), readable on both obsidian and light surfaces.
 class AppColors {
   AppColors._();
 
-  /// VLESS — Teal 600 (matches app accent).
-  static const vless = Color(0xFF00897B);
+  /// VLESS — Cyber Cyan (matches the secondary accent).
+  static const vless = Color(0xFF22D3EE);
 
-  /// VMess — Blue 800.
-  static const vmess = Color(0xFF1565C0);
+  /// VMess — Indigo 400.
+  static const vmess = Color(0xFF818CF8);
 
-  /// Trojan — Orange 900.
-  static const trojan = Color(0xFFE65100);
+  /// Trojan — Amber/Orange 400.
+  static const trojan = Color(0xFFFB923C);
 
-  /// Shadowsocks — Purple 800.
-  static const shadowsocks = Color(0xFF6A1B9A);
+  /// Shadowsocks — Violet glow.
+  static const shadowsocks = Color(0xFFC084FC);
 
-  /// Hysteria2 — Green 800.
-  static const hysteria2 = Color(0xFF2E7D32);
+  /// Hysteria2 — Signal green.
+  static const hysteria2 = Color(0xFF4ADE80);
 
-  /// Returns the badge color for the given [type].
+  /// Returns the accent color for the given [type].
   static Color protocolColor(ProtocolType type) {
     return switch (type) {
       ProtocolType.vless => vless,

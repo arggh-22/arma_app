@@ -49,6 +49,8 @@ class SettingsScreen extends ConsumerWidget {
         title: Text(l10n.settings, style: theme.textTheme.titleLarge),
       ),
       body: ListView(
+        // Bottom padding clears the floating pill nav.
+        padding: const EdgeInsets.only(bottom: 120),
         children: [
           // Arma VPN settings section header
           Padding(
@@ -717,6 +719,32 @@ class SettingsScreen extends ConsumerWidget {
             value: acSettings.mixedSniEnabled,
             onChanged: (v) =>
                 ref.read(antiCensorshipProvider.notifier).setMixedSni(v),
+          ),
+
+          const Divider(),
+
+          // Routing section header (3-tab nav: routing lives in Settings)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              l10n.routing,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: colorScheme.primary,
+              ),
+            ),
+          ),
+
+          // Routing rules & per-app proxy
+          ListTile(
+            key: const Key('settings-routing-tile'),
+            leading: const Icon(Icons.alt_route_outlined),
+            title: Text(l10n.routing, style: theme.textTheme.titleMedium),
+            subtitle: Text(
+              l10n.routingSettingsSubtitle,
+              style: theme.textTheme.bodyMedium,
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/routing'),
           ),
 
           const Divider(),

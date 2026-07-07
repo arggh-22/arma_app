@@ -111,33 +111,36 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         announcementText != null && announcementText.isNotEmpty;
     final hasAnnouncement = hasAnnouncementTitle || hasAnnouncementText;
 
+    final colorScheme = Theme.of(context).colorScheme;
     final (statusText, statusColor) = switch (status) {
+      // Conversational action prompt under the hero (design: "Tap to
+      // secure connection"); connection errors take its place in red.
       Disconnected(:final lastError) => (
-        lastError ?? l10n.notConnected,
-        Theme.of(context).colorScheme.onSurfaceVariant,
+        lastError ?? l10n.tapToConnect,
+        lastError != null ? colorScheme.error : colorScheme.onSurfaceVariant,
       ),
-      Connecting() => (
-        '${l10n.connecting}...',
-        Theme.of(context).colorScheme.primary,
-      ),
-      Connected() => (l10n.connected, Colors.green),
+      Connecting() => ('${l10n.connecting}...', colorScheme.primary),
+      Connected() => (l10n.tapToDisconnect, colorScheme.onSurfaceVariant),
       Disconnecting() => (
-        'Disconnecting...',
-        Theme.of(context).colorScheme.onSurfaceVariant,
+        '${l10n.disconnecting}...',
+        colorScheme.onSurfaceVariant,
       ),
     };
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          l10n.appName,
-          style: Theme.of(context).textTheme.titleLarge,
+        title: Row(
+          children: [
+            Icon(Icons.shield, color: colorScheme.primary, size: 24),
+            const Gap(8),
+            Text(l10n.appName),
+          ],
         ),
       ),
       body: NotificationListener<UserScrollNotification>(
         onNotification: _onScroll,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
           child: Column(
             children: [
               Container(
@@ -146,22 +149,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 constraints: const BoxConstraints(minHeight: 260),
                 child: Column(
                   children: [
+                    const Gap(8),
                     const ConnectButton(),
-                    const Gap(16),
+                    const Gap(20),
                     Text(
                       statusText,
+                      textAlign: TextAlign.center,
                       style: Theme.of(
                         context,
-                      ).textTheme.titleMedium?.copyWith(color: statusColor),
+                      ).textTheme.bodyMedium?.copyWith(color: statusColor),
                     ),
-                    const Gap(8),
+                    const Gap(12),
                     const ConnectionTimer(),
-                    const Gap(24),
-                    const ActiveServerCard(),
                     if (uiPreferences.showDashboardStatistics) ...[
-                      const Gap(16),
+                      const Gap(12),
                       const TrafficStatsCard(),
                     ],
+                    const Gap(24),
+                    const ActiveServerCard(),
                   ],
                 ),
               ),
@@ -220,8 +225,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         ),
       ),
+      // Lift the FAB clear of the floating pill nav.
       floatingActionButton: _showLinkFab
-          ? isGuest
+          ? Padding(
+              padding: const EdgeInsets.only(bottom: 84),
+              child: isGuest
                 ? FloatingActionButton.extended(
                     key: const Key('dashboard-telegram-link-fab'),
                     heroTag: 'dashboard-telegram-link-fab',
@@ -235,7 +243,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     tooltip: l10n.dashboardTelegramFabLabel,
                     onPressed: _openTelegramBot,
                     child: const FaIcon(FontAwesomeIcons.telegram, size: 20),
-                  )
+                  ),
+            )
           : null,
     );
   }

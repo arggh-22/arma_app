@@ -326,5 +326,13 @@
   "telegramLinkDoneAction": "Готово",
   "dashboardTelegramFabLabel": "Telegram",
   "dashboardAnnouncementTitle": "Announcement",
-  "dashboardAnnouncementReadMore": "Read more"
+  "dashboardAnnouncementReadMore": "Read more",
+  "navHome": "Главная",
+  "tapToConnect": "Нажмите, чтобы защитить соединение",
+  "tapToDisconnect": "Нажмите, чтобы отключиться",
+  "disconnecting": "Отключение",
+  "searchServersHint": "Поиск серверов...",
+  "serversCountSubtitle": "{serverCount} серверов · {providerCount} провайдеров",
+  "searchNoResults": "Нет серверов, соответствующих поиску или фильтрам",
+  "routingSettingsSubtitle": "Правила доменов и прокси для приложений"
 }

@@ -1447,6 +1447,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Read more'**
   String get dashboardAnnouncementReadMore;
+
+  /// No description provided for @navHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navHome;
+
+  /// No description provided for @tapToConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to secure connection'**
+  String get tapToConnect;
+
+  /// No description provided for @tapToDisconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to disconnect'**
+  String get tapToDisconnect;
+
+  /// No description provided for @disconnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnecting'**
+  String get disconnecting;
+
+  /// No description provided for @searchServersHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search servers...'**
+  String get searchServersHint;
+
+  /// No description provided for @serversCountSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{serverCount} servers · {providerCount} providers'**
+  String serversCountSubtitle(int serverCount, int providerCount);
+
+  /// No description provided for @searchNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No servers match your search or filters'**
+  String get searchNoResults;
+
+  /// No description provided for @routingSettingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Domain rules & per-app proxy'**
+  String get routingSettingsSubtitle;
 }
 
 class _AppLocalizationsDelegate

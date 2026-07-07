@@ -188,6 +188,10 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
       id: 'default-api-key-${key.id}',
       name: key.name,
       url: key.subscriptionUrl,
+      // Client UA is required — a browser UA makes the arma backend redirect
+      // to an HTML page instead of serving the subscription (see
+      // SubscriptionService._defaultUserAgent).
+      userAgent: 'arma',
       lastUpdated: syntheticTimestamp,
       addedAt: syntheticTimestamp,
       autoUpdate: false,
