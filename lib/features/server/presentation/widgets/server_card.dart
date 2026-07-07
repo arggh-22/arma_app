@@ -70,7 +70,8 @@ class ServerCard extends StatelessWidget {
         : (isDark ? ArmaTokens.glassBorder(0.06) : Colors.transparent);
 
     return Semantics(
-      label: '${server.name}, ${server.protocol.label}, tap to select',
+      label:
+          '${server.name}, ${server.protocol.label}${server.rawConfig != null ? ', JSON config' : ''}, tap to select',
       child: Material(
         color: bg,
         borderRadius: BorderRadius.circular(12),
@@ -129,6 +130,11 @@ class ServerCard extends StatelessWidget {
                         Row(
                           children: [
                             ProtocolBadge(protocol: server.protocol),
+                            if (server.rawConfig != null &&
+                                server.rawConfig!.isNotEmpty) ...[
+                              const Gap(6),
+                              const _JsonBadge(),
+                            ],
                             const Gap(8),
                             Expanded(
                               child: Text(
@@ -166,6 +172,41 @@ class ServerCard extends StatelessWidget {
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Small capsule marking a server that carries a full JSON Xray config
+/// (from a JSON subscription) — rendered next to the protocol badge.
+class _JsonBadge extends StatelessWidget {
+  const _JsonBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final accent = theme.colorScheme.primary;
+    final isDark = theme.brightness == Brightness.dark;
+    final textColor =
+        isDark ? accent : Color.lerp(accent, Colors.black, 0.35)!;
+
+    return Semantics(
+      label: 'JSON config',
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: accent.withValues(alpha: isDark ? 0.12 : 0.10),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: accent.withValues(alpha: 0.35)),
+        ),
+        child: Text(
+          'JSON',
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: textColor,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.4,
           ),
         ),
       ),
