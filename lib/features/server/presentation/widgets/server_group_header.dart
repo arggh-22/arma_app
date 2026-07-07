@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
+import 'package:arma_proxy_vpn_client/core/utils/byte_format.dart';
 import 'package:arma_proxy_vpn_client/core/utils/expiry_format.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/subscription.dart';
 
@@ -254,8 +255,6 @@ class ServerGroupHeader extends StatelessWidget {
     final usedBytes = (sub.uploadBytes ?? 0) + (sub.downloadBytes ?? 0);
     final totalBytes = sub.totalBytes ?? 1;
     final fraction = (usedBytes / totalBytes).clamp(0.0, 1.0);
-    final usedGb = usedBytes / (1024 * 1024 * 1024);
-    final totalGb = totalBytes / (1024 * 1024 * 1024);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,7 +270,7 @@ class ServerGroupHeader extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          '${usedGb.toStringAsFixed(1)} / ${totalGb.toStringAsFixed(1)} GB',
+          '${formatBytes(usedBytes)} / ${formatBytes(totalBytes)}',
           style: theme.textTheme.bodySmall?.copyWith(
             color: colorScheme.onSurfaceVariant,
           ),

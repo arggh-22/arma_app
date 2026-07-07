@@ -1,5 +1,7 @@
+import 'package:arma_proxy_vpn_client/core/utils/byte_format.dart';
 import 'package:arma_proxy_vpn_client/features/connection/domain/entities/connection_status.dart';
 import 'package:arma_proxy_vpn_client/features/connection/presentation/providers/connection_provider.dart';
+import 'package:arma_proxy_vpn_client/features/dashboard/domain/entities/default_server_item.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_servers_provider.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_servers_sort_filter_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
@@ -73,6 +75,17 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
             .map((item) => item.expireDate)
             .reduce((a, b) => a.isBefore(b) ? a : b);
 
+    // Aggregate data usage across distinct subscriptions (a key's servers all
+    // carry the same used/total figures, so dedupe by subscription URL first).
+    final usageByUrl = <String, DefaultServerItem>{};
+    for (final item in state.items) {
+      usageByUrl.putIfAbsent(item.subscriptionUrl, () => item);
+    }
+    final usedBytes =
+        usageByUrl.values.fold<int>(0, (sum, i) => sum + i.usedTraffic);
+    final totalBytes =
+        usageByUrl.values.fold<int>(0, (sum, i) => sum + i.dataLimit);
+
     final notifier = ref.read(defaultServersSortFilterProvider.notifier);
 
     return Column(
@@ -133,6 +146,11 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: _SubscriptionExpiry(expireDate: earliestExpiry),
+          ),
+        if (totalBytes > 0)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+            child: _UsageBar(usedBytes: usedBytes, totalBytes: totalBytes),
           ),
         if (allConfigs.isEmpty)
           Padding(
@@ -271,6 +289,46 @@ class _SubscriptionExpiry extends StatelessWidget {
           style: theme.textTheme.bodySmall?.copyWith(
             color: color,
             fontWeight: emphasized ? FontWeight.bold : null,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Data-usage progress bar for the whole default-servers subscription
+/// (spec §2: `subscription-userinfo` → download/total). Turns red near the cap.
+class _UsageBar extends StatelessWidget {
+  const _UsageBar({required this.usedBytes, required this.totalBytes});
+
+  final int usedBytes;
+  final int totalBytes;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final fraction =
+        totalBytes <= 0 ? 0.0 : (usedBytes / totalBytes).clamp(0.0, 1.0);
+    final nearLimit = fraction >= 0.9;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: fraction,
+            minHeight: 6,
+            backgroundColor: colorScheme.surfaceContainerHighest,
+            color: nearLimit ? colorScheme.error : colorScheme.primary,
+          ),
+        ),
+        const Gap(4),
+        Text(
+          '${formatBytes(usedBytes)} / ${formatBytes(totalBytes)}',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
       ],

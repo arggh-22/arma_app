@@ -71,6 +71,34 @@ void main() {
     ]);
   });
 
+  testWidgets('shows the subscription data-usage bar', (tester) async {
+    const gb = 1073741824;
+    final notifier = TestDefaultServersNotifier(
+      _state(items: [
+        _item(
+          id: '1',
+          name: 'A',
+          subscriptionUrl: 'https://example.com/sub',
+          usedTraffic: gb,
+          dataLimit: 10 * gb,
+        ),
+        _item(
+          id: '2',
+          name: 'B',
+          subscriptionUrl: 'https://example.com/sub',
+          usedTraffic: gb,
+          dataLimit: 10 * gb,
+        ),
+      ]),
+    );
+
+    await _pumpSection(tester, defaultServersNotifier: notifier);
+
+    // Both servers share one subscription, so usage is shown once (deduped).
+    expect(find.text('1.0 GB / 10 GB'), findsOneWidget);
+    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+  });
+
   testWidgets('search filters the default servers list', (tester) async {
     final notifier = TestDefaultServersNotifier(
       _state(items: [
@@ -374,15 +402,18 @@ DefaultServerItem _item({
   String status = 'active',
   bool isActive = true,
   ServerConfig? serverConfig,
+  int usedTraffic = 1024,
+  int dataLimit = 4096,
+  String? subscriptionUrl,
 }) {
   final config = serverConfig ?? _serverConfig(id: id, name: name);
   return DefaultServerItem(
     id: id,
     name: name,
     status: status,
-    usedTraffic: 1024,
-    dataLimit: 4096,
-    subscriptionUrl: 'https://example.com/$id',
+    usedTraffic: usedTraffic,
+    dataLimit: dataLimit,
+    subscriptionUrl: subscriptionUrl ?? 'https://example.com/$id',
     expireDate: DateTime.utc(2027, 1, 1),
     isActive: isActive,
     serverConfig: config,
