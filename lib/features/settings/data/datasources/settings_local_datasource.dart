@@ -42,6 +42,9 @@ class SettingsLocalDatasource {
   static const _enabledRegionsKey = 'enabled_regions';
   static const _bypassLanKey = 'bypass_lan';
 
+  // Health check / latency ping type (Advanced Settings)
+  static const _pingTypeKey = 'ping_type';
+
   // UI / notification display
   static const _showDetailedNotificationKey = 'show_detailed_notification';
   static const _showDashboardStatisticsKey = 'show_dashboard_statistics';
@@ -226,6 +229,11 @@ class SettingsLocalDatasource {
 
   Future<void> setBypassLan(bool bypass) =>
       _prefs.setBool(_bypassLanKey, bypass);
+
+  /// Latency ping type key (`http` / `tcp` / `icmp`). Defaults to `http`.
+  String getPingType() => _prefs.getString(_pingTypeKey) ?? 'http';
+
+  Future<void> setPingType(String key) => _prefs.setString(_pingTypeKey, key);
 
   // ── DNS Presets and Filtering ──────────────────────────────────────────
 

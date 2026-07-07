@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
-import 'package:arma_proxy_vpn_client/core/theme/app_theme.dart';
+import 'package:arma_proxy_vpn_client/features/server/domain/latency_level.dart';
 
-/// Inline latency display widget per UI-SPEC §6.
+/// Inline latency display widget per UI-SPEC §6 and Health Check spec §3.
 ///
 /// Shows latency values with color-coded text:
 /// - **null (untested):** dash in onSurfaceVariant
 /// - **-2 (testing):** small circular progress indicator
-/// - **-1 (failed):** error icon
-/// - **0-150ms (good):** green text
-/// - **151-300ms (fair):** orange text
-/// - **301ms+ (poor):** error color text
+/// - **-1 (failed) / 600+ ms:** gray "Timeout"
+/// - **0-120ms (excellent):** green text
+/// - **121-250ms (medium):** yellow/orange text
+/// - **251-600ms (poor):** red text
 ///
 /// Wrapped in InkWell for tap-to-retest (SERV-03).
 /// Fixed 56dp width to prevent layout shift.
@@ -75,33 +75,26 @@ class LatencyIndicator extends StatelessWidget {
       );
     }
 
-    // Failed
-    if (latency == -1) {
-      return Icon(
-        Icons.error_outline,
-        size: 16,
-        color: colorScheme.error,
+    final level = latencyLevelFor(latency);
+    final color = latencyColor(level, colorScheme);
+
+    // Failed / timed out (-1 or > 600 ms): gray "Timeout" per §3.
+    if (level == LatencyLevel.timeout) {
+      return Text(
+        'Timeout',
+        style: theme.textTheme.labelSmall?.copyWith(color: color),
       );
     }
 
-    // Success — color coded by latency range
-    final Color textColor;
-    if (latency! <= 150) {
-      textColor = ArmaTokens.success;
-    } else if (latency! <= 300) {
-      textColor = ArmaTokens.warning;
-    } else {
-      textColor = colorScheme.error;
-    }
-
+    // Success — color coded by band (green / yellow / red).
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.bolt, size: 12, color: textColor),
+        Icon(Icons.bolt, size: 12, color: color),
         Text(
           '${latency}ms',
           style: theme.textTheme.labelMedium?.copyWith(
-            color: textColor,
+            color: color,
             fontWeight: FontWeight.w600,
           ),
         ),

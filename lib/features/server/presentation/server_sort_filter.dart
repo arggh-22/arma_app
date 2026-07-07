@@ -1,4 +1,5 @@
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
+import 'package:arma_proxy_vpn_client/features/server/domain/latency_level.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/sort_filter_provider.dart';
 
 /// Shared server list sort/filter logic used by both the Servers tab and the
@@ -12,14 +13,10 @@ List<ServerConfig> applyServerFilter(
 ) {
   var result = switch (sortFilter.filter) {
     FilterCriteria.all => servers,
-    FilterCriteria.working => servers.where((s) {
-      final latency = latencyMap[s.id];
-      return latency != null && latency > 0 && latency <= 300;
-    }).toList(),
-    FilterCriteria.failed => servers.where((s) {
-      final latency = latencyMap[s.id];
-      return latency == -1 || (latency != null && latency > 300);
-    }).toList(),
+    FilterCriteria.working =>
+      servers.where((s) => isLatencyWorking(latencyMap[s.id])).toList(),
+    FilterCriteria.failed =>
+      servers.where((s) => isLatencyFailed(latencyMap[s.id])).toList(),
   };
 
   if (sortFilter.protocol != null) {

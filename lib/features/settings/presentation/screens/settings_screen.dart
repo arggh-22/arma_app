@@ -14,7 +14,9 @@ import 'package:arma_proxy_vpn_client/features/settings/domain/entities/dns_pres
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/anti_censorship_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/default_server_auto_update_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/dns_settings_provider.dart';
+import 'package:arma_proxy_vpn_client/features/settings/domain/entities/ping_type.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/engine_settings_provider.dart';
+import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/ping_type_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/locale_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/theme_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/ui_preferences_provider.dart';
@@ -37,6 +39,7 @@ class SettingsScreen extends ConsumerWidget {
     final currentLocale = ref.watch(localeProvider);
     final dnsSettings = ref.watch(dnsSettingsProvider);
     final engineSettings = ref.watch(engineSettingsProvider);
+    final pingType = ref.watch(pingTypeProvider);
     final acSettings = ref.watch(antiCensorshipProvider);
     final uiPreferences = ref.watch(uiPreferencesProvider);
     final autoUpdateInterval = ref.watch(defaultServerAutoUpdateProvider);
@@ -768,6 +771,36 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => context.push('/logs'),
           ),
 
+          // Ping type (Health Check) — spec §2. Default HTTP.
+          ListTile(
+            leading: const Icon(Icons.speed_outlined),
+            title: Text('Ping type', style: theme.textTheme.titleMedium),
+            subtitle: Text(
+              'How server latency is measured',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          for (final type in PingType.values)
+            RadioListTile<PingType>(
+              key: Key('ping-type-${type.key}'),
+              value: type,
+              groupValue: pingType,
+              title: Text(_pingTypeTitle(type)),
+              subtitle: Text(
+                _pingTypeSubtitle(type),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              onChanged: (value) {
+                if (value != null) {
+                  ref.read(pingTypeProvider.notifier).set(value);
+                }
+              },
+            ),
+
           const Divider(),
 
           // Data section header
@@ -1153,5 +1186,27 @@ class _OverdueRefreshUpdatedIndicator extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+String _pingTypeTitle(PingType type) {
+  switch (type) {
+    case PingType.http:
+      return 'HTTP (recommended)';
+    case PingType.tcpConnect:
+      return 'TCP Connect';
+    case PingType.icmp:
+      return 'ICMP';
+  }
+}
+
+String _pingTypeSubtitle(PingType type) {
+  switch (type) {
+    case PingType.http:
+      return 'Real end-to-end internet check through the tunnel';
+    case PingType.tcpConnect:
+      return 'Fast direct TCP handshake to the server port';
+    case PingType.icmp:
+      return 'System ping to the server, bypassing the tunnel';
   }
 }
