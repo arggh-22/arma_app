@@ -41,11 +41,15 @@ class LatencyNotifier extends _$LatencyNotifier {
 
   /// Test all servers with an explicit [type] (e.g. a fast TCP sweep on
   /// startup), concurrency limit of 3. Results update progressively.
+  ///
+  /// Set [force] to run even if another bulk test is already in progress —
+  /// used by startup so its sweep is never silently skipped.
   Future<void> testAllServersWith(
     List<ServerConfig> servers,
-    PingType type,
-  ) async {
-    if (_isBulkTesting) return;
+    PingType type, {
+    bool force = false,
+  }) async {
+    if (_isBulkTesting && !force) return;
     _isBulkTesting = true;
     final probe = latencyProbeFor(type, _platformService);
 

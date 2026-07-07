@@ -51,7 +51,8 @@ class LatencyIndicator extends StatelessWidget {
   String get _semanticsLabel {
     if (latency == null) return 'Tap to test latency';
     if (latency == -2) return 'Testing';
-    if (latency == -1) return 'Failed';
+    // Match the visible "Timeout" for failures and over-threshold values.
+    if (latencyLevelFor(latency) == LatencyLevel.timeout) return 'Timeout';
     return '${latency}ms latency';
   }
 

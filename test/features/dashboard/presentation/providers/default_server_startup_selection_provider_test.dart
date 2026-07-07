@@ -126,8 +126,9 @@ void main() {
           .read(defaultServerStartupSelectionProvider)
           .autoSelectBestServer();
 
-      // Skips before refreshing or selecting.
-      expect(defaultNotifier.refreshCalls, 0);
+      // Refresh runs first (so a persisted default selection can resolve), but
+      // an existing active server is respected — no auto-selection happens.
+      expect(defaultNotifier.refreshCalls, 1);
       expect(activeNotifier.selectedIds, isEmpty);
     });
   });
@@ -196,8 +197,9 @@ class _TestLatencyNotifier extends LatencyNotifier {
   @override
   Future<void> testAllServersWith(
     List<ServerConfig> servers,
-    PingType type,
-  ) async {
+    PingType type, {
+    bool force = false,
+  }) async {
     sweepType = type;
     testedIds.addAll(servers.map((s) => s.id));
     state = {...state, ...latencies};

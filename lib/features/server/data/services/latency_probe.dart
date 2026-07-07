@@ -89,10 +89,21 @@ class IcmpProbe implements LatencyProbe {
   @override
   Future<int> measure(ServerConfig server) async {
     final timeoutSecs = kLatencyProbeTimeout.inSeconds;
-    // macOS/iOS use `-t` for per-packet timeout; Linux/Android use `-W`.
-    final args = Platform.isMacOS
-        ? ['-c', '1', '-t', '$timeoutSecs', server.address]
-        : ['-c', '1', '-W', '$timeoutSecs', server.address];
+    // Ping flags differ per OS: Windows uses -n/-w(ms); macOS -t; Linux/-W.
+    final List<String> args;
+    if (Platform.isWindows) {
+      args = [
+        '-n',
+        '1',
+        '-w',
+        '${kLatencyProbeTimeout.inMilliseconds}',
+        server.address,
+      ];
+    } else if (Platform.isMacOS) {
+      args = ['-c', '1', '-t', '$timeoutSecs', server.address];
+    } else {
+      args = ['-c', '1', '-W', '$timeoutSecs', server.address];
+    }
     try {
       final result = await Process.run('ping', args)
           .timeout(kLatencyProbeTimeout + const Duration(seconds: 1));

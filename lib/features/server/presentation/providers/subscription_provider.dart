@@ -117,6 +117,14 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
     if (subscription == null) return 0;
 
     final result = await _service.fetch(subscription);
+
+    // Guard against wiping the subscription: if the refresh yielded no servers
+    // (e.g. a transient failure, or a server that returned an empty/HTML body),
+    // keep the existing servers rather than deleting them and adding nothing.
+    if (result.servers.isEmpty) {
+      return 0;
+    }
+
     final resolvedName = (result.profileTitle ?? '').trim().isNotEmpty
         ? result.profileTitle!.trim()
         : subscription.name;

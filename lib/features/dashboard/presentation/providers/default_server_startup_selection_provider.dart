@@ -19,13 +19,15 @@ class DefaultServerStartupSelectionController {
   final Ref _ref;
 
   Future<void> autoSelectBestServer() async {
-    // Respect an existing selection — only auto-pick when nothing is active
-    // (fresh install / first start).
+    await _ref.read(defaultServersProvider.notifier).refresh();
+
+    // Respect an existing selection — only auto-pick when nothing is active.
+    // Checked AFTER the refresh so a persisted default-server selection has a
+    // chance to resolve against the freshly-loaded list (e.g. after an upgrade
+    // where only the id, not the config snapshot, was stored).
     if (_ref.read(activeServerProvider) != null) {
       return;
     }
-
-    await _ref.read(defaultServersProvider.notifier).refresh();
 
     final candidates = _ref
         .read(defaultServersProvider)
@@ -42,7 +44,7 @@ class DefaultServerStartupSelectionController {
     // reachable server in the list — realistic and quick for the user.
     await _ref
         .read(latencyProvider.notifier)
-        .testAllServersWith(candidates, PingType.tcpConnect);
+        .testAllServersWith(candidates, PingType.tcpConnect, force: true);
     final latencyMap = _ref.read(latencyProvider);
 
     final selected = candidates.firstWhere(

@@ -12,6 +12,7 @@ import 'package:arma_proxy_vpn_client/features/server/presentation/providers/act
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/best_server_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/latency_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/server_list_provider.dart';
+import 'package:arma_proxy_vpn_client/features/settings/domain/entities/ping_type.dart';
 
 /// Hero connect control — a massive glowing circle that morphs between
 /// connection states (design: Home Dashboard hero tunnel element).
@@ -114,11 +115,28 @@ class ConnectButton extends ConsumerWidget {
                   .where((item) => item.isConnectable)
                   .map((item) => item.serverConfig!)
                   .toList(growable: false);
-              final fallback = selectBestServer(
-                [...defaults, ...imported],
+              final candidates = [...defaults, ...imported];
+              var fallback = selectBestServer(
+                candidates,
                 ref.read(latencyProvider),
                 excludeServerId: selectedServer.id,
               );
+              // No latency measured yet — do a quick TCP sweep so we can still
+              // find a reachable alternative.
+              if (fallback == null && candidates.length > 1) {
+                await ref
+                    .read(latencyProvider.notifier)
+                    .testAllServersWith(
+                      candidates,
+                      PingType.tcpConnect,
+                      force: true,
+                    );
+                fallback = selectBestServer(
+                  candidates,
+                  ref.read(latencyProvider),
+                  excludeServerId: selectedServer.id,
+                );
+              }
               if (fallback != null) {
                 await ref
                     .read(activeServerProvider.notifier)

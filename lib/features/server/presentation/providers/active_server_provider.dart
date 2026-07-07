@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_servers_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/server_list_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/data/datasources/settings_local_datasource.dart';
@@ -24,10 +25,22 @@ class ActiveServerNotifier extends _$ActiveServerNotifier {
     if (activeId == null) return null;
 
     // Default servers (ids prefixed `default-api-`) aren't in the imported
-    // list — restore them from the persisted config snapshot so the user's
-    // selection survives an app restart.
+    // list. Resolve them against the live default-servers list so the config
+    // is fresh and validated (a server that expired / was removed clears the
+    // selection). While that list hasn't loaded yet, fall back to the persisted
+    // snapshot so the selection shows immediately after a restart.
     if (activeId.startsWith('default-api')) {
-      return _restoreSnapshot();
+      final defaultState = ref.watch(defaultServersProvider);
+      for (final item in defaultState.items) {
+        if (item.isConnectable && item.serverConfig?.id == activeId) {
+          return item.serverConfig;
+        }
+      }
+      if (defaultState.items.isEmpty) {
+        return _restoreSnapshot();
+      }
+      // The default list has loaded but no longer contains this server.
+      return null;
     }
 
     // Imported servers: resolve fresh from the list so edits/deletes are

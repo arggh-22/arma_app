@@ -95,7 +95,8 @@ class SubscriptionService {
       'X-Ver-Os': '16',
     };
 
-    final response = await _fetchWithJsonFallback(subscription.url, headers);
+    final fetched = await _fetchAndParse(subscription.url, headers);
+    final response = fetched.response;
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -123,8 +124,8 @@ class SubscriptionService {
     );
     final effectiveGroupName = profileTitle ?? subscription.name;
 
-    // D-01, D-02: Parse body — auto-detects format
-    final servers = SubscriptionParser.parseBody(response.body);
+    // Body was parsed during the fetch/fallback (D-01, D-02, auto-detected).
+    final servers = fetched.servers;
 
     // Tag servers with subscription ID and group name
     final taggedServers = servers
@@ -167,34 +168,54 @@ class SubscriptionService {
     return trimmed;
   }
 
-  /// Fetches the subscription, preferring the JSON format (spec §1).
+  /// Fetches and parses the subscription, preferring the JSON format (spec §1).
   ///
-  /// Requests `?format=json` first; if the server rejects the extra query
-  /// param with a non-200 (some providers 400/404 on unknown params), retries
-  /// the original URL untouched. The parser auto-detects whichever format
-  /// comes back, so share-link/base64 subscriptions still work.
-  Future<http.Response> _fetchWithJsonFallback(
+  /// Requests `?format=json` first. Falls back to the untouched URL when that
+  /// request either fails (non-200) OR returns a body that parses to zero
+  /// servers — this covers providers that reject the unknown param (4xx) and
+  /// those that silently ignore it and return a 200 landing/HTML page. Without
+  /// the empty-body fallback a "200 + wrong body" would yield 0 servers and a
+  /// refresh would wipe the subscription. The parser auto-detects whichever
+  /// format comes back, so share-link/base64 subscriptions still work.
+  Future<_FetchResult> _fetchAndParse(
     String url,
     Map<String, String> headers,
   ) async {
     final jsonUri = _withJsonFormat(url);
+    final originalUri = Uri.parse(url);
+
     final jsonResponse =
         await _client.get(jsonUri, headers: headers).timeout(_timeout);
-    if (jsonResponse.statusCode == 200) return jsonResponse;
+    final jsonServers = jsonResponse.statusCode == 200
+        ? SubscriptionParser.parseBody(jsonResponse.body)
+        : const <ServerConfig>[];
+    if (jsonServers.isNotEmpty) {
+      return _FetchResult(jsonResponse, jsonServers);
+    }
 
-    final original = Uri.parse(url);
-    if (jsonUri == original) return jsonResponse;
-    return _client.get(original, headers: headers).timeout(_timeout);
+    // Retry the untouched URL if the format=json attempt failed or yielded
+    // nothing parseable — but never downgrade a usable response to a broken one.
+    if (jsonUri != originalUri) {
+      final plainResponse =
+          await _client.get(originalUri, headers: headers).timeout(_timeout);
+      final plainServers = plainResponse.statusCode == 200
+          ? SubscriptionParser.parseBody(plainResponse.body)
+          : const <ServerConfig>[];
+      if (plainServers.isNotEmpty || jsonResponse.statusCode != 200) {
+        return _FetchResult(plainResponse, plainServers);
+      }
+    }
+
+    return _FetchResult(jsonResponse, jsonServers);
   }
 
-  /// Adds `format=json` to the query while preserving any existing parameters.
+  /// Adds `format=json` to the query, preserving the original raw query string
+  /// verbatim (including any repeated keys) rather than rebuilding it.
   static Uri _withJsonFormat(String url) {
     final uri = Uri.parse(url);
     if (uri.queryParameters['format'] == 'json') return uri;
-    return uri.replace(queryParameters: {
-      ...uri.queryParameters,
-      'format': 'json',
-    });
+    final query = uri.query.isEmpty ? 'format=json' : '${uri.query}&format=json';
+    return uri.replace(query: query);
   }
 
   String? _extractProfileTitle(Map<String, String> headers, String body) {
@@ -271,4 +292,13 @@ class SubscriptionService {
     }
     return trimmed;
   }
+}
+
+/// A fetched subscription response together with its parsed servers, so the
+/// JSON/plain fallback decision (based on parse success) doesn't re-parse.
+class _FetchResult {
+  const _FetchResult(this.response, this.servers);
+
+  final http.Response response;
+  final List<ServerConfig> servers;
 }

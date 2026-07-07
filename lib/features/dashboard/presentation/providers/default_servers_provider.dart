@@ -58,6 +58,10 @@ final defaultServersSubscriptionServiceProvider = Provider<SubscriptionService>(
   (ref) => SubscriptionService(),
 );
 
+/// Sentinel so [DefaultServersState.copyWith] can distinguish "not provided"
+/// (keep current) from an explicit null (clear) for the notice fields.
+const Object _unset = Object();
+
 class DefaultServersState {
   const DefaultServersState({
     required this.items,
@@ -112,9 +116,11 @@ class DefaultServersState {
     bool resetFailureType = false,
     bool? hasPendingRetry,
     int? retryAttempt,
-    String? announcement,
-    String? supportUrl,
-    String? webPageUrl,
+    // Notice fields use the [_unset] sentinel so an explicit null clears them
+    // (e.g. when the admin removes the `announce`/`support-url` headers).
+    Object? announcement = _unset,
+    Object? supportUrl = _unset,
+    Object? webPageUrl = _unset,
     bool? profileUpdateAlways,
   }) {
     return DefaultServersState(
@@ -126,9 +132,13 @@ class DefaultServersState {
           : lastFailureType ?? this.lastFailureType,
       hasPendingRetry: hasPendingRetry ?? this.hasPendingRetry,
       retryAttempt: retryAttempt ?? this.retryAttempt,
-      announcement: announcement ?? this.announcement,
-      supportUrl: supportUrl ?? this.supportUrl,
-      webPageUrl: webPageUrl ?? this.webPageUrl,
+      announcement: identical(announcement, _unset)
+          ? this.announcement
+          : announcement as String?,
+      supportUrl:
+          identical(supportUrl, _unset) ? this.supportUrl : supportUrl as String?,
+      webPageUrl:
+          identical(webPageUrl, _unset) ? this.webPageUrl : webPageUrl as String?,
       profileUpdateAlways: profileUpdateAlways ?? this.profileUpdateAlways,
     );
   }

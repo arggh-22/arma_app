@@ -110,6 +110,30 @@ class XrayConfigBuilder {
       config['inbounds'] = [
         _buildTunInbound(sniffingEnabled: s.sniffingEnabled),
       ];
+
+      // Honor the user's DNS choice (prevents a DNS leak through the
+      // subscription's embedded resolver).
+      config['dns'] = _buildDns(remoteDns: s.remoteDns, directDns: s.directDns);
+
+      // Prepend the user's routing choices (LAN bypass, region split-tunnel,
+      // custom domain rules) ahead of the server's own rules — top-down
+      // evaluation means the user's rules win while the server's balancer /
+      // catch-all still handles everything else.
+      final userRules = _userRoutingRules(
+        bypassLan: s.bypassLan,
+        enabledRegions: s.enabledRegions,
+        customRules: s.customRules,
+      );
+      if (userRules.isNotEmpty) {
+        final routing = _asMap(config['routing']) ?? <String, dynamic>{};
+        final existingRules = (routing['rules'] as List?) ?? const [];
+        routing['rules'] = [...userRules, ...existingRules];
+        config['routing'] = routing;
+      }
+
+      // NOTE: mux and fragment are per-outbound transport settings the
+      // subscription defines itself; they are intentionally left as-is for
+      // raw JSON-subscription configs.
       return jsonEncode(config);
     } catch (_) {
       return null;
@@ -560,7 +584,33 @@ class XrayConfigBuilder {
 
     final rules = <Map<String, dynamic>>[
       serverBypassRule,
+      ..._userRoutingRules(
+        bypassLan: bypassLan,
+        enabledRegions: enabledRegions,
+        customRules: customRules,
+      ),
     ];
+
+    // Catch-all proxy (must be last)
+    rules.add({
+      'type': 'field',
+      'outboundTag': 'proxy',
+      'port': '0-65535',
+    });
+
+    return {'domainStrategy': 'IPIfNonMatch', 'rules': rules};
+  }
+
+  /// The user-configurable routing rules (LAN bypass, region presets, custom
+  /// domain rules) — without the server-bypass or catch-all rules. Shared by
+  /// [_buildRouting] and the raw-config merge so JSON-subscription servers also
+  /// honor the user's routing choices (prepended before the server's rules).
+  static List<Map<String, dynamic>> _userRoutingRules({
+    bool bypassLan = true,
+    Set<String> enabledRegions = const {},
+    List<DomainRule> customRules = const [],
+  }) {
+    final rules = <Map<String, dynamic>>[];
 
     // LAN bypass (conditional per user setting)
     if (bypassLan) {
@@ -650,18 +700,14 @@ class XrayConfigBuilder {
       });
     }
 
-    // Catch-all proxy (must be last)
-    rules.add({
-      'type': 'field',
-      'outboundTag': 'proxy',
-      'port': '0-65535',
-    });
-
-    return {'domainStrategy': 'IPIfNonMatch', 'rules': rules};
+    return rules;
   }
 
   /// Check if an address is an IP (v4) rather than a hostname.
   static bool _isIpAddress(String address) {
     return RegExp(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$').hasMatch(address);
   }
+
+  static Map<String, dynamic>? _asMap(dynamic value) =>
+      value is Map<String, dynamic> ? value : null;
 }
