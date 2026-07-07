@@ -146,7 +146,7 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: _SubscriptionExpiry(expireDate: earliestExpiry),
           ),
-        if (totalBytes > 0)
+        if (totalBytes > 0 || usedBytes > 0)
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
             child: _UsageBar(usedBytes: usedBytes, totalBytes: totalBytes),
@@ -307,8 +307,19 @@ class _UsageBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final fraction =
-        totalBytes <= 0 ? 0.0 : (usedBytes / totalBytes).clamp(0.0, 1.0);
+
+    // Unlimited plan (no data cap / total=0) — show usage against the infinity
+    // symbol, no fraction bar.
+    if (totalBytes <= 0) {
+      return Text(
+        '${formatBytes(usedBytes)} / ∞',
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
+      );
+    }
+
+    final fraction = (usedBytes / totalBytes).clamp(0.0, 1.0);
     final nearLimit = fraction >= 0.9;
 
     return Column(
@@ -318,8 +329,8 @@ class _UsageBar extends StatelessWidget {
           borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
             value: fraction,
-            minHeight: 6,
-            backgroundColor: colorScheme.surfaceContainerHighest,
+            minHeight: 8,
+            backgroundColor: colorScheme.onSurface.withValues(alpha: 0.12),
             color: nearLimit ? colorScheme.error : colorScheme.primary,
           ),
         ),

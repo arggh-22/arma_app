@@ -230,8 +230,9 @@ class ServerGroupHeader extends StatelessWidget {
             ],
           ),
 
-          // Data usage progress bar
-          if (sub.totalBytes != null && sub.totalBytes! > 0) ...[
+          // Data usage — a progress bar for capped plans, or a "used" line for
+          // unlimited plans (no `total` in subscription-userinfo).
+          if (_hasUsageInfo(sub)) ...[
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.only(left: 32),
@@ -249,13 +250,32 @@ class ServerGroupHeader extends StatelessWidget {
     );
   }
 
+  /// Whether the subscription reports any usage/allowance worth displaying.
+  static bool _hasUsageInfo(Subscription sub) {
+    final used = (sub.uploadBytes ?? 0) + (sub.downloadBytes ?? 0);
+    final hasTotal = sub.totalBytes != null && sub.totalBytes! > 0;
+    return hasTotal || used > 0;
+  }
+
   Widget _buildDataUsageBar(BuildContext context, Subscription sub) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final usedBytes = (sub.uploadBytes ?? 0) + (sub.downloadBytes ?? 0);
-    final totalBytes = sub.totalBytes ?? 1;
-    final fraction = (usedBytes / totalBytes).clamp(0.0, 1.0);
+    final total = sub.totalBytes;
+    final hasTotal = total != null && total > 0;
 
+    // Unlimited plan (no data cap / total=0) — show usage against the infinity
+    // symbol, no fraction bar.
+    if (!hasTotal) {
+      return Text(
+        '${formatBytes(usedBytes)} / ∞',
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
+      );
+    }
+
+    final fraction = (usedBytes / total).clamp(0.0, 1.0);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -263,14 +283,15 @@ class ServerGroupHeader extends StatelessWidget {
           borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
             value: fraction,
-            minHeight: 6,
-            backgroundColor: colorScheme.surfaceContainerHighest,
+            minHeight: 8,
+            // A contrasty track so the bar is clearly visible even at 0% usage.
+            backgroundColor: colorScheme.onSurface.withValues(alpha: 0.12),
             color: fraction > 0.9 ? colorScheme.error : colorScheme.primary,
           ),
         ),
         const SizedBox(height: 4),
         Text(
-          '${formatBytes(usedBytes)} / ${formatBytes(totalBytes)}',
+          '${formatBytes(usedBytes)} / ${formatBytes(total)}',
           style: theme.textTheme.bodySmall?.copyWith(
             color: colorScheme.onSurfaceVariant,
           ),

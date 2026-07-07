@@ -51,4 +51,18 @@ void main() {
     await _pump(tester, _sub());
     expect(find.byType(LinearProgressIndicator), findsNothing);
   });
+
+  testWidgets('shows a used-only line for an unlimited plan (no total)',
+      (tester) async {
+    // Unlimited: usage present but no `total` (e.g. total omitted from header).
+    await _pump(tester, _sub(downloadBytes: 2 * _gb));
+    expect(find.byType(LinearProgressIndicator), findsNothing);
+    expect(find.text('2.0 GB / ∞'), findsOneWidget);
+  });
+
+  testWidgets('treats an explicit total=0 as unlimited', (tester) async {
+    await _pump(tester, _sub(totalBytes: 0, downloadBytes: 2 * _gb));
+    expect(find.byType(LinearProgressIndicator), findsNothing);
+    expect(find.text('2.0 GB / ∞'), findsOneWidget);
+  });
 }
