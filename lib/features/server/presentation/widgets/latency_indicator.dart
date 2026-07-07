@@ -36,9 +36,12 @@ class LatencyIndicator extends StatelessWidget {
       label: _semanticsLabel,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(10),
         child: SizedBox(
-          width: 56,
+          // Comfortable touch target (min 48dp height per Material guidance)
+          // so the small icon/value is easy to tap.
+          width: 60,
+          height: 48,
           child: Center(child: _buildContent(theme, colorScheme)),
         ),
       ),
