@@ -6,7 +6,11 @@ import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/core/theme/app_theme.dart';
 import 'package:arma_proxy_vpn_client/features/connection/domain/entities/connection_status.dart';
 import 'package:arma_proxy_vpn_client/features/connection/presentation/providers/connection_provider.dart';
+import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_servers_provider.dart';
+import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/active_server_provider.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/providers/best_server_provider.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/providers/latency_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/server_list_provider.dart';
 
 /// Hero connect control — a massive glowing circle that morphs between
@@ -95,7 +99,33 @@ class ConnectButton extends ConsumerWidget {
           }
 
           if (selectedServer != null) {
-            await ref.read(connectionProvider.notifier).connect(selectedServer);
+            final connNotifier = ref.read(connectionProvider.notifier);
+            await connNotifier.connect(selectedServer);
+
+            // If the server was unreachable / failed to start, auto-select the
+            // best working alternative and connect to it instead.
+            final result = ref.read(connectionProvider);
+            if (result is Disconnected && result.lastError != null) {
+              final imported =
+                  ref.read(serverListProvider).value ?? const <ServerConfig>[];
+              final defaults = ref
+                  .read(defaultServersProvider)
+                  .items
+                  .where((item) => item.isConnectable)
+                  .map((item) => item.serverConfig!)
+                  .toList(growable: false);
+              final fallback = selectBestServer(
+                [...defaults, ...imported],
+                ref.read(latencyProvider),
+                excludeServerId: selectedServer.id,
+              );
+              if (fallback != null) {
+                await ref
+                    .read(activeServerProvider.notifier)
+                    .selectServer(fallback);
+                await connNotifier.connect(fallback);
+              }
+            }
           }
         case Connecting():
         case Connected():

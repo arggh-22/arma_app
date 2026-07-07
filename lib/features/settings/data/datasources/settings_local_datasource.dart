@@ -12,6 +12,7 @@ class SettingsLocalDatasource {
   static const _themeKey = 'theme_mode';
   static const _localeKey = 'locale';
   static const _activeServerKey = 'active_server_id';
+  static const _activeServerConfigKey = 'active_server_config';
 
   // DNS (D-06, D-07)
   static const _dnsProtocolKey = 'dns_protocol';
@@ -80,6 +81,20 @@ class SettingsLocalDatasource {
       await _prefs.remove(_activeServerKey);
     } else {
       await _prefs.setString(_activeServerKey, id);
+    }
+  }
+
+  /// Returns the persisted active server config JSON (used to restore default
+  /// servers, whose ids aren't in the imported list), or null.
+  String? getActiveServerConfigJson() =>
+      _prefs.getString(_activeServerConfigKey);
+
+  /// Persists or clears the active server config snapshot.
+  Future<void> setActiveServerConfigJson(String? json) async {
+    if (json == null) {
+      await _prefs.remove(_activeServerConfigKey);
+    } else {
+      await _prefs.setString(_activeServerConfigKey, json);
     }
   }
 
