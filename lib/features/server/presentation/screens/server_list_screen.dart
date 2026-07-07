@@ -262,6 +262,25 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
 
     final groupEntries = groups.entries.toList();
 
+    // Stable group ordering: newest subscription first, keyed by the
+    // subscription's addedAt (which is preserved across refreshes), so
+    // updating a subscription no longer reshuffles the list. Manual groups
+    // fall back to their newest server's timestamp. Servers *within* a group
+    // keep their (default = server-response, or user-selected) order.
+    final subById = {for (final s in subscriptions) s.id: s};
+    DateTime groupTimestamp(List<ServerConfig> groupServers) {
+      final subId = groupServers.first.subscriptionId;
+      final sub = subId == null ? null : subById[subId];
+      if (sub != null) return sub.addedAt;
+      return groupServers
+          .map((s) => s.addedAt)
+          .reduce((a, b) => (a.isAfter(b) ? a : b));
+    }
+
+    groupEntries.sort(
+      (a, b) => groupTimestamp(b.value).compareTo(groupTimestamp(a.value)),
+    );
+
     // Build flat list of widgets: headers + cards with spacing
     final items = <Widget>[];
 
