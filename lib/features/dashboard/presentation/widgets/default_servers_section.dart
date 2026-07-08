@@ -20,6 +20,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
+import 'package:arma_proxy_vpn_client/core/utils/link_launcher.dart';
 
 /// Home screen default servers list, grouped into one collapsible block per
 /// API key (subscription).
@@ -197,6 +198,9 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
           _expanded.add(url);
         }
       }),
+      supportUrl: first.supportUrl,
+      webPageUrl: first.webPageUrl,
+      onOpenUrl: _openUrl,
       onRefresh: () => _onRefresh(url),
       onPing: configs.isEmpty ? null : () => _onPing(url, configs),
       onMore: () => _onMore(url, first.keyName, configs),
@@ -254,6 +258,15 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
         ),
       ],
     );
+  }
+
+  Future<void> _openUrl(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+    final launch = ref.read(linkLauncherProvider);
+    final opened = await launch(uri);
+    if (!mounted || opened) return;
+    showAppSnackBar(context, message: 'Could not open link');
   }
 
   Future<void> _onRefresh(String url) async {

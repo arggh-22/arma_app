@@ -156,25 +156,27 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       Card(
                         key: const Key('dashboard-announcement-card'),
                         child: Padding(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.fromLTRB(12, 8, 8, 4),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               if (hasAnnouncementTitle)
                                 Text(
                                   announcementTitle,
-                                  style: Theme.of(context).textTheme.titleMedium,
+                                  style: Theme.of(context).textTheme.titleSmall,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               if (hasAnnouncementTitle && hasAnnouncementText)
-                                const Gap(8),
+                                const Gap(2),
                               if (hasAnnouncementText)
                                 Text(
                                   announcementText,
-                                  maxLines: 3,
+                                  maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.bodySmall,
                                 ),
-                              if (hasAnnouncementText) ...[
-                                const Gap(8),
+                              if (hasAnnouncementText)
                                 Align(
                                   alignment: Alignment.centerRight,
                                   child: TextButton(
@@ -183,15 +185,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     ),
                                     onPressed: () =>
                                         _openAnnouncementSheet(announcementText),
-                                    child: Text(l10n.dashboardAnnouncementReadMore),
+                                    style: TextButton.styleFrom(
+                                      visualDensity: VisualDensity.compact,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                      ),
+                                      minimumSize: const Size(0, 28),
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    child:
+                                        Text(l10n.dashboardAnnouncementReadMore),
                                   ),
                                 ),
-                              ],
                             ],
                           ),
                         ),
                       ),
-                      const Gap(16),
+                      const Gap(12),
                     ],
                     const DefaultServersSection(),
                   ],

@@ -32,6 +32,9 @@ class SubscriptionKeyBlock extends StatelessWidget {
     required this.onMore,
     required this.children,
     this.announcement,
+    this.supportUrl,
+    this.webPageUrl,
+    this.onOpenUrl,
   });
 
   final String name;
@@ -50,6 +53,21 @@ class SubscriptionKeyBlock extends StatelessWidget {
   final VoidCallback onMore;
   final List<Widget> children;
   final String? announcement;
+
+  /// Per-key `support-url` — opens the "Support" button when present.
+  final String? supportUrl;
+
+  /// Per-key `profile-web-page-url` — opens the "Renew" button when present.
+  final String? webPageUrl;
+
+  /// Opens an external link (renew / support). Required for the buttons to
+  /// appear.
+  final ValueChanged<String>? onOpenUrl;
+
+  static bool _hasLink(String? url) => url != null && url.trim().isNotEmpty;
+
+  bool get _hasLinks =>
+      onOpenUrl != null && (_hasLink(webPageUrl) || _hasLink(supportUrl));
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +92,7 @@ class SubscriptionKeyBlock extends StatelessWidget {
               top: Radius.circular(ArmaTokens.radiusCard),
             ),
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 8, 4, 8),
+              padding: const EdgeInsets.fromLTRB(8, 1, 4, 1),
               child: Row(
                 children: [
                   AnimatedRotation(
@@ -82,13 +100,14 @@ class SubscriptionKeyBlock extends StatelessWidget {
                     duration: const Duration(milliseconds: 200),
                     child: Icon(
                       Icons.chevron_right,
+                      size: 18,
                       color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                   const Gap(2),
                   Icon(
                     isActive ? Icons.shield : Icons.warning_amber_rounded,
-                    size: 20,
+                    size: 18,
                     color: isActive ? colorScheme.primary : ArmaTokens.warning,
                   ),
                   const Gap(8),
@@ -98,7 +117,7 @@ class SubscriptionKeyBlock extends StatelessWidget {
                         Flexible(
                           child: Text(
                             name,
-                            style: theme.textTheme.titleMedium?.copyWith(
+                            style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
                             maxLines: 1,
@@ -141,7 +160,7 @@ class SubscriptionKeyBlock extends StatelessWidget {
 
           // Info line: expiry + data usage.
           Padding(
-            padding: const EdgeInsets.fromLTRB(38, 0, 12, 10),
+            padding: const EdgeInsets.fromLTRB(34, 0, 12, 6),
             child: _InfoRow(
               expireDate: expireDate,
               usedBytes: usedBytes,
@@ -152,7 +171,7 @@ class SubscriptionKeyBlock extends StatelessWidget {
           // Per-key announcement (shown collapsed or expanded).
           if (announcement != null && announcement!.trim().isNotEmpty)
             Padding(
-              padding: const EdgeInsets.fromLTRB(38, 0, 12, 12),
+              padding: const EdgeInsets.fromLTRB(34, 0, 12, 8),
               child: _Announcement(text: announcement!.trim()),
             ),
 
@@ -167,6 +186,18 @@ class SubscriptionKeyBlock extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        // Renew / Support — only in the expanded card, right
+                        // under the expiry/announcement area.
+                        if (_hasLinks) ...[
+                          Padding(
+                            padding: const EdgeInsets.only(left: 22, bottom: 8),
+                            child: _LinkButtons(
+                              webPageUrl: webPageUrl,
+                              supportUrl: supportUrl,
+                              onOpenUrl: onOpenUrl!,
+                            ),
+                          ),
+                        ],
                         const Divider(height: 1),
                         const Gap(6),
                         ...children,
@@ -300,6 +331,61 @@ class _Announcement extends StatelessWidget {
   }
 }
 
+/// Renew (prominent, filled) + Support (secondary, outlined) actions shown at
+/// the top of an expanded block.
+class _LinkButtons extends StatelessWidget {
+  const _LinkButtons({
+    required this.webPageUrl,
+    required this.supportUrl,
+    required this.onOpenUrl,
+  });
+
+  final String? webPageUrl;
+  final String? supportUrl;
+  final ValueChanged<String> onOpenUrl;
+
+  static bool _has(String? url) => url != null && url.trim().isNotEmpty;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasRenew = _has(webPageUrl);
+    final hasSupport = _has(supportUrl);
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (hasRenew)
+          FilledButton.icon(
+            onPressed: () => onOpenUrl(webPageUrl!),
+            icon: const Icon(Icons.card_membership_outlined, size: 16),
+            label: const Text('Renew'),
+            style: FilledButton.styleFrom(
+              visualDensity: VisualDensity.compact,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              minimumSize: const Size(0, 32),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              textStyle: Theme.of(context).textTheme.labelMedium,
+            ),
+          ),
+        if (hasRenew && hasSupport) const Gap(8),
+        if (hasSupport)
+          OutlinedButton.icon(
+            onPressed: () => onOpenUrl(supportUrl!),
+            icon: const Icon(Icons.support_agent_outlined, size: 16),
+            label: const Text('Support'),
+            style: OutlinedButton.styleFrom(
+              visualDensity: VisualDensity.compact,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              minimumSize: const Size(0, 32),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              textStyle: Theme.of(context).textTheme.labelMedium,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 /// Compact header icon button that swaps to a spinner while [busy].
 class _HeaderAction extends StatelessWidget {
   const _HeaderAction({
@@ -318,21 +404,21 @@ class _HeaderAction extends StatelessWidget {
   Widget build(BuildContext context) {
     if (busy) {
       return const SizedBox(
-        width: 40,
-        height: 40,
+        width: 32,
+        height: 32,
         child: Padding(
-          padding: EdgeInsets.all(10),
+          padding: EdgeInsets.all(8),
           child: CircularProgressIndicator.adaptive(strokeWidth: 2),
         ),
       );
     }
     return IconButton(
-      icon: Icon(icon, size: 20),
+      icon: Icon(icon, size: 18),
       tooltip: tooltip,
       onPressed: onTap,
       color: Theme.of(context).colorScheme.onSurfaceVariant,
       visualDensity: VisualDensity.compact,
-      constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
       padding: EdgeInsets.zero,
     );
   }

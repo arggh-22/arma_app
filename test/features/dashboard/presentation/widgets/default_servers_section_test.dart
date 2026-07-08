@@ -280,6 +280,32 @@ void main() {
     expect(container.read(revealServerProvider), isNull);
   });
 
+  testWidgets('renew/support buttons appear only when the block is expanded',
+      (tester) async {
+    final notifier = TestDefaultServersNotifier(
+      _state(items: [
+        _item(
+          id: '1',
+          name: 'A',
+          webPageUrl: 'https://example.com/renew',
+          supportUrl: 'https://example.com/support',
+        ),
+      ]),
+    );
+
+    await _pumpSection(tester, defaultServersNotifier: notifier);
+    // Collapsed — links hidden.
+    expect(find.text('Renew'), findsNothing);
+    expect(find.text('Support'), findsNothing);
+
+    await tester.tap(find.text('Key-1'));
+    await tester.pumpAndSettle();
+
+    // Expanded — both actions shown.
+    expect(find.text('Renew'), findsOneWidget);
+    expect(find.text('Support'), findsOneWidget);
+  });
+
   testWidgets('inactive key renders as a warning block with no server cards',
       (tester) async {
     final defaultNotifier = TestDefaultServersNotifier(
@@ -429,6 +455,8 @@ DefaultServerItem _item({
   int usedTraffic = 1024,
   int dataLimit = 4096,
   String? subscriptionUrl,
+  String? supportUrl,
+  String? webPageUrl,
 }) {
   final config = serverConfig ?? _serverConfig(id: id, name: name);
   return DefaultServerItem(
@@ -444,6 +472,8 @@ DefaultServerItem _item({
     expireDate: DateTime.utc(2027, 1, 1),
     isActive: isActive,
     serverConfig: config,
+    supportUrl: supportUrl,
+    webPageUrl: webPageUrl,
   );
 }
 
