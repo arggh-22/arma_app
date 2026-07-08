@@ -31,6 +31,7 @@ class SubscriptionKeyBlock extends StatelessWidget {
     required this.onPing,
     required this.onMore,
     required this.children,
+    this.showInfoLine = true,
     this.announcement,
     this.supportUrl,
     this.webPageUrl,
@@ -50,8 +51,12 @@ class SubscriptionKeyBlock extends StatelessWidget {
   final VoidCallback onToggleExpand;
   final VoidCallback? onRefresh;
   final VoidCallback? onPing;
-  final VoidCallback onMore;
+  final VoidCallback? onMore;
   final List<Widget> children;
+
+  /// Whether to show the usage + expiry line under the header. Hidden for
+  /// manual groups on the Servers tab that carry no subscription metadata.
+  final bool showInfoLine;
   final String? announcement;
 
   /// Per-key `support-url` — opens the "Support" button when present.
@@ -135,38 +140,42 @@ class SubscriptionKeyBlock extends StatelessWidget {
                       ],
                     ),
                   ),
-                  _HeaderAction(
-                    icon: Icons.refresh,
-                    tooltip: 'Update subscription',
-                    busy: isRefreshing,
-                    onTap: onRefresh,
-                  ),
-                  _HeaderAction(
-                    icon: Icons.speed,
-                    tooltip: 'Ping',
-                    busy: isPinging,
-                    onTap: onPing,
-                  ),
-                  _HeaderAction(
-                    icon: Icons.more_vert,
-                    tooltip: 'Manage',
-                    busy: false,
-                    onTap: onMore,
-                  ),
+                  if (onRefresh != null)
+                    _HeaderAction(
+                      icon: Icons.refresh,
+                      tooltip: 'Update subscription',
+                      busy: isRefreshing,
+                      onTap: onRefresh,
+                    ),
+                  if (onPing != null)
+                    _HeaderAction(
+                      icon: Icons.speed,
+                      tooltip: 'Ping',
+                      busy: isPinging,
+                      onTap: onPing,
+                    ),
+                  if (onMore != null)
+                    _HeaderAction(
+                      icon: Icons.more_vert,
+                      tooltip: 'Manage',
+                      busy: false,
+                      onTap: onMore,
+                    ),
                 ],
               ),
             ),
           ),
 
           // Info line: expiry + data usage.
-          Padding(
-            padding: const EdgeInsets.fromLTRB(34, 0, 12, 6),
-            child: _InfoRow(
-              expireDate: expireDate,
-              usedBytes: usedBytes,
-              totalBytes: totalBytes,
+          if (showInfoLine)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(34, 0, 12, 6),
+              child: _InfoRow(
+                expireDate: expireDate,
+                usedBytes: usedBytes,
+                totalBytes: totalBytes,
+              ),
             ),
-          ),
 
           // Server list — mounted only when expanded (kept out of the tree
           // when collapsed so it neither renders nor participates in taps).

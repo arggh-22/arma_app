@@ -132,7 +132,7 @@ void main() {
     await tester.tap(
       find.descendant(
         of: find.byKey(const ValueKey('server-group-header-Alpha')),
-        matching: find.byIcon(Icons.expand_more),
+        matching: find.byIcon(Icons.chevron_right),
       ),
     );
     await tester.pumpAndSettle();

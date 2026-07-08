@@ -39,7 +39,7 @@ void main() {
       await tester.tap(
         find.descendant(
           of: importedHeader,
-          matching: find.byIcon(Icons.expand_less),
+          matching: find.byIcon(Icons.chevron_right),
         ),
       );
       await tester.pumpAndSettle();
@@ -50,7 +50,7 @@ void main() {
       await tester.tap(
         find.descendant(
           of: importedHeader,
-          matching: find.byIcon(Icons.expand_more),
+          matching: find.byIcon(Icons.chevron_right),
         ),
       );
       await tester.pumpAndSettle();

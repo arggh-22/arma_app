@@ -97,10 +97,11 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
     final repo = ref.read(subscriptionRepositoryProvider);
     await repo.saveSubscription(updated);
 
-    // Persist servers
-    final serverNotifier = ref.read(serverListProvider.notifier);
+    // Persist servers through the keep-alive repository (see refreshSubscription
+    // for why the auto-dispose serverListProvider notifier must not be used).
+    final serverRepo = ref.read(serverRepositoryProvider);
     for (final server in result.servers) {
-      await serverNotifier.addServer(server);
+      await serverRepo.saveConfig(server);
     }
 
     ref.invalidateSelf();
@@ -128,6 +129,13 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
       return 0;
     }
 
+    // Persist through the keep-alive repository (NOT serverListProvider's
+    // notifier): the auto-refresh runs on launch while the Servers screen is
+    // not mounted, so the auto-dispose serverListProvider may be disposed and
+    // `addServer`/`deleteServer` on it would throw "Ref … after it has been
+    // disposed" — after the destructive delete, wiping the subscription.
+    final serverRepo = ref.read(serverRepositoryProvider);
+
     final resolvedName = (result.profileTitle ?? '').trim().isNotEmpty
         ? result.profileTitle!.trim()
         : subscription.name;
@@ -146,7 +154,6 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
     }
 
     // D-13: Delete ALL old servers from this subscription
-    final serverRepo = ref.read(serverRepositoryProvider);
     final allServers = await serverRepo.getAllConfigs();
     for (final server in allServers) {
       if (server.subscriptionId == subscriptionId) {
@@ -155,9 +162,8 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
     }
 
     // Add new servers
-    final serverNotifier = ref.read(serverListProvider.notifier);
     for (final server in result.servers) {
-      await serverNotifier.addServer(server);
+      await serverRepo.saveConfig(server);
     }
 
     // Update subscription metadata

@@ -7,6 +7,11 @@ import 'package:arma_proxy_vpn_client/core/constants/app_constants.dart';
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/core/utils/app_snackbar.dart';
 import 'package:arma_proxy_vpn_client/core/utils/clipboard_helper.dart';
+import 'package:arma_proxy_vpn_client/core/utils/link_launcher.dart';
+import 'package:arma_proxy_vpn_client/features/api/presentation/providers/auth_provider.dart';
+import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/pinned_keys_provider.dart';
+import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/subscription_actions_sheet.dart';
+import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/subscription_key_block.dart';
 import 'package:arma_proxy_vpn_client/features/connection/domain/entities/connection_status.dart';
 import 'package:arma_proxy_vpn_client/features/connection/presentation/providers/connection_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/data/parsers/share_link_parser.dart';
@@ -27,7 +32,6 @@ import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/debug
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/empty_server_state.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/import_fab.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/server_card.dart';
-import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/server_group_header.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/sort_filter_bar.dart';
 
 /// Server list screen — full integration of Phase 3 features.
@@ -298,6 +302,9 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     final sortFilter = ref.watch(sortFilterProvider);
     final latencyMap = ref.watch(latencyProvider);
     final subscriptions = ref.watch(subscriptionProvider);
+    final pinned = ref.watch(pinnedKeysProvider);
+    final globalAnnouncement =
+        ref.watch(authStateProvider).asData?.value.announcementText?.trim();
 
     // Apply status filter, protocol quick-filter, and search query
     final filteredServers = applyServerFilter(servers, sortFilter, latencyMap);
@@ -336,147 +343,103 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
       (a, b) => groupTimestamp(b.value).compareTo(groupTimestamp(a.value)),
     );
 
+    // Pinned subscriptions float to the top (keyed by their URL, shared with
+    // the home screen), keeping newest-first order within each partition.
+    bool isPinnedGroup(List<ServerConfig> gs) {
+      final subId = gs.first.subscriptionId;
+      final sub = subId == null ? null : subById[subId];
+      return sub != null && pinned.contains(sub.url);
+    }
+
+    final ordered = <MapEntry<String, List<ServerConfig>>>[
+      ...groupEntries.where((e) => isPinnedGroup(e.value)),
+      ...groupEntries.where((e) => !isPinnedGroup(e.value)),
+    ];
+
     // Accordion: resolve the single open group. Default to the first (top)
     // group; `''` means the user collapsed all.
     final openGroupKey = _expandedGroup == null
-        ? (groupEntries.isNotEmpty ? groupEntries.first.key : null)
+        ? (ordered.isNotEmpty ? ordered.first.key : null)
         : (_expandedGroup!.isEmpty ? null : _expandedGroup);
 
-    // Build flat list of widgets: headers + cards with spacing
+    // One collapsible block per group, styled like the home screen.
     final items = <Widget>[];
 
-    for (var i = 0; i < groupEntries.length; i++) {
-      if (i > 0) {
-        items.add(const Gap(24));
-      }
-      final entry = groupEntries[i];
+    for (var i = 0; i < ordered.length; i++) {
+      if (i > 0) items.add(const Gap(12));
+      final entry = ordered[i];
       final groupServers = entry.value;
 
-      // Find subscription for this group
-      final firstServer = groupServers.first;
-      Subscription? subscription;
-      if (firstServer.subscriptionId != null) {
-        subscription = subscriptions
-            .where((s) => s.id == firstServer.subscriptionId)
-            .firstOrNull;
-      }
+      final subId = groupServers.first.subscriptionId;
+      final subscription = subId == null ? null : subById[subId];
 
-      final isCollapsed = entry.key != openGroupKey;
+      final isExpanded = entry.key == openGroupKey;
+      final now = DateTime.now();
+      final expireDate =
+          subscription?.expireDate ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final isActive =
+          expireDate.millisecondsSinceEpoch <= 0 || expireDate.isAfter(now);
+      final usedBytes = (subscription?.uploadBytes ?? 0) +
+          (subscription?.downloadBytes ?? 0);
+      final ownAnnouncement = subscription?.announcement?.trim();
+      final announcement = subscription == null
+          ? null
+          : (ownAnnouncement != null && ownAnnouncement.isNotEmpty
+                ? ownAnnouncement
+                : (globalAnnouncement != null && globalAnnouncement.isNotEmpty
+                      ? globalAnnouncement
+                      : null));
 
       items.add(
-        ServerGroupHeader(
+        SubscriptionKeyBlock(
           key: ValueKey('server-group-header-${entry.key}'),
-          groupName: entry.key,
-          subscription: subscription,
+          name: subscription != null
+              ? entry.key
+              : '${entry.key} (${groupServers.length})',
+          isActive: isActive,
+          isPinned: subscription != null && pinned.contains(subscription.url),
+          showInfoLine: subscription != null,
+          expireDate: expireDate,
+          usedBytes: usedBytes,
+          totalBytes: subscription?.totalBytes ?? 0,
+          announcement: announcement,
+          supportUrl: subscription?.supportUrl,
+          webPageUrl: subscription?.webPageUrl,
+          onOpenUrl: _openUrl,
           serverCount: groupServers.length,
-          isCollapsed: isCollapsed,
-          isRefreshing: _refreshingSubscriptions.contains(
-            firstServer.subscriptionId,
-          ),
-          isPinging: _pingingSubscriptions.contains(firstServer.subscriptionId),
-          onToggleCollapse: () {
+          isExpanded: isExpanded,
+          isRefreshing: _refreshingSubscriptions.contains(subscription?.id),
+          isPinging: _pingingSubscriptions.contains(subscription?.id),
+          onToggleExpand: () {
             setState(() {
               // Open this group (collapsing every other), or collapse it if
-              // it's already the open one.
-              _expandedGroup = isCollapsed ? entry.key : '';
+              // it's already the open one (accordion).
+              _expandedGroup = isExpanded ? '' : entry.key;
             });
           },
-          onRefresh: subscription != null
-              ? () => _onRefreshSubscription(subscription!.id)
-              : null,
-          onPing: () => _onPingGroup(context, subscription?.id, groupServers),
-          onDeleteAll: subscription != null
-              ? () => _onDeleteAllInSubscription(
-                  context,
-                  subscription!.id,
-                  groupServers,
-                )
-              : null,
+          onRefresh: (isMultiSelectActive || subscription == null)
+              ? null
+              : () => _onRefreshSubscription(subscription.id),
+          onPing: isMultiSelectActive
+              ? null
+              : () => _onPingGroup(context, subscription?.id, groupServers),
+          onMore: (isMultiSelectActive || subscription == null)
+              ? null
+              : () => _onMoreSubscription(context, subscription, groupServers),
+          children: [
+            for (final server in groupServers)
+              _buildServerCard(
+                context,
+                ref,
+                server,
+                activeServer,
+                latencyMap,
+                multiSelect,
+                isMultiSelectActive,
+              ),
+          ],
         ),
       );
-
-      // Skip server cards if group is collapsed
-      if (isCollapsed) continue;
-
-      items.add(const Gap(2));
-      for (var j = 0; j < groupServers.length; j++) {
-        final server = groupServers[j];
-        // Indent cards from the left so they read as nested under the
-        // group/subscription header.
-        items.add(
-          Padding(
-            key: _cardKey(server.id),
-            padding: const EdgeInsets.only(
-              left: 24,
-              right: 8,
-              top: 5,
-              bottom: 5,
-            ),
-            child: isMultiSelectActive
-                ? ServerCard(
-                    server: server,
-                    isSelected: server.id == activeServer?.id,
-                    latency: latencyMap[server.id],
-                    isMultiSelect: true,
-                    isChecked: multiSelect.contains(server.id),
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      ref
-                          .read(activeServerProvider.notifier)
-                          .selectServer(server);
-                    },
-                    onLongPress: () {},
-                    onLatencyTap: () =>
-                        ref.read(latencyProvider.notifier).testServer(server),
-                    onToggleSelect: () => ref
-                        .read(multiSelectProvider.notifier)
-                        .toggle(server.id),
-                  )
-                : Dismissible(
-                    key: ValueKey('dismiss-${server.id}'),
-                    direction: DismissDirection.endToStart,
-                    background: Container(
-                      alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.only(right: 24),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.error,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.delete, color: Colors.white),
-                    ),
-                    confirmDismiss: (_) async => true,
-                    onDismissed: (_) {
-                      _onSwipeDelete(context, ref, server);
-                    },
-                    child: DebugLongPressWrapper(
-                      onDebugLongPress: () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) =>
-                              ServerXrayConfigScreen(server: server),
-                        ),
-                      ),
-                      child: ServerCard(
-                        server: server,
-                        isSelected: server.id == activeServer?.id,
-                        latency: latencyMap[server.id],
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          _onTapServer(server);
-                        },
-                        onLongPress: () {
-                          HapticFeedback.mediumImpact();
-                          ref
-                              .read(multiSelectProvider.notifier)
-                              .enterSelectionMode(server.id);
-                        },
-                        onLatencyTap: () =>
-                            ref.read(latencyProvider.notifier).testServer(server),
-                      ),
-                    ),
-                  ),
-          ),
-        );
-      }
     }
 
     // Empty search/filter result hint (servers exist, none match).
@@ -510,6 +473,141 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
       // Bottom padding clears the floating pill nav + import FAB.
       padding: const EdgeInsets.only(top: 8, bottom: 140),
       children: items,
+    );
+  }
+
+  /// One server row, nested inside a subscription block. Supports tap-select,
+  /// long-press multi-select, swipe-to-delete, and inline latency retest.
+  Widget _buildServerCard(
+    BuildContext context,
+    WidgetRef ref,
+    ServerConfig server,
+    ServerConfig? activeServer,
+    Map<String, int> latencyMap,
+    Set<String> multiSelect,
+    bool isMultiSelectActive,
+  ) {
+    return Padding(
+      key: _cardKey(server.id),
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: isMultiSelectActive
+          ? ServerCard(
+              server: server,
+              isSelected: server.id == activeServer?.id,
+              latency: latencyMap[server.id],
+              isMultiSelect: true,
+              isChecked: multiSelect.contains(server.id),
+              onTap: () {
+                HapticFeedback.selectionClick();
+                ref.read(activeServerProvider.notifier).selectServer(server);
+              },
+              onLongPress: () {},
+              onLatencyTap: () =>
+                  ref.read(latencyProvider.notifier).testServer(server),
+              onToggleSelect: () =>
+                  ref.read(multiSelectProvider.notifier).toggle(server.id),
+            )
+          : Dismissible(
+              key: ValueKey('dismiss-${server.id}'),
+              direction: DismissDirection.endToStart,
+              background: Container(
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.only(right: 24),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.error,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.delete, color: Colors.white),
+              ),
+              confirmDismiss: (_) async => true,
+              onDismissed: (_) => _onSwipeDelete(context, ref, server),
+              child: DebugLongPressWrapper(
+                onDebugLongPress: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => ServerXrayConfigScreen(server: server),
+                  ),
+                ),
+                child: ServerCard(
+                  server: server,
+                  isSelected: server.id == activeServer?.id,
+                  latency: latencyMap[server.id],
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    _onTapServer(server);
+                  },
+                  onLongPress: () {
+                    HapticFeedback.mediumImpact();
+                    ref
+                        .read(multiSelectProvider.notifier)
+                        .enterSelectionMode(server.id);
+                  },
+                  onLatencyTap: () =>
+                      ref.read(latencyProvider.notifier).testServer(server),
+                ),
+              ),
+            ),
+    );
+  }
+
+  /// Opens an external link (renew / support) in the browser.
+  Future<void> _openUrl(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+    final launch = ref.read(linkLauncherProvider);
+    final opened = await launch(uri);
+    if (!mounted || opened) return;
+    showAppSnackBar(context, message: 'Could not open link');
+  }
+
+  /// Subscription management sheet (mirrors the home screen's "…" sheet, plus
+  /// Copy link and Delete for imported subscriptions).
+  void _onMoreSubscription(
+    BuildContext context,
+    Subscription subscription,
+    List<ServerConfig> groupServers,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    final isPinned = ref.read(pinnedKeysProvider).contains(subscription.url);
+    showSubscriptionActionsSheet(
+      context,
+      title: subscription.name,
+      actions: [
+        SubscriptionAction(
+          icon: Icons.refresh,
+          label: 'Update subscription',
+          onTap: () => _onRefreshSubscription(subscription.id),
+        ),
+        SubscriptionAction(
+          icon: Icons.speed,
+          label: 'Ping',
+          onTap: () =>
+              _onPingGroup(context, subscription.id, groupServers),
+        ),
+        SubscriptionAction(
+          icon: Icons.copy,
+          label: 'Copy link',
+          onTap: () {
+            Clipboard.setData(ClipboardData(text: subscription.url));
+            showAppSnackBar(context, message: l10n.linkCopied);
+          },
+        ),
+        SubscriptionAction(
+          icon: isPinned ? Icons.push_pin_outlined : Icons.push_pin,
+          label: isPinned ? 'Unpin' : 'Pin',
+          onTap: () =>
+              ref.read(pinnedKeysProvider.notifier).toggle(subscription.url),
+        ),
+        SubscriptionAction(
+          icon: Icons.delete_outline,
+          label: 'Delete all',
+          isDestructive: true,
+          onTap: () => _onDeleteAllInSubscription(
+            context,
+            subscription.id,
+            groupServers,
+          ),
+        ),
+      ],
     );
   }
 

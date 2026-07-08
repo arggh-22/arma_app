@@ -97,7 +97,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    // Redesigned blocks show usage as text (used / total), matching home.
     expect(find.text('1.0 GB / 10 GB'), findsOneWidget);
   });
 }
