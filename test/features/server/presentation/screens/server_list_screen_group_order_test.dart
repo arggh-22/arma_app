@@ -94,9 +94,9 @@ void main() {
     await tester.pumpAndSettle();
 
     final betaY =
-        tester.getTopLeft(find.byKey(const ValueKey('server-group-header-Beta'))).dy;
+        tester.getTopLeft(find.byKey(const ValueKey('server-group-header-sub-new'))).dy;
     final alphaY =
-        tester.getTopLeft(find.byKey(const ValueKey('server-group-header-Alpha'))).dy;
+        tester.getTopLeft(find.byKey(const ValueKey('server-group-header-sub-old'))).dy;
 
     // 'Beta' (sub added later) must appear above 'Alpha' despite storage order.
     expect(betaY, lessThan(alphaY));
@@ -131,7 +131,7 @@ void main() {
     // Expand 'Alpha' → it opens and 'Beta' collapses.
     await tester.tap(
       find.descendant(
-        of: find.byKey(const ValueKey('server-group-header-Alpha')),
+        of: find.byKey(const ValueKey('server-group-header-sub-old')),
         matching: find.byIcon(Icons.chevron_right),
       ),
     );

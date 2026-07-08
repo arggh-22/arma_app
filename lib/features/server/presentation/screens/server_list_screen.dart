@@ -316,10 +316,14 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
       latencyMap,
     );
 
-    // Group servers by groupName
+    // Group servers by SUBSCRIPTION, not by display name: two subscriptions
+    // can share the same profile-title (e.g. two "ARMA VPN" keys), and keying
+    // on the name would merge their servers into one block. Manual servers
+    // (no subscription) fall back to their group name.
     final groups = <String, List<ServerConfig>>{};
     for (final server in sortedServers) {
-      groups.putIfAbsent(server.groupName, () => []).add(server);
+      final key = server.subscriptionId ?? 'manual:${server.groupName}';
+      groups.putIfAbsent(key, () => []).add(server);
     }
 
     final groupEntries = groups.entries.toList();
@@ -372,6 +376,10 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
 
       final subId = groupServers.first.subscriptionId;
       final subscription = subId == null ? null : subById[subId];
+      final displayName =
+          (subscription != null && subscription.name.trim().isNotEmpty)
+          ? subscription.name.trim()
+          : groupServers.first.groupName;
 
       final isExpanded = entry.key == openGroupKey;
       final now = DateTime.now();
@@ -392,10 +400,13 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
 
       items.add(
         SubscriptionKeyBlock(
+          // Key on the (unique) group key, not the display name — two
+          // subscriptions can share a profile-title, and duplicate ListView
+          // child keys trip the sliver child-order assertion.
           key: ValueKey('server-group-header-${entry.key}'),
           name: subscription != null
-              ? entry.key
-              : '${entry.key} (${groupServers.length})',
+              ? displayName
+              : '$displayName (${groupServers.length})',
           isActive: isActive,
           isPinned: subscription != null && pinned.contains(subscription.url),
           showInfoLine: subscription != null,
@@ -831,45 +842,64 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
 
     final trimmed = text.trim();
 
-    // Support empty-state import of subscription URLs too.
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    // Subscription URL import — supports pasting several links at once
+    // (newline / whitespace / comma separated). Each URL becomes its OWN
+    // subscription so distinct keys never merge into a single block.
+    final subscriptionUrls = trimmed
+        .split(RegExp(r'[\s,]+'))
+        .map((u) => u.trim())
+        .where((u) => u.startsWith('http://') || u.startsWith('https://'))
+        .toList();
+
+    if (subscriptionUrls.isNotEmpty) {
       messenger.showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Row(
             children: [
-              SizedBox(
+              const SizedBox(
                 width: 16,
                 height: 16,
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
-              SizedBox(width: 12),
-              Text('Fetching subscription...'),
+              const SizedBox(width: 12),
+              Text(
+                subscriptionUrls.length == 1
+                    ? 'Fetching subscription...'
+                    : 'Fetching ${subscriptionUrls.length} subscriptions...',
+              ),
             ],
           ),
-          duration: Duration(seconds: 30),
+          duration: const Duration(seconds: 60),
         ),
       );
 
-      try {
-        final importedCount = await ref
-            .read(subscriptionProvider.notifier)
-            .addSubscription(url: trimmed, name: '', userAgent: 'arma');
-        if (!context.mounted) return;
-
-        if (importedCount <= 0) {
-          showAppSnackBar(context, message: l10n.parseErrorInvalidLink);
-          return;
+      var totalImported = 0;
+      for (final url in subscriptionUrls) {
+        try {
+          totalImported += await ref
+              .read(subscriptionProvider.notifier)
+              .addSubscription(url: url, name: '', userAgent: 'arma');
+        } catch (_) {
+          // Skip a bad/expired link but keep importing the rest.
         }
+      }
+      if (!context.mounted) return;
 
+      if (totalImported <= 0) {
         showAppSnackBar(
           context,
-          message: l10n.importedServersCount(importedCount),
-          backgroundColor: Colors.green.shade700,
+          message: subscriptionUrls.length == 1
+              ? l10n.parseErrorInvalidLink
+              : l10n.subscriptionFetchError,
         );
-      } catch (_) {
-        if (!context.mounted) return;
-        showAppSnackBar(context, message: l10n.subscriptionFetchError);
+        return;
       }
+
+      showAppSnackBar(
+        context,
+        message: l10n.importedServersCount(totalImported),
+        backgroundColor: Colors.green.shade700,
+      );
       return;
     }
 

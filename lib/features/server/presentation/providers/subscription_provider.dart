@@ -51,15 +51,26 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
     String userAgent = '',
     bool autoUpdate = true,
   }) async {
+    // A subscription URL is unique — re-importing the same link updates the
+    // existing subscription in place (reusing its id) instead of creating a
+    // duplicate block. Its addedAt is preserved so the list order is stable.
+    Subscription? existing;
+    for (final s in state) {
+      if (s.url == url) {
+        existing = s;
+        break;
+      }
+    }
+
     // Use provided name, or defer to profileTitle from subscription response
     // Only use domain as last resort if both are unavailable
     final subscription = Subscription(
-      id: const Uuid().v4(),
+      id: existing?.id ?? const Uuid().v4(),
       name: name.isNotEmpty ? name : '', // Keep empty to prioritize profileTitle
       url: url,
       userAgent: userAgent,
       lastUpdated: DateTime.now(),
-      addedAt: DateTime.now(),
+      addedAt: existing?.addedAt ?? DateTime.now(),
       autoUpdate: autoUpdate,
     );
 
@@ -100,6 +111,16 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
     // Persist servers through the keep-alive repository (see refreshSubscription
     // for why the auto-dispose serverListProvider notifier must not be used).
     final serverRepo = ref.read(serverRepositoryProvider);
+    // Re-import of an existing URL: clear its previous servers first so they
+    // are replaced, not duplicated.
+    if (existing != null) {
+      final all = await serverRepo.getAllConfigs();
+      for (final s in all) {
+        if (s.subscriptionId == subscription.id) {
+          await serverRepo.deleteConfig(s.id);
+        }
+      }
+    }
     for (final server in result.servers) {
       await serverRepo.saveConfig(server);
     }

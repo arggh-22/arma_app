@@ -34,7 +34,7 @@ void main() {
       expect(find.text('Imported 2'), findsOneWidget);
 
       final importedHeader = find.byKey(
-        const ValueKey('server-group-header-Imported'),
+        const ValueKey('server-group-header-manual:Imported'),
       );
       await tester.tap(
         find.descendant(
