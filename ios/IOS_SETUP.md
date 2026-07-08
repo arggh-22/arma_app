@@ -16,7 +16,12 @@ needs **no changes** — the iOS native side implements the same contract as And
 | `ios/Runner/VpnChannel.swift` | Flutter ↔ `NETunnelProviderManager` bridge (start/stop/isRunning/permission/status events) | ✅ complete, core-independent |
 | `ios/Runner/AppDelegate.swift` | registers `VpnChannel` on the Flutter engine | ✅ |
 | `ios/Runner/Runner.entitlements` | NetworkExtension + App Group for the app | ✅ (edit App Group if needed) |
-| `ios/PacketTunnel/PacketTunnelProvider.swift` | the extension; configures utun + `XrayBridge` seam | ⚠️ skeleton — Xray core not wired |
+| `ios/PacketTunnel/PacketTunnelProvider.swift` | extension lifecycle; builds utun settings; starts `XrayTunnel` | ✅ complete |
+| `ios/PacketTunnel/TunnelConfig.swift` | parses DNS/MTU from the Xray JSON → `NEPacketTunnelNetworkSettings` | ✅ |
+| `ios/PacketTunnel/XrayTunnel.swift` | orchestrates core + tun2socks; rewrites the tun inbound → SOCKS; stats via App Group | ✅ |
+| `ios/PacketTunnel/XrayCore.swift` | Xray-core (`LibXray`) seam — run/stop/stats/version/measureDelay | ⚠️ 4 calls to uncomment once the xcframework is linked |
+| `ios/PacketTunnel/Tun2SocksBridge.swift` | utun ⇄ SOCKS bridge (`HevSocks5Tunnel`) + utun-fd discovery | ⚠️ 2 calls to uncomment once the pod is linked |
+| `ios/Runner/XrayProbe.swift` | in-app version + latency probe (`getXrayVersion`/`measureDelay`) | ⚠️ 2 calls to uncomment |
 | `ios/PacketTunnel/Info.plist` | declares the packet-tunnel provider class | ✅ |
 | `ios/PacketTunnel/PacketTunnel.entitlements` | NetworkExtension + App Group for the extension | ✅ |
 
@@ -50,17 +55,24 @@ equivalent **xcframework**:
    gomobile bind -target=ios -o LibXray.xcframework github.com/xtls/libxray/...
    ```
    (Or use a prebuilt `LibXray.xcframework` from the XTLS ecosystem.)
-2. Drag `LibXray.xcframework` into the **PacketTunnel** target (Frameworks).
-3. Implement the `XrayBridge` seam in `PacketTunnelProvider.swift`:
-   - `start(config:packetFlow:)` — start Xray with the JSON config, and bridge
-     packets between `packetFlow` (read/write) and Xray. Two common approaches:
-     - **tun2socks**: run Xray with a SOCKS/HTTP inbound, run a userspace
-       tun2socks (e.g. hev-socks5-tunnel) reading `packetFlow.readPackets` and
-       writing to the SOCKS inbound; or
-     - **Xray tun inbound**: feed the `packetFlow` to Xray's tun handling.
-   - `stop()` — stop Xray and the bridge.
-4. Optionally surface version/latency: implement `getXrayVersion` and
-   `measureDelay` in `VpnChannel.swift` (currently return `"Unknown"`/`-1`).
+2. Drag `LibXray.xcframework` into **both** the **PacketTunnel** target (needed
+   to run the tunnel) and the **Runner** target (for `getXrayVersion` /
+   `measureDelay`) — Frameworks, Embed & Sign.
+3. `pod install` (the Podfile now declares `HevSocks5Tunnel` for the
+   PacketTunnel target — the utun⇄SOCKS bridge).
+4. The tunnel is **already implemented** (no packet plumbing left to write):
+   - `PacketTunnelProvider` → `TunnelConfig` (utun settings) → `XrayTunnel`
+     (rewrites the tun inbound to a local SOCKS inbound, starts the core, runs
+     tun2socks over the utun fd, reports stats through the App Group).
+   - The only edits are the **framework calls** marked `// ← real call` in
+     `XrayCore.swift` (4), `Tun2SocksBridge.swift` (2) and `XrayProbe.swift` (2).
+     Uncomment the `import LibXray` / `import HevSocks5Tunnel` lines and replace
+     the placeholder `notLinked()` / commented calls with your framework's
+     actual functions. Names vary by libXray version — the request/response is
+     libXray's base64-JSON `CallResponse`.
+5. Ship `geoip.dat` / `geosite.dat` in the extension bundle (so routing rules
+   like `geoip:ru` resolve). `XrayCore.assetDir()` points at the bundle
+   `resourcePath`; adjust if you place them elsewhere (e.g. the App Group).
 
 ## Behavior parity notes
 
@@ -70,12 +82,15 @@ equivalent **xcframework**:
   these are no-ops on iOS (iOS has no equivalent API for 3rd-party VPNs).
 - `setNotificationDetailsEnabled` → no-op; iOS shows the system VPN indicator.
 - Status events (`connecting`/`connected`/`disconnected`) are emitted from
-  `NEVPNStatusDidChange`. Traffic-stats (`type:"stats"`) events are not emitted
-  yet — add them from the extension via the App Group if you want live counters.
+  `NEVPNStatusDidChange`. Traffic stats are written to the App Group by the
+  extension (`vpn.stats.up`/`down`) and can also be pulled via
+  `session.sendProviderMessage("stats")`.
 
 ## Quick local check (after a Mac build)
 
 `flutter run -d ios`, tap connect on a server, and watch Xcode's Console for the
 PacketTunnel extension (filter by process `PacketTunnel`). The UI should move
-`connecting → connected`; if it stays connecting, the `XrayBridge` seam isn't
-running the core yet.
+`connecting → connected`; if it stays connecting, the core/tun2socks calls in
+`XrayCore.swift` / `Tun2SocksBridge.swift` are still the placeholders (look for
+the `os_log` "core running" / "starting tun2socks" lines and a
+"LibXray.xcframework not linked" error).

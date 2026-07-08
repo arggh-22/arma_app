@@ -1,4 +1,8 @@
+#if canImport(Flutter)
 import Flutter
+#elseif canImport(FlutterMacOS)
+import FlutterMacOS
+#endif
 import Foundation
 import NetworkExtension
 import UserNotifications
@@ -74,12 +78,15 @@ final class VpnChannel: NSObject, FlutterStreamHandler {
       }
 
     case "getXrayVersion":
-      // TODO(ios-core): surface the real version from the bundled Xray xcframework.
-      result("Unknown")
+      result(XrayProbe.version())
 
     case "measureDelay":
-      // TODO(ios-core): run a one-shot latency probe via the Xray core.
-      result(-1)
+      let config = args?["config"] as? String ?? ""
+      let url = args?["url"] as? String ?? "https://www.google.com/generate_204"
+      DispatchQueue.global(qos: .userInitiated).async {
+        let ms = XrayProbe.measureDelay(configJson: config, url: url)
+        DispatchQueue.main.async { result(ms) }
+      }
 
     // Android-only features — safe no-ops on iOS.
     case "getInstalledApps":

@@ -36,6 +36,15 @@ target 'Runner' do
   end
 end
 
+# Network Extension that runs Xray + tun2socks (see ios/IOS_SETUP.md).
+# Add this target in Xcode first (File ▸ New ▸ Target ▸ Network Extension).
+# HevSocks5Tunnel provides the utun ⇄ SOCKS5 bridge; LibXray.xcframework (the
+# Xray core) is added manually to the target's Frameworks — it is NOT a pod.
+target 'PacketTunnel' do
+  use_frameworks!
+  pod 'HevSocks5Tunnel', '~> 2.9'
+end
+
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
