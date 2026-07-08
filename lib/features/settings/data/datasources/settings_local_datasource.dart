@@ -100,15 +100,18 @@ class SettingsLocalDatasource {
 
   // ── DNS (D-06, D-07) ──────────────────────────────────────────────
 
-  /// DNS protocol: "doh", "dot", or "plain".
-  String getDnsProtocol() => _prefs.getString(_dnsProtocolKey) ?? 'doh';
+  /// DNS protocol: "doh", "dot", or "plain" (shown in the UI as DoU —
+  /// DNS over UDP). Defaults to plain UDP.
+  String getDnsProtocol() => _prefs.getString(_dnsProtocolKey) ?? 'plain';
 
   Future<void> setDnsProtocol(String protocol) =>
       _prefs.setString(_dnsProtocolKey, protocol);
 
-  /// Remote DNS server URL.
-  String getRemoteDns() =>
-      _prefs.getString(_remoteDnsKey) ?? 'https://1.1.1.1/dns-query';
+  /// Remote DNS server URL. The default is a plain IP to match the default
+  /// "plain" (DoU) protocol — Xray infers the DNS transport from the address
+  /// format, so a DoH URL here would silently keep DoH as the effective
+  /// default.
+  String getRemoteDns() => _prefs.getString(_remoteDnsKey) ?? '1.1.1.1';
 
   Future<void> setRemoteDns(String dns) => _prefs.setString(_remoteDnsKey, dns);
 

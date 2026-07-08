@@ -255,7 +255,9 @@ class SettingsScreen extends ConsumerWidget {
                 segments: const [
                   ButtonSegment(value: 'doh', label: Text('DoH')),
                   ButtonSegment(value: 'dot', label: Text('DoT')),
-                  ButtonSegment(value: 'plain', label: Text('Plain')),
+                  // DoU = DNS over UDP; kept as stored value 'plain' for
+                  // backward compatibility with persisted settings.
+                  ButtonSegment(value: 'plain', label: Text('DoU')),
                 ],
                 selected: {dnsSettings.protocol},
                 onSelectionChanged: (values) {

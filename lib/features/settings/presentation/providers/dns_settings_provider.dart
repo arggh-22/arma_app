@@ -6,12 +6,12 @@ import 'package:arma_proxy_vpn_client/features/settings/domain/entities/dns_pres
 
 part 'dns_settings_provider.g.dart';
 
-/// DNS configuration: protocol (DoH/DoT/Plain), remote DNS, direct DNS, FakeIP, filtering.
+/// DNS configuration: protocol (DoH/DoT/DoU), remote DNS, direct DNS, FakeIP, filtering.
 ///
 /// Auto-saves every change to SharedPreferences.
 /// These settings take effect on the next VPN connection.
 class DnsSettings {
-  /// DNS protocol: 'doh', 'dot', or 'plain'.
+  /// DNS protocol: 'doh', 'dot', or 'plain' (shown in the UI as DoU).
   final String protocol;
 
   /// Remote DNS server URL (used for proxied traffic).
@@ -33,8 +33,8 @@ class DnsSettings {
   final DnsFilteringOptions filtering;
 
   const DnsSettings({
-    this.protocol = 'doh',
-    this.remoteDns = 'https://1.1.1.1/dns-query',
+    this.protocol = 'plain',
+    this.remoteDns = '1.1.1.1',
     this.directDns = 'localhost',
     this.fakeIpEnabled = false,
     this.fakeIpCidr = '198.18.0.0/15',
@@ -87,7 +87,7 @@ class DnsSettingsNotifier extends _$DnsSettingsNotifier {
     );
   }
 
-  /// Set DNS protocol: 'doh', 'dot', or 'plain'.
+  /// Set DNS protocol: 'doh', 'dot', or 'plain' (DoU).
   Future<void> setProtocol(String protocol) async {
     await _datasource.setDnsProtocol(protocol);
     state = state.copyWith(protocol: protocol);

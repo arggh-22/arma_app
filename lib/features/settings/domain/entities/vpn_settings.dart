@@ -29,8 +29,8 @@ class VpnSettings {
   final String fakeIpCidr;
 
   const VpnSettings({
-    this.dnsProtocol = 'doh',
-    this.remoteDns = 'https://1.1.1.1/dns-query',
+    this.dnsProtocol = 'plain',
+    this.remoteDns = '1.1.1.1',
     this.directDns = 'localhost',
     this.sniffingEnabled = true,
     this.muxEnabled = false,

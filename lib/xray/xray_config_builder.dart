@@ -266,9 +266,9 @@ class XrayConfigBuilder {
   /// The [remoteDns] value is already in the correct format for the protocol:
   /// - DoH: `https://1.1.1.1/dns-query`
   /// - DoT: `tls://1.1.1.1`
-  /// - Plain: `1.1.1.1`
+  /// - DoU (plain UDP, the default): `1.1.1.1`
   static Map<String, dynamic> _buildDns({
-    String remoteDns = 'https://1.1.1.1/dns-query',
+    String remoteDns = '1.1.1.1',
     String directDns = 'localhost',
   }) {
     return {
