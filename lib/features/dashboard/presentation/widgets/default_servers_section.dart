@@ -312,9 +312,10 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
 
     final connectionState = ref.read(connectionProvider);
     if (connectionState is Connected && currentSelection?.id != target.id) {
-      final connectionNotifier = ref.read(connectionProvider.notifier);
-      await connectionNotifier.disconnect();
-      await connectionNotifier.connect(target);
+      // connect() handles tearing down the current session and waiting for the
+      // native side to fully stop before starting the new server — firing a
+      // separate disconnect() here raced the restart (connected, no traffic).
+      await ref.read(connectionProvider.notifier).connect(target);
     }
   }
 

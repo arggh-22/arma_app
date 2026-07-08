@@ -250,7 +250,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(activeNotifier.selectedIds, ['new']);
-      expect(connectionNotifier.events, ['disconnect', 'connect:new']);
+      // The UI now delegates the reconnect to connect(), which itself tears
+      // down the current session (and waits for the native side) before
+      // starting the new server — so the tap issues a single connect call.
+      expect(connectionNotifier.events, ['connect:new']);
     },
   );
 

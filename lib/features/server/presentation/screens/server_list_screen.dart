@@ -623,9 +623,10 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
 
     final connectionState = ref.read(connectionProvider);
     if (connectionState is Connected && currentSelection?.id != server.id) {
-      final connectionNotifier = ref.read(connectionProvider.notifier);
-      await connectionNotifier.disconnect();
-      await connectionNotifier.connect(server);
+      // connect() tears the current session down and waits for the native side
+      // to confirm it stopped before starting the new server, so we must NOT
+      // fire a separate disconnect() here (that raced the restart).
+      await ref.read(connectionProvider.notifier).connect(server);
     }
   }
 

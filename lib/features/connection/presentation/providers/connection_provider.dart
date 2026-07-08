@@ -113,17 +113,20 @@ class ConnectionNotifier extends _$ConnectionNotifier
   Future<void> connect(ServerConfig server, {bool isManual = true}) async {
     print('[ConnectionNotifier] connect(${server.name}) — current state: $state');
 
-    // Allow reconnect if stuck in Connecting/Connected state
-    if (state is Connected) {
-      // Already connected — disconnect first, then reconnect
+    // Switching servers / reconnecting: tear down any existing (or pending)
+    // session and WAIT until the native side reports it is fully stopped
+    // before starting the new one. The native service processes stop/start/
+    // isRunning on one sequential handler, so polling isRunning until false
+    // guarantees the previous xray-core + TUN are gone. Without this wait the
+    // new startVpn raced the old teardown, leaving the service "connected"
+    // with no traffic (old tunnel torn down after the new one came up, or the
+    // reachability probe running through the still-up old TUN).
+    if (state is! Disconnected) {
+      debugPrint(
+        '[ConnectionNotifier] Reconnect: stopping current session first',
+      );
       await disconnect();
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
-    if (state is Connecting) {
-      // Stuck in connecting — force reset
-      print('[ConnectionNotifier] Forcing reset from stuck Connecting state');
-      state = const Disconnected();
-      await Future.delayed(const Duration(milliseconds: 300));
+      await _awaitNativeStopped();
     }
 
     if (isManual) _fallbackAttempts = 0;
@@ -241,6 +244,29 @@ class ConnectionNotifier extends _$ConnectionNotifier
       state = const Disconnected();
       _cancelStateTimeout();
     }
+  }
+
+  /// Polls the native side until it reports the tunnel is fully stopped (or a
+  /// timeout elapses). Because native stop/isRunning share one sequential
+  /// message handler, an `isRunning == false` reply is only produced after the
+  /// preceding `stopVpn` has fully torn down xray-core and closed the TUN — so
+  /// this is a reliable "safe to start the next server" barrier.
+  Future<void> _awaitNativeStopped({
+    Duration timeout = const Duration(seconds: 6),
+  }) async {
+    final deadline = DateTime.now().add(timeout);
+    while (DateTime.now().isBefore(deadline)) {
+      try {
+        if (!await _platformService.isRunning) return;
+      } catch (_) {
+        // Treat an errored query as "assume stopped" rather than hang forever.
+        return;
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+    }
+    debugPrint(
+      '[ConnectionNotifier] _awaitNativeStopped: timed out waiting for stop',
+    );
   }
 
   /// Start a timeout that auto-resets state if it stays in a transitional
