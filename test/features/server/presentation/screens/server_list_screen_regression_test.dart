@@ -36,6 +36,12 @@ void main() {
       final importedHeader = find.byKey(
         const ValueKey('server-group-header-manual:Imported'),
       );
+      // Manual (clipboard-imported) groups still expose the "…" management
+      // button so they can be pinged / pinned / deleted.
+      expect(
+        find.descendant(of: importedHeader, matching: find.byIcon(Icons.more_vert)),
+        findsOneWidget,
+      );
       await tester.tap(
         find.descendant(
           of: importedHeader,

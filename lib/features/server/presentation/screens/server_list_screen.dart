@@ -347,13 +347,15 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
       (a, b) => groupTimestamp(b.value).compareTo(groupTimestamp(a.value)),
     );
 
-    // Pinned subscriptions float to the top (keyed by their URL, shared with
-    // the home screen), keeping newest-first order within each partition.
-    bool isPinnedGroup(List<ServerConfig> gs) {
+    // Pinned groups float to the top. Keyed by the subscription URL (shared
+    // with the home screen) for real subs, or the group key for manual groups.
+    String pinKeyFor(List<ServerConfig> gs) {
       final subId = gs.first.subscriptionId;
       final sub = subId == null ? null : subById[subId];
-      return sub != null && pinned.contains(sub.url);
+      return sub?.url ?? (subId ?? 'manual:${gs.first.groupName}');
     }
+
+    bool isPinnedGroup(List<ServerConfig> gs) => pinned.contains(pinKeyFor(gs));
 
     final ordered = <MapEntry<String, List<ServerConfig>>>[
       ...groupEntries.where((e) => isPinnedGroup(e.value)),
@@ -380,6 +382,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
           (subscription != null && subscription.name.trim().isNotEmpty)
           ? subscription.name.trim()
           : groupServers.first.groupName;
+      final pinKey = subscription?.url ?? entry.key;
 
       final isExpanded = entry.key == openGroupKey;
       final now = DateTime.now();
@@ -408,7 +411,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
               ? displayName
               : '$displayName (${groupServers.length})',
           isActive: isActive,
-          isPinned: subscription != null && pinned.contains(subscription.url),
+          isPinned: pinned.contains(pinKey),
           showInfoLine: subscription != null,
           expireDate: expireDate,
           usedBytes: usedBytes,
@@ -434,9 +437,15 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
           onPing: isMultiSelectActive
               ? null
               : () => _onPingGroup(context, subscription?.id, groupServers),
-          onMore: (isMultiSelectActive || subscription == null)
+          onMore: isMultiSelectActive
               ? null
-              : () => _onMoreSubscription(context, subscription, groupServers),
+              : () => _onMoreGroup(
+                  context,
+                  subscription,
+                  groupServers,
+                  pinKey,
+                  displayName,
+                ),
           children: [
             for (final server in groupServers)
               _buildServerCard(
@@ -572,51 +581,55 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
 
   /// Subscription management sheet (mirrors the home screen's "…" sheet, plus
   /// Copy link and Delete for imported subscriptions).
-  void _onMoreSubscription(
+  /// Management sheet for a group. Works for real subscriptions (Update +
+  /// Copy link available) and for manually/clipboard-imported groups that have
+  /// no subscription URL (Ping / Pin / Delete only — there's nothing to update
+  /// from). [pinKey] identifies the group in the shared pinned-keys set.
+  void _onMoreGroup(
     BuildContext context,
-    Subscription subscription,
+    Subscription? subscription,
     List<ServerConfig> groupServers,
+    String pinKey,
+    String title,
   ) {
     final l10n = AppLocalizations.of(context)!;
-    final isPinned = ref.read(pinnedKeysProvider).contains(subscription.url);
+    final isPinned = ref.read(pinnedKeysProvider).contains(pinKey);
+    final hasUrl = subscription != null && subscription.url.trim().isNotEmpty;
     showSubscriptionActionsSheet(
       context,
-      title: subscription.name,
+      title: title,
       actions: [
-        SubscriptionAction(
-          icon: Icons.refresh,
-          label: 'Update subscription',
-          onTap: () => _onRefreshSubscription(subscription.id),
-        ),
+        if (hasUrl)
+          SubscriptionAction(
+            icon: Icons.refresh,
+            label: 'Update subscription',
+            onTap: () => _onRefreshSubscription(subscription.id),
+          ),
         SubscriptionAction(
           icon: Icons.speed,
           label: 'Ping',
           onTap: () =>
-              _onPingGroup(context, subscription.id, groupServers),
+              _onPingGroup(context, subscription?.id, groupServers),
         ),
-        SubscriptionAction(
-          icon: Icons.copy,
-          label: 'Copy link',
-          onTap: () {
-            Clipboard.setData(ClipboardData(text: subscription.url));
-            showAppSnackBar(context, message: l10n.linkCopied);
-          },
-        ),
+        if (hasUrl)
+          SubscriptionAction(
+            icon: Icons.copy,
+            label: 'Copy link',
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: subscription.url));
+              showAppSnackBar(context, message: l10n.linkCopied);
+            },
+          ),
         SubscriptionAction(
           icon: isPinned ? Icons.push_pin_outlined : Icons.push_pin,
           label: isPinned ? 'Unpin' : 'Pin',
-          onTap: () =>
-              ref.read(pinnedKeysProvider.notifier).toggle(subscription.url),
+          onTap: () => ref.read(pinnedKeysProvider.notifier).toggle(pinKey),
         ),
         SubscriptionAction(
           icon: Icons.delete_outline,
           label: 'Delete all',
           isDestructive: true,
-          onTap: () => _onDeleteAllInSubscription(
-            context,
-            subscription.id,
-            groupServers,
-          ),
+          onTap: () => _onDeleteGroup(context, subscription, groupServers),
         ),
       ],
     );
@@ -742,10 +755,12 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     );
   }
 
-  /// Delete all servers in a subscription group with confirmation.
-  void _onDeleteAllInSubscription(
+  /// Delete a whole group with confirmation. For a real subscription this also
+  /// removes the subscription record; for a manual/clipboard group it just
+  /// deletes the servers.
+  void _onDeleteGroup(
     BuildContext context,
-    String subscriptionId,
+    Subscription? subscription,
     List<ServerConfig> servers,
   ) {
     final l10n = AppLocalizations.of(context)!;
@@ -761,17 +776,21 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
           ),
           TextButton(
             onPressed: () {
-              for (final server in servers) {
-                ref.read(serverListProvider.notifier).deleteServer(server.id);
-                final activeServer = ref.read(activeServerProvider);
-                if (activeServer?.id == server.id) {
-                  ref.read(activeServerProvider.notifier).selectServer(null);
+              // Clear the active selection if it points into this group.
+              final activeServer = ref.read(activeServerProvider);
+              if (servers.any((s) => s.id == activeServer?.id)) {
+                ref.read(activeServerProvider.notifier).selectServer(null);
+              }
+              if (subscription != null) {
+                // deleteSubscription removes the sub record AND its servers.
+                ref
+                    .read(subscriptionProvider.notifier)
+                    .deleteSubscription(subscription.id);
+              } else {
+                for (final server in servers) {
+                  ref.read(serverListProvider.notifier).deleteServer(server.id);
                 }
               }
-              // Also delete the subscription itself
-              ref
-                  .read(subscriptionProvider.notifier)
-                  .deleteSubscription(subscriptionId);
               Navigator.pop(dialogContext);
             },
             style: TextButton.styleFrom(
