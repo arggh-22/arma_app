@@ -17,6 +17,7 @@ import 'package:arma_proxy_vpn_client/features/server/presentation/providers/act
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/best_server_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/latency_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/multi_select_provider.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/providers/reveal_server_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/server_list_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/sort_filter_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/subscription_provider.dart';
@@ -51,6 +52,53 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
   final Set<String> _refreshingSubscriptions = {};
   final Set<String> _pingingSubscriptions = {};
 
+  /// Per-server card keys, used to scroll a server into view on reveal.
+  final Map<String, GlobalKey> _cardKeys = {};
+
+  /// The last reveal id this screen acted on (avoids re-scrolling on rebuild).
+  String? _revealHandledId;
+
+  GlobalKey _cardKey(String serverId) =>
+      _cardKeys.putIfAbsent(serverId, GlobalKey.new);
+
+  /// When the active-server card requests a reveal for an imported server,
+  /// open its group (accordion) and scroll it into view. Ids we don't own
+  /// (e.g. default-api servers) are ignored and left for the home screen.
+  void _maybeReveal(List<ServerConfig> servers) {
+    final id = ref.watch(revealServerProvider);
+    if (id == null || id == _revealHandledId) return;
+
+    ServerConfig? target;
+    for (final server in servers) {
+      if (server.id == id) {
+        target = server;
+        break;
+      }
+    }
+    if (target == null) return; // not loaded / not an imported server.
+
+    _revealHandledId = id;
+    final groupName = target.groupName;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() => _expandedGroup = groupName);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final ctx = _cardKeys[id]?.currentContext;
+        if (ctx != null) {
+          Scrollable.ensureVisible(
+            ctx,
+            alignment: 0.2,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeInOut,
+          );
+        }
+        _revealHandledId = null;
+        ref.read(revealServerProvider.notifier).clear();
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -83,6 +131,10 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
           ),
         ),
         data: (servers) {
+          // Honor a pending "scroll to this server" request from the
+          // dashboard's active-server card.
+          _maybeReveal(servers);
+
           if (servers.isEmpty) {
             return EmptyServerState(
               onImportTap: () => _importFromClipboard(context, ref),
@@ -353,6 +405,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
         // group/subscription header.
         items.add(
           Padding(
+            key: _cardKey(server.id),
             padding: const EdgeInsets.only(
               left: 24,
               right: 8,

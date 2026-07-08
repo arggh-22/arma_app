@@ -18,11 +18,21 @@ class DefaultServerItemMapper {
 
   static List<DefaultServerItem> mapResolved(
     DefaultServerKey key,
-    List<ServerConfig> servers,
-  ) {
+    List<ServerConfig> servers, {
+    String? announcement,
+    String? supportUrl,
+    String? webPageUrl,
+  }) {
     final parsedConfigs = servers;
     if (parsedConfigs.isEmpty) {
-      return [_fallbackItem(key)];
+      return [
+        _fallbackItem(
+          key,
+          announcement: announcement,
+          supportUrl: supportUrl,
+          webPageUrl: webPageUrl,
+        ),
+      ];
     }
 
     if (parsedConfigs.length == 1) {
@@ -37,6 +47,9 @@ class DefaultServerItemMapper {
           id: normalizedId,
           name: key.name,
           serverConfig: serverConfig,
+          announcement: announcement,
+          supportUrl: supportUrl,
+          webPageUrl: webPageUrl,
         ),
       ];
     }
@@ -49,13 +62,34 @@ class DefaultServerItemMapper {
           ? '${key.name} ${index + 1}'
           : parsedName;
       final scopedConfig = parsedConfig.copyWith(id: rowId, name: rowName);
-      return _toItem(key, id: rowId, name: rowName, serverConfig: scopedConfig);
+      return _toItem(
+        key,
+        id: rowId,
+        name: rowName,
+        serverConfig: scopedConfig,
+        announcement: announcement,
+        supportUrl: supportUrl,
+        webPageUrl: webPageUrl,
+      );
     }, growable: false);
   }
 
-  static DefaultServerItem _fallbackItem(DefaultServerKey key) {
+  static DefaultServerItem _fallbackItem(
+    DefaultServerKey key, {
+    String? announcement,
+    String? supportUrl,
+    String? webPageUrl,
+  }) {
     final normalizedId = 'default-api-${key.id}';
-    return _toItem(key, id: normalizedId, name: key.name, serverConfig: null);
+    return _toItem(
+      key,
+      id: normalizedId,
+      name: key.name,
+      serverConfig: null,
+      announcement: announcement,
+      supportUrl: supportUrl,
+      webPageUrl: webPageUrl,
+    );
   }
 
   static DefaultServerItem _toItem(
@@ -63,10 +97,14 @@ class DefaultServerItemMapper {
     required String id,
     required String name,
     required ServerConfig? serverConfig,
+    String? announcement,
+    String? supportUrl,
+    String? webPageUrl,
   }) {
     return DefaultServerItem(
       id: id,
       name: name,
+      keyName: key.name,
       status: key.status,
       usedTraffic: key.usedTraffic,
       dataLimit: key.dataLimit,
@@ -74,6 +112,9 @@ class DefaultServerItemMapper {
       expireDate: key.expireDate,
       isActive: key.isActive,
       serverConfig: serverConfig,
+      announcement: announcement,
+      supportUrl: supportUrl,
+      webPageUrl: webPageUrl,
     );
   }
 }

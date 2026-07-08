@@ -69,7 +69,9 @@ void main() {
   testWidgets('hides FAB on down-scroll and shows it on up-scroll', (
     tester,
   ) async {
-    tester.view.physicalSize = const Size(400, 640);
+    // Short viewport so the (redesigned, more compact) home content reliably
+    // overflows and is scrollable — the FAB show/hide reacts to scroll.
+    tester.view.physicalSize = const Size(400, 500);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
       tester.view.resetPhysicalSize();

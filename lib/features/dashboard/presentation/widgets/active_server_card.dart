@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:gap/gap.dart';
 
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
+import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/active_server_provider.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/providers/reveal_server_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/protocol_badge.dart';
 import 'package:arma_proxy_vpn_client/shared/widgets/glass_card.dart';
 
@@ -32,22 +34,15 @@ class ActiveServerCard extends ConsumerWidget {
           ? colorScheme.primary.withValues(alpha: 0.55)
           : null,
       padding: EdgeInsets.zero,
-      onTap: () {
-        // Navigate to servers tab (index 1)
-        final shell = StatefulNavigationShell.maybeOf(context);
-        if (shell != null) {
-          shell.goBranch(1);
-        } else {
-          context.go('/servers');
-        }
-      },
+      onTap: () => _onTap(context, ref, server),
       child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: server == null
               ? Row(
                   children: [
                     Icon(
                       Icons.dns_outlined,
+                      size: 20,
                       color: colorScheme.onSurfaceVariant,
                     ),
                     const Gap(8),
@@ -61,6 +56,7 @@ class ActiveServerCard extends ConsumerWidget {
                     ),
                     Icon(
                       Icons.chevron_right,
+                      size: 20,
                       color: colorScheme.onSurfaceVariant,
                     ),
                   ],
@@ -70,38 +66,67 @@ class ActiveServerCard extends ConsumerWidget {
                     ProtocolBadge(protocol: server.protocol),
                     const Gap(8),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
+                      child: Row(
                         children: [
-                          Text(
-                            server.name,
-                            style: theme.textTheme.titleMedium,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            // Default servers show the app/brand name; imported
-                            // servers show their subscription/group name.
-                            server.id.startsWith('default-api')
-                                ? l10n.appName
-                                : server.groupName,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
+                          Flexible(
+                            child: Text(
+                              server.name,
+                              style: theme.textTheme.titleSmall,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const Gap(8),
+                          Flexible(
+                            child: Text(
+                              // Default servers show the app/brand name;
+                              // imported servers show their subscription name.
+                              server.id.startsWith('default-api')
+                                  ? l10n.appName
+                                  : server.groupName,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ],
                       ),
                     ),
                     Icon(
                       Icons.chevron_right,
+                      size: 20,
                       color: colorScheme.onSurfaceVariant,
                     ),
                   ],
                 ),
       ),
     );
+  }
+
+  /// Reveal the selected server where it lives. Default-api servers are on the
+  /// home screen, so we ask the home list to scroll to it; imported servers
+  /// live on the Servers tab, so we switch tabs and let that screen scroll.
+  void _onTap(BuildContext context, WidgetRef ref, ServerConfig? server) {
+    if (server == null) {
+      _goToServersTab(context);
+      return;
+    }
+
+    ref.read(revealServerProvider.notifier).request(server.id);
+
+    if (!server.id.startsWith('default-api')) {
+      _goToServersTab(context);
+    }
+  }
+
+  void _goToServersTab(BuildContext context) {
+    final shell = StatefulNavigationShell.maybeOf(context);
+    if (shell != null) {
+      shell.goBranch(1);
+    } else {
+      context.go('/servers');
+    }
   }
 }

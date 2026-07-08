@@ -1,18 +1,18 @@
 import 'package:arma_proxy_vpn_client/core/utils/app_snackbar.dart';
-import 'package:arma_proxy_vpn_client/core/utils/byte_format.dart';
 import 'package:arma_proxy_vpn_client/features/connection/domain/entities/connection_status.dart';
 import 'package:arma_proxy_vpn_client/features/connection/presentation/providers/connection_provider.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/domain/entities/default_server_item.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_servers_provider.dart';
-import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_servers_sort_filter_provider.dart';
+import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/pinned_keys_provider.dart';
+import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/subscription_actions_sheet.dart';
+import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/subscription_key_block.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/active_server_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/latency_provider.dart';
-import 'package:arma_proxy_vpn_client/features/server/presentation/server_sort_filter.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/providers/reveal_server_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/screens/server_xray_config_screen.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/debug_long_press_wrapper.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/server_card.dart';
-import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/sort_filter_bar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,13 +20,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
-import 'package:arma_proxy_vpn_client/core/utils/expiry_format.dart';
 
-/// Home screen default servers list.
+/// Home screen default servers list, grouped into one collapsible block per
+/// API key (subscription).
 ///
-/// Mirrors the Servers tab UI: a search + sort/filter bar over a list of
-/// [ServerCard]s, driven by the API-provided default servers. Filtering state
-/// is independent from the Servers tab (see [defaultServersSortFilterProvider]).
+/// Each key the user has from the API becomes a [SubscriptionKeyBlock] showing
+/// its own name, expiry, usage and announcement, with inline Update / Ping
+/// actions and a "…" management sheet. Pinned blocks float to the top.
 class DefaultServersSection extends ConsumerStatefulWidget {
   const DefaultServersSection({super.key});
 
@@ -36,15 +36,67 @@ class DefaultServersSection extends ConsumerStatefulWidget {
 }
 
 class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
+  /// Subscription URLs whose block is currently expanded (default collapsed).
+  final Set<String> _expanded = {};
+
+  /// The subscription URL currently refreshing (shows a spinner on its block).
+  String? _refreshingUrl;
+
+  /// Subscription URLs currently being pinged.
+  final Set<String> _pinging = {};
+
+  /// Per-server card keys, used to scroll a server into view on reveal.
+  final Map<String, GlobalKey> _cardKeys = {};
+
+  /// The last reveal id this section acted on (avoids re-scrolling on rebuild).
+  String? _revealHandledId;
+
+  GlobalKey _cardKey(String serverId) =>
+      _cardKeys.putIfAbsent(serverId, GlobalKey.new);
+
+  /// When the active-server card requests a reveal for one of *our* servers,
+  /// expand its block and scroll it into view. Ids we don't own are left for
+  /// the Servers tab to handle.
+  void _handleReveal(String? serverId) {
+    if (serverId == null || serverId == _revealHandledId) return;
+
+    final state = ref.read(defaultServersProvider);
+    DefaultServerItem? owner;
+    for (final item in state.items) {
+      if (item.serverConfig?.id == serverId) {
+        owner = item;
+        break;
+      }
+    }
+    if (owner == null) return; // not a default server — not ours to handle.
+
+    _revealHandledId = serverId;
+    setState(() => _expanded.add(owner!.subscriptionUrl));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final ctx = _cardKeys[serverId]?.currentContext;
+      if (ctx != null) {
+        Scrollable.ensureVisible(
+          ctx,
+          alignment: 0.2,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+        );
+      }
+      // Clear so the same request doesn't linger; allow future reveals.
+      _revealHandledId = null;
+      ref.read(revealServerProvider.notifier).clear();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final state = ref.watch(defaultServersProvider);
-    final sortFilter = ref.watch(defaultServersSortFilterProvider);
     final latencyMap = ref.watch(latencyProvider);
-    final isBulkTesting = ref.watch(latencyProvider.notifier).isBulkTesting;
     final activeServer = ref.watch(activeServerProvider);
+    final pinned = ref.watch(pinnedKeysProvider);
 
     ref.listen<DefaultServersState>(defaultServersProvider, (previous, next) {
       final previousFailure = previous?.lastFailureType;
@@ -55,43 +107,39 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
       showAppSnackBar(context, message: _failureMessage(l10n, currentFailure));
     });
 
-    // Connectable default servers as ServerConfigs, then filtered + sorted
-    // through the same logic as the Servers tab. Inactive/expired keys are
-    // excluded so they can't be selected.
-    final allConfigs = <ServerConfig>[
-      for (final item in state.items)
-        if (item.isConnectable) item.serverConfig!,
-    ];
-    final visibleConfigs = applyServerSort(
-      applyServerFilter(allConfigs, sortFilter, latencyMap),
-      sortFilter.sort,
-      latencyMap,
-    );
+    // React to a reveal request from the active-server card.
+    ref.listen<String?>(revealServerProvider, (_, id) => _handleReveal(id));
 
-    final earliestExpiry = state.items.isEmpty
-        ? null
-        : state.items
-            .map((item) => item.expireDate)
-            .reduce((a, b) => a.isBefore(b) ? a : b);
-
-    // Aggregate data usage across distinct subscriptions (a key's servers all
-    // carry the same used/total figures, so dedupe by subscription URL first).
-    final usageByUrl = <String, DefaultServerItem>{};
-    for (final item in state.items) {
-      usageByUrl.putIfAbsent(item.subscriptionUrl, () => item);
+    if (state.items.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: _EmptyState(
+          title: l10n.defaultServersEmptyTitle,
+          body: state.lastFailureType == DefaultServersFailureType.offline
+              ? l10n.defaultServersNoCacheOfflineBody
+              : l10n.defaultServersEmptyBody,
+        ),
+      );
     }
-    final usedBytes =
-        usageByUrl.values.fold<int>(0, (sum, i) => sum + i.usedTraffic);
-    final totalBytes =
-        usageByUrl.values.fold<int>(0, (sum, i) => sum + i.dataLimit);
 
-    final notifier = ref.read(defaultServersSortFilterProvider.notifier);
+    // Group the flat item list by subscription (key) URL, preserving the API
+    // ordering. Pinned keys are hoisted to the top without disturbing the
+    // relative order within each partition.
+    final groups = <String, List<DefaultServerItem>>{};
+    for (final item in state.items) {
+      groups.putIfAbsent(item.subscriptionUrl, () => []).add(item);
+    }
+    final entries = groups.entries.toList();
+    final ordered = <MapEntry<String, List<DefaultServerItem>>>[
+      ...entries.where((e) => pinned.contains(e.key)),
+      ...entries.where((e) => !pinned.contains(e.key)),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
           child: Row(
             children: [
               Expanded(
@@ -100,132 +148,135 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
                   style: theme.textTheme.titleMedium,
                 ),
               ),
-              if (state.isOfflineData) ...[
+              if (state.isOfflineData)
                 _OfflineBadge(label: l10n.defaultServersOfflineData),
-                const SizedBox(width: 8),
-              ],
-              // Test All — populates latency so the Working/Failed filters work.
-              if (allConfigs.isNotEmpty)
-                Semantics(
-                  label: l10n.testAllServers,
-                  child: isBulkTesting
-                      ? const Padding(
-                          padding: EdgeInsets.all(12),
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        )
-                      : IconButton(
-                          key: const Key('default-servers-test-all'),
-                          icon: const Icon(Icons.speed),
-                          tooltip: l10n.testAllServers,
-                          onPressed: () => ref
-                              .read(latencyProvider.notifier)
-                              .testAllServers(allConfigs),
-                        ),
-                ),
-              IconButton(
-                tooltip: l10n.defaultServersRefreshSemantics,
-                onPressed: () =>
-                    ref.read(defaultServersProvider.notifier).refresh(),
-                icon: state.isRefreshing
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.refresh),
-              ),
             ],
           ),
         ),
-        if (earliestExpiry != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: _SubscriptionExpiry(expireDate: earliestExpiry),
-          ),
-        if (totalBytes > 0 || usedBytes > 0)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
-            child: _UsageBar(usedBytes: usedBytes, totalBytes: totalBytes),
-          ),
-        if (allConfigs.isEmpty)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-            child: _EmptyState(
-              title: l10n.defaultServersEmptyTitle,
-              body: state.lastFailureType == DefaultServersFailureType.offline
-                  ? l10n.defaultServersNoCacheOfflineBody
-                  : l10n.defaultServersEmptyBody,
-            ),
-          )
-        else ...[
-          SortFilterBar(
-            state: sortFilter,
-            availableProtocols: {
-              for (final config in allConfigs) config.protocol,
-            },
-            onSort: notifier.setSort,
-            onFilter: notifier.setFilter,
-            onQuery: notifier.setQuery,
-            onProtocol: notifier.setProtocol,
-          ),
-          const Gap(4),
-          if (visibleConfigs.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 32,
-              ),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.search_off,
-                    size: 40,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                  const Gap(12),
-                  Text(
-                    l10n.searchNoResults,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          else
-            for (final config in visibleConfigs)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                child: DebugLongPressWrapper(
-                  onDebugLongPress: kDebugMode
-                      ? () => Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (_) =>
-                                  ServerXrayConfigScreen(server: config),
-                            ),
-                          )
-                      : () {},
-                  child: ServerCard(
-                    server: config,
-                    isSelected: config.id == activeServer?.id,
-                    latency: latencyMap[config.id],
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      _onTapConfig(config);
-                    },
-                    onLatencyTap: () =>
-                        ref.read(latencyProvider.notifier).testServer(config),
-                  ),
-                ),
-              ),
+        for (var i = 0; i < ordered.length; i++) ...[
+          if (i > 0) const Gap(12),
+          _buildBlock(context, ordered[i], activeServer, latencyMap, pinned),
         ],
       ],
     );
+  }
+
+  Widget _buildBlock(
+    BuildContext context,
+    MapEntry<String, List<DefaultServerItem>> group,
+    ServerConfig? activeServer,
+    Map<String, int> latencyMap,
+    Set<String> pinned,
+  ) {
+    final url = group.key;
+    final items = group.value;
+    final first = items.first;
+
+    final configs = <ServerConfig>[
+      for (final item in items)
+        if (item.isConnectable) item.serverConfig!,
+    ];
+
+    final isExpanded = _expanded.contains(url);
+
+    return SubscriptionKeyBlock(
+      key: ValueKey('subscription-block-$url'),
+      name: first.keyName.isNotEmpty ? first.keyName : first.name,
+      isActive: first.isActive,
+      isPinned: pinned.contains(url),
+      expireDate: first.expireDate,
+      usedBytes: first.usedTraffic,
+      totalBytes: first.dataLimit,
+      announcement: first.announcement,
+      serverCount: configs.length,
+      isExpanded: isExpanded,
+      isRefreshing: _refreshingUrl == url,
+      isPinging: _pinging.contains(url),
+      onToggleExpand: () => setState(() {
+        if (!_expanded.remove(url)) {
+          _expanded.add(url);
+        }
+      }),
+      onRefresh: () => _onRefresh(url),
+      onPing: configs.isEmpty ? null : () => _onPing(url, configs),
+      onMore: () => _onMore(url, first.keyName, configs),
+      children: [
+        for (final config in configs)
+          Padding(
+            key: _cardKey(config.id),
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: DebugLongPressWrapper(
+              onDebugLongPress: kDebugMode
+                  ? () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => ServerXrayConfigScreen(server: config),
+                        ),
+                      )
+                  : () {},
+              child: ServerCard(
+                server: config,
+                isSelected: config.id == activeServer?.id,
+                latency: latencyMap[config.id],
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  _onTapConfig(config);
+                },
+                onLatencyTap: () =>
+                    ref.read(latencyProvider.notifier).testServer(config),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  void _onMore(String url, String keyName, List<ServerConfig> configs) {
+    final isPinned = ref.read(pinnedKeysProvider).contains(url);
+    showSubscriptionActionsSheet(
+      context,
+      title: keyName,
+      actions: [
+        SubscriptionAction(
+          icon: Icons.refresh,
+          label: 'Update subscription',
+          onTap: () => _onRefresh(url),
+        ),
+        if (configs.isNotEmpty)
+          SubscriptionAction(
+            icon: Icons.speed,
+            label: 'Ping',
+            onTap: () => _onPing(url, configs),
+          ),
+        SubscriptionAction(
+          icon: isPinned ? Icons.push_pin_outlined : Icons.push_pin,
+          label: isPinned ? 'Unpin' : 'Pin',
+          onTap: () => ref.read(pinnedKeysProvider.notifier).toggle(url),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _onRefresh(String url) async {
+    setState(() => _refreshingUrl = url);
+    try {
+      await ref.read(defaultServersProvider.notifier).refresh();
+    } finally {
+      if (mounted) {
+        setState(() => _refreshingUrl = null);
+      }
+    }
+  }
+
+  Future<void> _onPing(String url, List<ServerConfig> configs) async {
+    if (configs.isEmpty) return;
+    setState(() => _pinging.add(url));
+    try {
+      await ref.read(latencyProvider.notifier).testAllServers(configs);
+    } finally {
+      if (mounted) {
+        setState(() => _pinging.remove(url));
+      }
+    }
   }
 
   Future<void> _onTapConfig(ServerConfig target) async {
@@ -255,94 +306,6 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
         l10n.defaultServersMalformedError,
       DefaultServersFailureType.unknown => l10n.defaultServersServerError,
     };
-  }
-}
-
-/// Section-level expiry indicator for the default servers, shown once next to
-/// the title (all default servers share the same subscription expiry).
-class _SubscriptionExpiry extends StatelessWidget {
-  const _SubscriptionExpiry({required this.expireDate});
-
-  final DateTime expireDate;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final expiry = describeExpiry(expireDate);
-    final emphasized = expiry.isUrgent || expiry.isCritical;
-    final color =
-        emphasized ? colorScheme.error : colorScheme.onSurfaceVariant;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          expiry.isCritical ? Icons.warning_amber_rounded : Icons.schedule,
-          size: 15,
-          color: color,
-        ),
-        const SizedBox(width: 6),
-        Text(
-          expiry.isExpired ? 'Subscription expired' : 'Expires in ${expiry.label}',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: color,
-            fontWeight: emphasized ? FontWeight.bold : null,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Data-usage progress bar for the whole default-servers subscription
-/// (spec §2: `subscription-userinfo` → download/total). Turns red near the cap.
-class _UsageBar extends StatelessWidget {
-  const _UsageBar({required this.usedBytes, required this.totalBytes});
-
-  final int usedBytes;
-  final int totalBytes;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    // Unlimited plan (no data cap / total=0) — show usage against the infinity
-    // symbol, no fraction bar.
-    if (totalBytes <= 0) {
-      return Text(
-        '${formatBytes(usedBytes)} / ∞',
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: colorScheme.onSurfaceVariant,
-        ),
-      );
-    }
-
-    final fraction = (usedBytes / totalBytes).clamp(0.0, 1.0);
-    final nearLimit = fraction >= 0.9;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: fraction,
-            minHeight: 8,
-            backgroundColor: colorScheme.onSurface.withValues(alpha: 0.12),
-            color: nearLimit ? colorScheme.error : colorScheme.primary,
-          ),
-        ),
-        const Gap(4),
-        Text(
-          '${formatBytes(usedBytes)} / ${formatBytes(totalBytes)}',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
-    );
   }
 }
 

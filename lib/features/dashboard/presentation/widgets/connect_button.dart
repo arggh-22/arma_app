@@ -35,9 +35,12 @@ class ConnectButton extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final diameter = (MediaQuery.sizeOf(context).width * 0.55).clamp(
-      180.0,
-      240.0,
+    // Compact hero control — the redesigned home groups most of its content
+    // into per-subscription blocks, so the connect button is deliberately
+    // smaller than the original full-width tunnel element.
+    final diameter = (MediaQuery.sizeOf(context).width * 0.38).clamp(
+      124.0,
+      164.0,
     );
 
     final (statusWord, icon, ringColor, glowAlpha, isPulsing, semanticLabel) =
@@ -206,14 +209,20 @@ class ConnectButton extends ConsumerWidget {
                     size: diameter * 0.22,
                   ),
                 ),
-                SizedBox(height: diameter * 0.07),
-                Text(
-                  statusWord,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: contentColor,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 3,
+                SizedBox(height: diameter * 0.06),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: diameter * 0.1),
+                  child: Text(
+                    statusWord,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.fade,
+                    softWrap: false,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: contentColor,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.5,
+                    ),
                   ),
                 ),
               ],

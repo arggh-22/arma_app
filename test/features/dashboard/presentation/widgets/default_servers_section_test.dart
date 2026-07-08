@@ -5,9 +5,11 @@ import 'package:arma_proxy_vpn_client/features/connection/domain/entities/connec
 import 'package:arma_proxy_vpn_client/features/dashboard/domain/entities/default_server_item.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_servers_provider.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/default_servers_section.dart';
+import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/subscription_key_block.dart';
 import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_config.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/active_server_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/latency_provider.dart';
+import 'package:arma_proxy_vpn_client/features/server/presentation/providers/reveal_server_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/widgets/server_card.dart';
 import 'package:arma_proxy_vpn_client/features/connection/presentation/providers/connection_provider.dart';
 import 'package:arma_proxy_vpn_client/core/constants/protocol_constants.dart';
@@ -16,7 +18,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('renders all default servers as cards', (tester) async {
+  testWidgets('renders one collapsible block per API key, servers collapsed',
+      (tester) async {
     final notifier = TestDefaultServersNotifier(
       _state(items: [
         _item(id: '1', name: 'A'),
@@ -28,33 +31,37 @@ void main() {
 
     await _pumpSection(tester, defaultServersNotifier: notifier);
 
-    expect(find.byType(ServerCard), findsNWidgets(4));
-    expect(find.text('A'), findsOneWidget);
-    expect(find.text('D'), findsOneWidget);
+    // Four distinct keys → four blocks. Server cards stay hidden until a block
+    // is expanded (Happ-style collapsed default).
+    expect(find.byType(SubscriptionKeyBlock), findsNWidgets(4));
+    expect(find.byType(ServerCard), findsNothing);
+    expect(find.text('Key-1'), findsOneWidget);
+    expect(find.text('Key-4'), findsOneWidget);
   });
 
-  testWidgets('only shows protocol chips present in the list', (tester) async {
-    // All default configs are VLESS, so only the VLESS chip should appear.
+  testWidgets('expanding a block reveals its server cards', (tester) async {
+    final notifier = TestDefaultServersNotifier(
+      _state(items: [_item(id: '1', name: 'Alpha')]),
+    );
+
+    await _pumpSection(tester, defaultServersNotifier: notifier);
+    expect(find.byType(ServerCard), findsNothing);
+
+    await tester.tap(find.text('Key-1'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ServerCard), findsOneWidget);
+    expect(find.text('Alpha'), findsOneWidget);
+  });
+
+  testWidgets('per-block Ping tests only that block\'s servers',
+      (tester) async {
+    final latency = TestLatencyNotifier();
     final notifier = TestDefaultServersNotifier(
       _state(items: [
         _item(id: '1', name: 'A'),
         _item(id: '2', name: 'B'),
       ]),
-    );
-
-    await _pumpSection(tester, defaultServersNotifier: notifier);
-
-    expect(find.byKey(const Key('protocol-filter-all')), findsOneWidget);
-    expect(find.byKey(const Key('protocol-filter-vless')), findsOneWidget);
-    expect(find.byKey(const Key('protocol-filter-vmess')), findsNothing);
-    expect(find.byKey(const Key('protocol-filter-trojan')), findsNothing);
-  });
-
-  testWidgets('Test All triggers latency testing for default servers',
-      (tester) async {
-    final latency = TestLatencyNotifier();
-    final notifier = TestDefaultServersNotifier(
-      _state(items: [_item(id: '1', name: 'A'), _item(id: '2', name: 'B')]),
     );
 
     await _pumpSection(
@@ -63,15 +70,17 @@ void main() {
       latencyNotifier: latency,
     );
 
-    await tester.tap(find.byKey(const Key('default-servers-test-all')));
+    // Ping the first block only.
+    await tester.tap(find.byIcon(Icons.speed).first);
     await tester.pump();
 
     expect(latency.bulkTested, [
-      ['1', '2'],
+      ['1'],
     ]);
   });
 
-  testWidgets('shows the subscription data-usage bar', (tester) async {
+  testWidgets('shows the subscription data-usage text in the block header',
+      (tester) async {
     const gb = 1073741824;
     final notifier = TestDefaultServersNotifier(
       _state(items: [
@@ -94,36 +103,13 @@ void main() {
 
     await _pumpSection(tester, defaultServersNotifier: notifier);
 
-    // Both servers share one subscription, so usage is shown once (deduped).
+    // Both servers share one subscription → a single block, usage shown once.
+    expect(find.byType(SubscriptionKeyBlock), findsOneWidget);
     expect(find.text('1.0 GB / 10 GB'), findsOneWidget);
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
-  });
-
-  testWidgets('search filters the default servers list', (tester) async {
-    final notifier = TestDefaultServersNotifier(
-      _state(items: [
-        _item(id: 'us', name: 'USA'),
-        _item(id: 'de', name: 'Germany'),
-      ]),
-    );
-
-    await _pumpSection(tester, defaultServersNotifier: notifier);
-
-    expect(find.text('USA'), findsOneWidget);
-    expect(find.text('Germany'), findsOneWidget);
-
-    await tester.enterText(
-      find.byKey(const Key('server-search-field')),
-      'usa',
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('USA'), findsOneWidget);
-    expect(find.text('Germany'), findsNothing);
   });
 
   testWidgets(
-    'refresh action shows spinner while keeping current cards visible',
+    'refresh action shows spinner while keeping the block visible',
     (tester) async {
       final refreshCompleter = Completer<void>();
       final notifier = TestDefaultServersNotifier(
@@ -135,7 +121,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.refresh));
       await tester.pump();
 
-      expect(find.text('Visible'), findsOneWidget);
+      expect(find.text('Key-1'), findsOneWidget);
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
       refreshCompleter.complete();
@@ -191,7 +177,6 @@ void main() {
     final notifier = TestDefaultServersNotifier(
       _state(items: [
         _item(id: 'sel', name: 'Selected', serverConfig: selectedServer),
-        _item(id: 'other', name: 'Other'),
       ]),
     );
 
@@ -203,8 +188,11 @@ void main() {
       ),
     );
 
-    expect(find.byType(ServerCard), findsNWidgets(2));
-    // Selected card renders the active checkmark; only one is selected.
+    await tester.tap(find.text('Key-sel'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ServerCard), findsOneWidget);
+    // Selected card renders the active checkmark.
     expect(find.byIcon(Icons.check_circle), findsOneWidget);
   });
 
@@ -222,6 +210,8 @@ void main() {
       connectionNotifier: connectionNotifier,
     );
 
+    await tester.tap(find.text('Key-new'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('New server'));
     await tester.pumpAndSettle();
 
@@ -254,6 +244,8 @@ void main() {
         connectionNotifier: connectionNotifier,
       );
 
+      await tester.tap(find.text('Key-new'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('New server'));
       await tester.pumpAndSettle();
 
@@ -262,7 +254,34 @@ void main() {
     },
   );
 
-  testWidgets('inactive servers are not rendered', (tester) async {
+  testWidgets('reveal request expands the owning block and shows the card',
+      (tester) async {
+    final server = _serverConfig(id: 'default-api-1', name: 'Reveal me');
+    final notifier = TestDefaultServersNotifier(
+      _state(items: [
+        _item(id: '1', name: 'Reveal me', serverConfig: server),
+      ]),
+    );
+
+    await _pumpSection(tester, defaultServersNotifier: notifier);
+    // Collapsed by default — no card yet.
+    expect(find.byType(ServerCard), findsNothing);
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(DefaultServersSection)),
+      listen: false,
+    );
+    container.read(revealServerProvider.notifier).request('default-api-1');
+    await tester.pumpAndSettle();
+
+    // Block auto-expanded and the reveal request was consumed.
+    expect(find.byType(ServerCard), findsOneWidget);
+    expect(find.text('Reveal me'), findsOneWidget);
+    expect(container.read(revealServerProvider), isNull);
+  });
+
+  testWidgets('inactive key renders as a warning block with no server cards',
+      (tester) async {
     final defaultNotifier = TestDefaultServersNotifier(
       _state(items: [
         _item(id: 'expired', name: 'Expired server', isActive: false),
@@ -271,10 +290,15 @@ void main() {
 
     await _pumpSection(tester, defaultServersNotifier: defaultNotifier);
 
-    expect(find.text('Expired server'), findsNothing);
+    // The key still shows (Happ keeps problematic keys visible) but carries a
+    // warning glyph and exposes no connectable server cards, even expanded.
+    expect(find.byType(SubscriptionKeyBlock), findsOneWidget);
+    expect(find.byIcon(Icons.warning_amber_rounded), findsWidgets);
+    await tester.tap(find.text('Key-expired'));
+    await tester.pumpAndSettle();
     expect(find.byType(ServerCard), findsNothing);
-    // Falls back to the empty-state guidance.
-    expect(find.text('No default servers available'), findsOneWidget);
+    // Not the global empty-state — that only shows when there are zero keys.
+    expect(find.text('No default servers available'), findsNothing);
   });
 }
 
@@ -410,6 +434,9 @@ DefaultServerItem _item({
   return DefaultServerItem(
     id: id,
     name: name,
+    // Distinct from the server name so block-header vs card assertions don't
+    // collide on the same string.
+    keyName: 'Key-$id',
     status: status,
     usedTraffic: usedTraffic,
     dataLimit: dataLimit,

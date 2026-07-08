@@ -8,13 +8,10 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/auth_provider.dart';
-import 'package:arma_proxy_vpn_client/features/connection/domain/entities/connection_status.dart';
-import 'package:arma_proxy_vpn_client/features/connection/presentation/providers/connection_provider.dart';
 import 'package:arma_proxy_vpn_client/features/connection/presentation/widgets/connection_timer.dart';
 import 'package:arma_proxy_vpn_client/features/connection/presentation/widgets/traffic_stats_card.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/active_server_card.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/connect_button.dart';
-import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/default_servers_notice_section.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/default_servers_section.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/ui_preferences_provider.dart';
 
@@ -100,7 +97,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final status = ref.watch(connectionProvider);
     final uiPreferences = ref.watch(uiPreferencesProvider);
     final authState = ref.watch(authStateProvider).asData?.value;
     final isGuest = authState?.isGuest ?? true;
@@ -113,20 +109,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final hasAnnouncement = hasAnnouncementTitle || hasAnnouncementText;
 
     final colorScheme = Theme.of(context).colorScheme;
-    final (statusText, statusColor) = switch (status) {
-      // Conversational action prompt under the hero (design: "Tap to
-      // secure connection"); connection errors take its place in red.
-      Disconnected(:final lastError) => (
-        lastError ?? l10n.tapToConnect,
-        lastError != null ? colorScheme.error : colorScheme.onSurfaceVariant,
-      ),
-      Connecting() => ('${l10n.connecting}...', colorScheme.primary),
-      Connected() => (l10n.tapToDisconnect, colorScheme.onSurfaceVariant),
-      Disconnecting() => (
-        '${l10n.disconnecting}...',
-        colorScheme.onSurfaceVariant,
-      ),
-    };
 
     return Scaffold(
       appBar: AppBar(
@@ -147,25 +129,18 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               Container(
                 key: const Key('dashboard-top-visual-group'),
                 width: double.infinity,
-                constraints: const BoxConstraints(minHeight: 260),
+                constraints: const BoxConstraints(minHeight: 180),
                 child: Column(
                   children: [
-                    const Gap(8),
+                    const Gap(4),
                     const ConnectButton(),
                     const Gap(20),
-                    Text(
-                      statusText,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium?.copyWith(color: statusColor),
-                    ),
-                    const Gap(12),
-                    const ConnectionTimer(),
-                    if (uiPreferences.showDashboardStatistics) ...[
-                      const Gap(12),
-                      const TrafficStatsCard(),
-                    ],
+                    // Statistics flank the running time: ↑ upload · timer ·
+                    // download ↓. When stats are disabled, show the timer alone.
+                    if (uiPreferences.showDashboardStatistics)
+                      const TrafficStatsCard(middle: ConnectionTimer())
+                    else
+                      const ConnectionTimer(),
                     const Gap(24),
                     const ActiveServerCard(),
                   ],
@@ -218,7 +193,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                       const Gap(16),
                     ],
-                    const DefaultServersNoticeSection(),
                     const DefaultServersSection(),
                   ],
                 ),

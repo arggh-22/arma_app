@@ -12,7 +12,12 @@ import 'package:arma_proxy_vpn_client/xray/formatters/speed_formatter.dart';
 /// Updated live from [trafficStatsProvider]; uses [formatSpeed] for
 /// human-readable formatting (B/s, KB/s, MB/s, GB/s).
 class TrafficStatsCard extends ConsumerWidget {
-  const TrafficStatsCard({super.key});
+  const TrafficStatsCard({super.key, this.middle});
+
+  /// Optional widget rendered between the upload and download capsules — used
+  /// on the dashboard to flank the connection timer (↑ upload · timer ·
+  /// download ↓). When null the two capsules sit side by side as before.
+  final Widget? middle;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -20,21 +25,38 @@ class TrafficStatsCard extends ConsumerWidget {
     final uploadSpeed = formatSpeed(stats.uplinkBytesPerSecond);
     final downloadSpeed = formatSpeed(stats.downlinkBytesPerSecond);
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _TelemetryCapsule(
-          icon: Icons.arrow_upward_rounded,
-          speed: uploadSpeed,
-          accent: ArmaTokens.cyan,
-        ),
-        const Gap(12),
-        _TelemetryCapsule(
-          icon: Icons.arrow_downward_rounded,
-          speed: downloadSpeed,
-          accent: ArmaTokens.success,
-        ),
-      ],
+    final upload = _TelemetryCapsule(
+      icon: Icons.arrow_upward_rounded,
+      speed: uploadSpeed,
+      accent: ArmaTokens.cyan,
+    );
+    final download = _TelemetryCapsule(
+      icon: Icons.arrow_downward_rounded,
+      speed: downloadSpeed,
+      accent: ArmaTokens.success,
+    );
+
+    if (middle == null) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [upload, const Gap(12), download],
+      );
+    }
+
+    // Upload · timer · download on a single row, scaled down on narrow
+    // screens so the wide timer never overflows.
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          upload,
+          const Gap(16),
+          middle!,
+          const Gap(16),
+          download,
+        ],
+      ),
     );
   }
 }

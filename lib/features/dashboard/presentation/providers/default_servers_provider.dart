@@ -218,10 +218,22 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
     for (final key in keys) {
       try {
         final resolved = await service.fetch(_toSyntheticSubscription(key));
+        // Per-key notices so each dashboard block can show its own announcement
+        // / links (spec §2), rather than a single merged banner.
+        final keyAnnouncement = _blankToNull(resolved.announcement);
+        final keySupportUrl = _blankToNull(resolved.supportUrl);
+        final keyWebPageUrl = _blankToNull(resolved.profileWebPageUrl);
         allItems.addAll(
-          DefaultServerItemMapper.mapResolved(key, resolved.servers),
+          DefaultServerItemMapper.mapResolved(
+            key,
+            resolved.servers,
+            announcement: keyAnnouncement,
+            supportUrl: keySupportUrl,
+            webPageUrl: keyWebPageUrl,
+          ),
         );
-        // Notices/links are subscription-wide; keep the first non-empty one.
+        // Notices/links are also aggregated subscription-wide (kept for the
+        // legacy notice section / tests); keep the first non-empty one.
         announcement ??= _blankToNull(resolved.announcement);
         supportUrl ??= _blankToNull(resolved.supportUrl);
         webPageUrl ??= _blankToNull(resolved.profileWebPageUrl);
