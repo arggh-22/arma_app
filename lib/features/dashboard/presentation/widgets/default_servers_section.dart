@@ -21,6 +21,7 @@ import 'package:gap/gap.dart';
 
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/core/utils/link_launcher.dart';
+import 'package:arma_proxy_vpn_client/features/api/presentation/providers/auth_provider.dart';
 
 /// Home screen default servers list, grouped into one collapsible block per
 /// API key (subscription).
@@ -93,11 +94,14 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
     final state = ref.watch(defaultServersProvider);
     final latencyMap = ref.watch(latencyProvider);
     final activeServer = ref.watch(activeServerProvider);
     final pinned = ref.watch(pinnedKeysProvider);
+    // Global API announcement — used as a fallback when a key has no announce
+    // of its own (same behavior as the Servers-tab group header).
+    final globalAnnouncement =
+        ref.watch(authStateProvider).asData?.value.announcementText?.trim();
 
     ref.listen<DefaultServersState>(defaultServersProvider, (previous, next) {
       final previousFailure = previous?.lastFailureType;
@@ -139,24 +143,24 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  l10n.defaultServersTitle,
-                  style: theme.textTheme.titleMedium,
-                ),
-              ),
-              if (state.isOfflineData)
-                _OfflineBadge(label: l10n.defaultServersOfflineData),
-            ],
+        if (state.isOfflineData)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: _OfflineBadge(label: l10n.defaultServersOfflineData),
+            ),
           ),
-        ),
         for (var i = 0; i < ordered.length; i++) ...[
           if (i > 0) const Gap(12),
-          _buildBlock(context, ordered[i], activeServer, latencyMap, pinned),
+          _buildBlock(
+            context,
+            ordered[i],
+            activeServer,
+            latencyMap,
+            pinned,
+            globalAnnouncement,
+          ),
         ],
       ],
     );
@@ -168,6 +172,7 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
     ServerConfig? activeServer,
     Map<String, int> latencyMap,
     Set<String> pinned,
+    String? globalAnnouncement,
   ) {
     final url = group.key;
     final items = group.value;
@@ -180,6 +185,15 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
 
     final isExpanded = _expanded.contains(url);
 
+    // Prefer the key's own announce; otherwise fall back to the global one.
+    final ownAnnouncement = first.announcement?.trim();
+    final announcement =
+        (ownAnnouncement != null && ownAnnouncement.isNotEmpty)
+        ? ownAnnouncement
+        : (globalAnnouncement != null && globalAnnouncement.isNotEmpty
+              ? globalAnnouncement
+              : null);
+
     return SubscriptionKeyBlock(
       key: ValueKey('subscription-block-$url'),
       name: first.keyName.isNotEmpty ? first.keyName : first.name,
@@ -188,7 +202,7 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
       expireDate: first.expireDate,
       usedBytes: first.usedTraffic,
       totalBytes: first.dataLimit,
-      announcement: first.announcement,
+      announcement: announcement,
       serverCount: configs.length,
       isExpanded: isExpanded,
       isRefreshing: _refreshingUrl == url,

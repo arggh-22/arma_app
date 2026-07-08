@@ -168,13 +168,6 @@ class SubscriptionKeyBlock extends StatelessWidget {
             ),
           ),
 
-          // Per-key announcement (shown collapsed or expanded).
-          if (announcement != null && announcement!.trim().isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(34, 0, 12, 8),
-              child: _Announcement(text: announcement!.trim()),
-            ),
-
           // Server list — mounted only when expanded (kept out of the tree
           // when collapsed so it neither renders nor participates in taps).
           AnimatedSize(
@@ -187,8 +180,8 @@ class SubscriptionKeyBlock extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         // Renew / Support — only in the expanded card, right
-                        // under the expiry/announcement area.
-                        if (_hasLinks) ...[
+                        // under the expiry area.
+                        if (_hasLinks)
                           Padding(
                             padding: const EdgeInsets.only(left: 22, bottom: 8),
                             child: _LinkButtons(
@@ -197,7 +190,14 @@ class SubscriptionKeyBlock extends StatelessWidget {
                               onOpenUrl: onOpenUrl!,
                             ),
                           ),
-                        ],
+                        // Subscription announcement, under the action buttons
+                        // (mirrors the Servers-tab group header notice).
+                        if (announcement != null &&
+                            announcement!.trim().isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(22, 0, 0, 8),
+                            child: _Announcement(text: announcement!.trim()),
+                          ),
                         const Divider(height: 1),
                         const Gap(6),
                         ...children,
