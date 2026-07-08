@@ -41,6 +41,7 @@ _ServerConfig _$ServerConfigFromJson(Map<String, dynamic> json) =>
       groupName: json['groupName'] as String? ?? 'Manual',
       serverDescription: json['serverDescription'] as String?,
       rawConfig: json['rawConfig'] as String?,
+      configFormat: json['configFormat'] as String?,
       addedAt: DateTime.parse(json['addedAt'] as String),
     );
 
@@ -79,6 +80,7 @@ Map<String, dynamic> _$ServerConfigToJson(_ServerConfig instance) =>
       'groupName': instance.groupName,
       'serverDescription': instance.serverDescription,
       'rawConfig': instance.rawConfig,
+      'configFormat': instance.configFormat,
       'addedAt': instance.addedAt.toIso8601String(),
     };
 

@@ -168,45 +168,49 @@ class SubscriptionService {
     return trimmed;
   }
 
-  /// Fetches and parses the subscription, preferring the JSON format (spec §1).
+  /// Fetches and parses the subscription, honoring the format the admin
+  /// configured for the sub link (spec §1).
   ///
-  /// Requests `?format=json` first. Falls back to the untouched URL when that
-  /// request either fails (non-200) OR returns a body that parses to zero
-  /// servers — this covers providers that reject the unknown param (4xx) and
-  /// those that silently ignore it and return a 200 landing/HTML page. Without
-  /// the empty-body fallback a "200 + wrong body" would yield 0 servers and a
-  /// refresh would wipe the subscription. The parser auto-detects whichever
-  /// format comes back, so share-link/base64 subscriptions still work.
+  /// Requests the URL **as-is** first, so the server returns its configured
+  /// format — JSON when JSON is the admin default, or base64/share-links when
+  /// that is selected. Only if the untouched URL yields nothing parseable (or a
+  /// non-200) do we retry with `?format=json` as a robustness fallback (some
+  /// providers only expose the rich JSON via that param). The parser
+  /// auto-detects whichever format comes back.
+  ///
+  /// Previously this forced `?format=json` first, which per spec overrides the
+  /// admin panel's choice — so a base64-configured subscription still arrived
+  /// (and was tagged) as JSON.
   Future<_FetchResult> _fetchAndParse(
     String url,
     Map<String, String> headers,
   ) async {
-    final jsonUri = _withJsonFormat(url);
     final originalUri = Uri.parse(url);
 
-    final jsonResponse =
-        await _client.get(jsonUri, headers: headers).timeout(_timeout);
-    final jsonServers = jsonResponse.statusCode == 200
-        ? SubscriptionParser.parseBody(jsonResponse.body)
+    final originalResponse =
+        await _client.get(originalUri, headers: headers).timeout(_timeout);
+    final originalServers = originalResponse.statusCode == 200
+        ? SubscriptionParser.parseBody(originalResponse.body)
         : const <ServerConfig>[];
-    if (jsonServers.isNotEmpty) {
-      return _FetchResult(jsonResponse, jsonServers);
+    if (originalServers.isNotEmpty) {
+      return _FetchResult(originalResponse, originalServers);
     }
 
-    // Retry the untouched URL if the format=json attempt failed or yielded
-    // nothing parseable — but never downgrade a usable response to a broken one.
+    // Retry with ?format=json if the untouched URL failed or parsed to nothing
+    // — but never downgrade a usable response to a broken one.
+    final jsonUri = _withJsonFormat(url);
     if (jsonUri != originalUri) {
-      final plainResponse =
-          await _client.get(originalUri, headers: headers).timeout(_timeout);
-      final plainServers = plainResponse.statusCode == 200
-          ? SubscriptionParser.parseBody(plainResponse.body)
+      final jsonResponse =
+          await _client.get(jsonUri, headers: headers).timeout(_timeout);
+      final jsonServers = jsonResponse.statusCode == 200
+          ? SubscriptionParser.parseBody(jsonResponse.body)
           : const <ServerConfig>[];
-      if (plainServers.isNotEmpty || jsonResponse.statusCode != 200) {
-        return _FetchResult(plainResponse, plainServers);
+      if (jsonServers.isNotEmpty || originalResponse.statusCode != 200) {
+        return _FetchResult(jsonResponse, jsonServers);
       }
     }
 
-    return _FetchResult(jsonResponse, jsonServers);
+    return _FetchResult(originalResponse, originalServers);
   }
 
   /// Adds `format=json` to the query, preserving the original raw query string

@@ -123,6 +123,9 @@ class ServerConfigModel extends HiveObject {
   @HiveField(49)
   final String? rawConfig;
 
+  @HiveField(27)
+  final String? configFormat;
+
   ServerConfigModel({
     required this.id,
     required this.name,
@@ -158,6 +161,7 @@ class ServerConfigModel extends HiveObject {
     this.insecure = false,
     this.serverDescription,
     this.rawConfig,
+    this.configFormat,
   });
 
   /// Maps this Hive model to the domain [ServerConfig] entity.
@@ -196,6 +200,7 @@ class ServerConfigModel extends HiveObject {
       groupName: groupName,
       serverDescription: serverDescription,
       rawConfig: rawConfig,
+      configFormat: configFormat,
       addedAt: DateTime.fromMillisecondsSinceEpoch(addedAtMillis),
     );
   }
@@ -239,6 +244,7 @@ extension ServerConfigModelMapper on ServerConfigModel {
       groupName: config.groupName,
       serverDescription: config.serverDescription,
       rawConfig: config.rawConfig,
+      configFormat: config.configFormat,
       addedAtMillis: config.addedAt.millisecondsSinceEpoch,
     );
   }

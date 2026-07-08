@@ -41,7 +41,7 @@ class SubscriptionParser {
     if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
       final sip008Result = Sip008Parser.tryParse(trimmed);
       if (sip008Result != null && sip008Result.isNotEmpty) {
-        return sip008Result;
+        return _stampFormat(sip008Result, 'sip008');
       }
     }
 
@@ -49,15 +49,29 @@ class SubscriptionParser {
     if (trimmed.contains('proxies:')) {
       final clashResult = ClashParser.tryParse(trimmed);
       if (clashResult != null && clashResult.isNotEmpty) {
-        return clashResult;
+        return _stampFormat(clashResult, 'clash');
       }
     }
 
-    // 3. Try base64 decode, fall back to plain text
-    final text = _tryBase64Decode(trimmed) ?? trimmed;
+    // 3. Try base64 decode, fall back to plain text. The source format tag
+    // reflects which path produced the servers (base64-encoded share links vs
+    // a plain share-link list).
+    final decoded = _tryBase64Decode(trimmed);
+    final format = decoded != null ? 'base64' : 'link';
+    final text = decoded ?? trimmed;
 
     // 4. Split by lines and parse each as a share link
-    return _parseShareLinks(text);
+    return _stampFormat(_parseShareLinks(text), format);
+  }
+
+  /// Tags every parsed config with the subscription's source [format] so the
+  /// UI can show a "json" / "base64" / … badge. The ARMA JSON parser stamps
+  /// its own entries, so it is not routed through here.
+  static List<ServerConfig> _stampFormat(
+    List<ServerConfig> configs,
+    String format,
+  ) {
+    return [for (final c in configs) c.copyWith(configFormat: format)];
   }
 
   /// Attempts to decode a base64 string.

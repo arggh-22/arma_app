@@ -51,13 +51,14 @@ class ServerConfigModelAdapter extends TypeAdapter<ServerConfigModel> {
       insecure: fields[47] == null ? false : fields[47] as bool,
       serverDescription: fields[48] as String?,
       rawConfig: fields[49] as String?,
+      configFormat: fields[27] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, ServerConfigModel obj) {
     writer
-      ..writeByte(34)
+      ..writeByte(35)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -94,6 +95,8 @@ class ServerConfigModelAdapter extends TypeAdapter<ServerConfigModel> {
       ..write(obj.alterId)
       ..writeByte(26)
       ..write(obj.xhttpMode)
+      ..writeByte(27)
+      ..write(obj.configFormat)
       ..writeByte(30)
       ..write(obj.serviceName)
       ..writeByte(31)

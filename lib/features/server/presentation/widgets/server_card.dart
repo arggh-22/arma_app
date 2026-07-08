@@ -73,9 +73,18 @@ class ServerCard extends StatelessWidget {
         ? colorScheme.primary.withValues(alpha: 0.55)
         : colorScheme.outlineVariant.withValues(alpha: isDark ? 0.45 : 0.9);
 
+    // Source-format tag (json / base64 / …). Falls back to "JSON" for legacy
+    // configs persisted before configFormat existed but that carry a rawConfig.
+    final formatLabel = (server.configFormat != null &&
+            server.configFormat!.trim().isNotEmpty)
+        ? server.configFormat!.trim().toUpperCase()
+        : ((server.rawConfig != null && server.rawConfig!.isNotEmpty)
+            ? 'JSON'
+            : null);
+
     return Semantics(
       label:
-          '${server.name}, ${server.protocol.label}${server.rawConfig != null ? ', JSON config' : ''}, tap to select',
+          '${server.name}, ${server.protocol.label}${formatLabel != null ? ', $formatLabel config' : ''}, tap to select',
       child: Material(
         color: bg,
         borderRadius: BorderRadius.circular(12),
@@ -134,10 +143,9 @@ class ServerCard extends StatelessWidget {
                         Row(
                           children: [
                             ProtocolBadge(protocol: server.protocol),
-                            if (server.rawConfig != null &&
-                                server.rawConfig!.isNotEmpty) ...[
+                            if (formatLabel != null) ...[
                               const Gap(6),
-                              const _JsonBadge(),
+                              _FormatBadge(label: formatLabel),
                             ],
                           ],
                         ),
@@ -172,10 +180,12 @@ class ServerCard extends StatelessWidget {
   }
 }
 
-/// Small capsule marking a server that carries a full JSON Xray config
-/// (from a JSON subscription) — rendered next to the protocol badge.
-class _JsonBadge extends StatelessWidget {
-  const _JsonBadge();
+/// Small capsule marking the source format a server was parsed from
+/// (e.g. `JSON`, `BASE64`) — rendered next to the protocol badge.
+class _FormatBadge extends StatelessWidget {
+  const _FormatBadge({required this.label});
+
+  final String label;
 
   @override
   Widget build(BuildContext context) {
@@ -186,7 +196,7 @@ class _JsonBadge extends StatelessWidget {
         isDark ? accent : Color.lerp(accent, Colors.black, 0.35)!;
 
     return Semantics(
-      label: 'JSON config',
+      label: '$label config',
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
@@ -195,7 +205,7 @@ class _JsonBadge extends StatelessWidget {
           border: Border.all(color: accent.withValues(alpha: 0.35)),
         ),
         child: Text(
-          'JSON',
+          label,
           style: theme.textTheme.labelSmall?.copyWith(
             color: textColor,
             fontWeight: FontWeight.w600,

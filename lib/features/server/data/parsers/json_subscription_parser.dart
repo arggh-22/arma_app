@@ -118,6 +118,7 @@ class JsonSubscriptionParser {
           ? description
           : null,
       rawConfig: jsonEncode(entry),
+      configFormat: 'json',
       addedAt: DateTime.now(),
     );
   }

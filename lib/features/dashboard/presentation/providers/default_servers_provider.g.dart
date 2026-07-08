@@ -42,7 +42,7 @@ final class DefaultServersNotifierProvider
 }
 
 String _$defaultServersNotifierHash() =>
-    r'403e71802ebd3e0bebf2c80748e1ea765b28feb5';
+    r'1f30300cbe67f2f3814dca31c14ed9b30fb2552f';
 
 abstract class _$DefaultServersNotifier extends $Notifier<DefaultServersState> {
   DefaultServersState build();

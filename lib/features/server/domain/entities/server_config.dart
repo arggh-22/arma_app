@@ -115,6 +115,11 @@ abstract class ServerConfig with _$ServerConfig {
     /// and post-quantum encryption that the field-based builder can't express.
     String? rawConfig,
 
+    /// Source format this config was parsed from — `'json'`, `'base64'`,
+    /// `'clash'`, `'sip008'`, or `'link'`. Shown as a small tag on the server
+    /// card next to the protocol badge. Null for manually built configs.
+    String? configFormat,
+
     /// Timestamp when the config was added.
     required DateTime addedAt,
   }) = _ServerConfig;
