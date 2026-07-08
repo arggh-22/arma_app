@@ -776,4 +776,66 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get routingSettingsSubtitle =>
       'Правила доменов и прокси для приложений';
+
+  @override
+  String get updateSubscriptionAction => 'Обновить подписку';
+
+  @override
+  String get pingAction => 'Пинг';
+
+  @override
+  String get manageAction => 'Управление';
+
+  @override
+  String get pinAction => 'Закрепить';
+
+  @override
+  String get unpinAction => 'Открепить';
+
+  @override
+  String get couldNotOpenLink => 'Не удалось открыть ссылку';
+
+  @override
+  String get renewAction => 'Продлить';
+
+  @override
+  String get supportAction => 'Поддержка';
+
+  @override
+  String get expiresNever => 'Срок действия: бессрочно';
+
+  @override
+  String expiresCountdown(String countdown) {
+    return 'Истекает: $countdown';
+  }
+
+  @override
+  String get pingTypeTitle => 'Тип пинга';
+
+  @override
+  String get pingTypeSubtitle => 'Как измеряется задержка сервера';
+
+  @override
+  String get deleteAllAction => 'Удалить все';
+
+  @override
+  String get pingTypeHttpTitle => 'HTTP (рекомендуется)';
+
+  @override
+  String get pingTypeHttpSubtitle =>
+      'Реальная сквозная проверка интернета через туннель';
+
+  @override
+  String get pingTypeTcpTitle => 'TCP Connect';
+
+  @override
+  String get pingTypeTcpSubtitle =>
+      'Быстрое TCP-подключение напрямую к порту сервера';
+
+  @override
+  String get pingTypeIcmpTitle => 'ICMP';
+
+  @override
+  String get pingTypeIcmpSubtitle =>
+      'Системный ping до сервера в обход туннеля';
 }

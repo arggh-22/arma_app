@@ -54,9 +54,25 @@ class DefaultServerItemMapper {
       ];
     }
 
+    // Identity-based row ids: the persisted active-server id is re-resolved
+    // by id against every freshly fetched list, so a backend reorder or
+    // insertion must not remap the id to a different physical server (a
+    // positional `-<index>` suffix did exactly that). Derive the id from the
+    // server's endpoint instead; only true duplicates get a numeric suffix.
+    final seenEndpoints = <String, int>{};
     return List<DefaultServerItem>.generate(parsedConfigs.length, (index) {
       final parsedConfig = parsedConfigs[index];
-      final rowId = 'default-api-${key.id}-${index + 1}';
+      final endpoint =
+          '${parsedConfig.protocol.name}'
+          '-${parsedConfig.address}-${parsedConfig.port}';
+      final occurrence = seenEndpoints.update(
+        endpoint,
+        (n) => n + 1,
+        ifAbsent: () => 1,
+      );
+      final rowId = occurrence == 1
+          ? 'default-api-${key.id}-$endpoint'
+          : 'default-api-${key.id}-$endpoint-$occurrence';
       final parsedName = parsedConfig.name.trim();
       final rowName = parsedName.isEmpty
           ? '${key.name} ${index + 1}'

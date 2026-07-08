@@ -303,8 +303,12 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     final latencyMap = ref.watch(latencyProvider);
     final subscriptions = ref.watch(subscriptionProvider);
     final pinned = ref.watch(pinnedKeysProvider);
-    final globalAnnouncement =
-        ref.watch(authStateProvider).asData?.value.announcementText?.trim();
+    final globalAnnouncement = ref
+        .watch(authStateProvider)
+        .asData
+        ?.value
+        .announcementText
+        ?.trim();
 
     // Apply status filter, protocol quick-filter, and search query
     final filteredServers = applyServerFilter(servers, sortFilter, latencyMap);
@@ -390,8 +394,8 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
           subscription?.expireDate ?? DateTime.fromMillisecondsSinceEpoch(0);
       final isActive =
           expireDate.millisecondsSinceEpoch <= 0 || expireDate.isAfter(now);
-      final usedBytes = (subscription?.uploadBytes ?? 0) +
-          (subscription?.downloadBytes ?? 0);
+      final usedBytes =
+          (subscription?.uploadBytes ?? 0) + (subscription?.downloadBytes ?? 0);
       final ownAnnouncement = subscription?.announcement?.trim();
       final announcement = subscription == null
           ? null
@@ -576,7 +580,10 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     final launch = ref.read(linkLauncherProvider);
     final opened = await launch(uri);
     if (!mounted || opened) return;
-    showAppSnackBar(context, message: 'Could not open link');
+    showAppSnackBar(
+      context,
+      message: AppLocalizations.of(context)!.couldNotOpenLink,
+    );
   }
 
   /// Subscription management sheet (mirrors the home screen's "…" sheet, plus
@@ -602,19 +609,18 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
         if (hasUrl)
           SubscriptionAction(
             icon: Icons.refresh,
-            label: 'Update subscription',
+            label: l10n.updateSubscriptionAction,
             onTap: () => _onRefreshSubscription(subscription.id),
           ),
         SubscriptionAction(
           icon: Icons.speed,
-          label: 'Ping',
-          onTap: () =>
-              _onPingGroup(context, subscription?.id, groupServers),
+          label: l10n.pingAction,
+          onTap: () => _onPingGroup(context, subscription?.id, groupServers),
         ),
         if (hasUrl)
           SubscriptionAction(
             icon: Icons.copy,
-            label: 'Copy link',
+            label: l10n.copyLink,
             onTap: () {
               Clipboard.setData(ClipboardData(text: subscription.url));
               showAppSnackBar(context, message: l10n.linkCopied);
@@ -622,12 +628,12 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
           ),
         SubscriptionAction(
           icon: isPinned ? Icons.push_pin_outlined : Icons.push_pin,
-          label: isPinned ? 'Unpin' : 'Pin',
+          label: isPinned ? l10n.unpinAction : l10n.pinAction,
           onTap: () => ref.read(pinnedKeysProvider.notifier).toggle(pinKey),
         ),
         SubscriptionAction(
           icon: Icons.delete_outline,
-          label: 'Delete all',
+          label: l10n.deleteAllAction,
           isDestructive: true,
           onTap: () => _onDeleteGroup(context, subscription, groupServers),
         ),
@@ -646,7 +652,10 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     await ref.read(activeServerProvider.notifier).selectServer(server);
 
     final connectionState = ref.read(connectionProvider);
-    if (connectionState is Connected && currentSelection?.id != server.id) {
+    // Connecting counts too: without it, tapping B while A was still coming
+    // up showed B as selected while the tunnel finished establishing to A.
+    if ((connectionState is Connected || connectionState is Connecting) &&
+        currentSelection?.id != server.id) {
       // connect() tears the current session down and waits for the native side
       // to confirm it stopped before starting the new server, so we must NOT
       // fire a separate disconnect() here (that raced the restart).

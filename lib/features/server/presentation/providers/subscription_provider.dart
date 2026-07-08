@@ -66,7 +66,9 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
     // Only use domain as last resort if both are unavailable
     final subscription = Subscription(
       id: existing?.id ?? const Uuid().v4(),
-      name: name.isNotEmpty ? name : '', // Keep empty to prioritize profileTitle
+      name: name.isNotEmpty
+          ? name
+          : '', // Keep empty to prioritize profileTitle
       url: url,
       userAgent: userAgent,
       lastUpdated: DateTime.now(),
@@ -86,7 +88,7 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
       }
       return Uri.parse(url).host; // Last resort: use domain
     }();
-    
+
     final resolvedAutoUpdate = result.profileUpdateIntervalHours != null
         ? result.profileUpdateIntervalHours! > 0
         : autoUpdate;
@@ -114,6 +116,13 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
     // Re-import of an existing URL: clear its previous servers first so they
     // are replaced, not duplicated.
     if (existing != null) {
+      // Same wipe guard as refreshSubscription: a 200 with an empty/HTML/
+      // unparseable body yields zero servers without throwing — keep the
+      // existing servers rather than deleting them and adding nothing.
+      if (result.servers.isEmpty) {
+        ref.invalidateSelf();
+        return 0;
+      }
       final all = await serverRepo.getAllConfigs();
       for (final s in all) {
         if (s.subscriptionId == subscription.id) {
@@ -205,7 +214,9 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
     // D-14: Auto-select first new server if old active was in this subscription
     if (activeServer?.subscriptionId == subscriptionId &&
         result.servers.isNotEmpty) {
-      ref.read(activeServerProvider.notifier).selectServer(result.servers.first);
+      ref
+          .read(activeServerProvider.notifier)
+          .selectServer(result.servers.first);
     }
 
     ref.invalidateSelf();

@@ -1495,6 +1495,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Domain rules & per-app proxy'**
   String get routingSettingsSubtitle;
+
+  /// No description provided for @updateSubscriptionAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Update subscription'**
+  String get updateSubscriptionAction;
+
+  /// No description provided for @pingAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Ping'**
+  String get pingAction;
+
+  /// No description provided for @manageAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get manageAction;
+
+  /// No description provided for @pinAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin'**
+  String get pinAction;
+
+  /// No description provided for @unpinAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpin'**
+  String get unpinAction;
+
+  /// No description provided for @couldNotOpenLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open link'**
+  String get couldNotOpenLink;
+
+  /// No description provided for @renewAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Renew'**
+  String get renewAction;
+
+  /// No description provided for @supportAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Support'**
+  String get supportAction;
+
+  /// No description provided for @expiresNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires: never'**
+  String get expiresNever;
+
+  /// No description provided for @expiresCountdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires: {countdown}'**
+  String expiresCountdown(String countdown);
+
+  /// No description provided for @pingTypeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ping type'**
+  String get pingTypeTitle;
+
+  /// No description provided for @pingTypeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How server latency is measured'**
+  String get pingTypeSubtitle;
+
+  /// No description provided for @deleteAllAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all'**
+  String get deleteAllAction;
+
+  /// No description provided for @pingTypeHttpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'HTTP (recommended)'**
+  String get pingTypeHttpTitle;
+
+  /// No description provided for @pingTypeHttpSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Real end-to-end internet check through the tunnel'**
+  String get pingTypeHttpSubtitle;
+
+  /// No description provided for @pingTypeTcpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'TCP Connect'**
+  String get pingTypeTcpTitle;
+
+  /// No description provided for @pingTypeTcpSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Fast direct TCP handshake to the server port'**
+  String get pingTypeTcpSubtitle;
+
+  /// No description provided for @pingTypeIcmpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'ICMP'**
+  String get pingTypeIcmpTitle;
+
+  /// No description provided for @pingTypeIcmpSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'System ping to the server, bypassing the tunnel'**
+  String get pingTypeIcmpSubtitle;
 }
 
 class _AppLocalizationsDelegate

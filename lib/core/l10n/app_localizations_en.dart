@@ -769,4 +769,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get routingSettingsSubtitle => 'Domain rules & per-app proxy';
+
+  @override
+  String get updateSubscriptionAction => 'Update subscription';
+
+  @override
+  String get pingAction => 'Ping';
+
+  @override
+  String get manageAction => 'Manage';
+
+  @override
+  String get pinAction => 'Pin';
+
+  @override
+  String get unpinAction => 'Unpin';
+
+  @override
+  String get couldNotOpenLink => 'Could not open link';
+
+  @override
+  String get renewAction => 'Renew';
+
+  @override
+  String get supportAction => 'Support';
+
+  @override
+  String get expiresNever => 'Expires: never';
+
+  @override
+  String expiresCountdown(String countdown) {
+    return 'Expires: $countdown';
+  }
+
+  @override
+  String get pingTypeTitle => 'Ping type';
+
+  @override
+  String get pingTypeSubtitle => 'How server latency is measured';
+
+  @override
+  String get deleteAllAction => 'Delete all';
+
+  @override
+  String get pingTypeHttpTitle => 'HTTP (recommended)';
+
+  @override
+  String get pingTypeHttpSubtitle =>
+      'Real end-to-end internet check through the tunnel';
+
+  @override
+  String get pingTypeTcpTitle => 'TCP Connect';
+
+  @override
+  String get pingTypeTcpSubtitle =>
+      'Fast direct TCP handshake to the server port';
+
+  @override
+  String get pingTypeIcmpTitle => 'ICMP';
+
+  @override
+  String get pingTypeIcmpSubtitle =>
+      'System ping to the server, bypassing the tunnel';
 }

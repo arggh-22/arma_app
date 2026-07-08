@@ -6,8 +6,17 @@ import 'package:arma_proxy_vpn_client/features/server/domain/entities/server_con
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/active_server_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/latency_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/domain/entities/ping_type.dart';
+import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/theme_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+Future<SharedPreferences> _mockPrefs({String? persistedActiveId}) async {
+  SharedPreferences.setMockInitialValues({
+    'active_server_id': ?persistedActiveId,
+  });
+  return SharedPreferences.getInstance();
+}
 
 void main() {
   group('defaultServerStartupSelectionProvider', () {
@@ -29,6 +38,7 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
+          sharedPreferencesProvider.overrideWithValue(await _mockPrefs()),
           defaultServersProvider.overrideWith(() => defaultNotifier),
           activeServerProvider.overrideWith(() => activeNotifier),
           latencyProvider.overrideWith(() => latencyNotifier),
@@ -67,6 +77,7 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
+          sharedPreferencesProvider.overrideWithValue(await _mockPrefs()),
           defaultServersProvider.overrideWith(() => defaultNotifier),
           activeServerProvider.overrideWith(() => activeNotifier),
           latencyProvider.overrideWith(() => latencyNotifier),
@@ -91,6 +102,7 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
+          sharedPreferencesProvider.overrideWithValue(await _mockPrefs()),
           defaultServersProvider.overrideWith(() => defaultNotifier),
           activeServerProvider.overrideWith(() => activeNotifier),
           latencyProvider.overrideWith(() => _TestLatencyNotifier(const {})),
@@ -115,6 +127,7 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
+          sharedPreferencesProvider.overrideWithValue(await _mockPrefs()),
           defaultServersProvider.overrideWith(() => defaultNotifier),
           activeServerProvider.overrideWith(() => activeNotifier),
           latencyProvider.overrideWith(() => _TestLatencyNotifier(const {})),
@@ -129,6 +142,35 @@ void main() {
       // Refresh runs first (so a persisted default selection can resolve), but
       // an existing active server is respected — no auto-selection happens.
       expect(defaultNotifier.refreshCalls, 1);
+      expect(activeNotifier.selectedIds, isEmpty);
+    });
+
+    test('does not overwrite a persisted selection that transiently fails to '
+        'resolve', () async {
+      final defaultNotifier = _TestDefaultServersNotifier(
+        itemsAfterRefresh: [_item(id: 'default-api-1', name: 'One')],
+      );
+      // The persisted id exists, but the refreshed list can't resolve it
+      // (e.g. per-key fetch failed), so the provider reports null.
+      final activeNotifier = _TestActiveServerNotifier();
+
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(
+            await _mockPrefs(persistedActiveId: 'default-api-104'),
+          ),
+          defaultServersProvider.overrideWith(() => defaultNotifier),
+          activeServerProvider.overrideWith(() => activeNotifier),
+          latencyProvider.overrideWith(() => _TestLatencyNotifier(const {})),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container
+          .read(defaultServerStartupSelectionProvider)
+          .autoSelectBestServer();
+
+      // The user's explicit choice must never be replaced by an auto-pick.
       expect(activeNotifier.selectedIds, isEmpty);
     });
   });
@@ -225,10 +267,10 @@ DefaultServerItem _item({
 }
 
 ServerConfig _config(String id, String name) => ServerConfig(
-      id: id,
-      name: name,
-      protocol: ProtocolType.vless,
-      address: 'example.com',
-      port: 443,
-      addedAt: DateTime.utc(2026, 1, 1),
-    );
+  id: id,
+  name: name,
+  protocol: ProtocolType.vless,
+  address: 'example.com',
+  port: 443,
+  addedAt: DateTime.utc(2026, 1, 1),
+);

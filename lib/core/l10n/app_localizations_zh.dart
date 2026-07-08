@@ -746,4 +746,63 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get routingSettingsSubtitle => '域名规则和分应用代理';
+
+  @override
+  String get updateSubscriptionAction => '更新订阅';
+
+  @override
+  String get pingAction => '延迟测试';
+
+  @override
+  String get manageAction => '管理';
+
+  @override
+  String get pinAction => '置顶';
+
+  @override
+  String get unpinAction => '取消置顶';
+
+  @override
+  String get couldNotOpenLink => '无法打开链接';
+
+  @override
+  String get renewAction => '续费';
+
+  @override
+  String get supportAction => '支持';
+
+  @override
+  String get expiresNever => '到期时间：永不';
+
+  @override
+  String expiresCountdown(String countdown) {
+    return '到期时间：$countdown';
+  }
+
+  @override
+  String get pingTypeTitle => '延迟测试方式';
+
+  @override
+  String get pingTypeSubtitle => '服务器延迟的测量方式';
+
+  @override
+  String get deleteAllAction => '全部删除';
+
+  @override
+  String get pingTypeHttpTitle => 'HTTP（推荐）';
+
+  @override
+  String get pingTypeHttpSubtitle => '通过隧道进行真实的端到端网络检测';
+
+  @override
+  String get pingTypeTcpTitle => 'TCP 连接';
+
+  @override
+  String get pingTypeTcpSubtitle => '直接对服务器端口进行快速 TCP 握手';
+
+  @override
+  String get pingTypeIcmpTitle => 'ICMP';
+
+  @override
+  String get pingTypeIcmpSubtitle => '绕过隧道对服务器进行系统 ping';
 }

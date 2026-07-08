@@ -70,8 +70,8 @@ void main() {
       final items = DefaultServerItemMapper.mapAll(key);
 
       expect(items, hasLength(2));
-      expect(items[0].id, 'default-api-7-1');
-      expect(items[1].id, 'default-api-7-2');
+      expect(items[0].id, 'default-api-7-vless-a.example-443');
+      expect(items[1].id, 'default-api-7-trojan-b.example-443');
       expect(items[0].name, 'Alpha');
       expect(items[1].name, 'Beta');
       expect(items[0].serverConfig, isNotNull);

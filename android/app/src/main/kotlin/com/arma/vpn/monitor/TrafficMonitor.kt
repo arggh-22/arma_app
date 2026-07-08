@@ -1,6 +1,7 @@
 package com.arma.vpn.monitor
 
 import libv2ray.CoreController
+import org.json.JSONObject
 import java.util.Timer
 import java.util.TimerTask
 
@@ -14,28 +15,48 @@ import java.util.TimerTask
  * JSON-subscription "auto-select" profiles route through a balancer whose
  * selector `["proxy"]` prefix-matches `proxy`, `proxy-2`, `proxy-3`, … so on
  * those configs the live traffic flows through whichever outbound the balancer
- * picked. Querying only "proxy" then reads 0. We poll the whole set and sum.
+ * picked. Querying only "proxy" then reads 0. The tag set is read from the
+ * actual config's outbounds so any number of proxy-N outbounds is covered.
  *
  * The config must include `"stats": {}` and `"policy": {"system": {"statsOutboundUplink": true,
  * "statsOutboundDownlink": true}}` sections for QueryStats to return data (Pitfall #6).
  *
  * @param controller The active CoreController running the Xray-core loop
+ * @param configJson The Xray config passed to startLoop, used to enumerate proxy outbound tags
  * @param onStats Callback invoked every second with (uplinkBytes, downlinkBytes)
  */
 class TrafficMonitor(
     private val controller: CoreController,
+    configJson: String?,
     private val onStats: (uplink: Long, downlink: Long) -> Unit
 ) {
 
     private var timer: Timer? = null
 
-    /**
-     * Proxy outbound tags to aggregate. "proxy" covers app-built configs and
-     * single-server subscriptions; "proxy-2".."proxy-16" cover balancer /
-     * auto-select subscription profiles. Missing tags simply read 0.
-     */
-    private val statsTags: List<String> =
-        listOf("proxy") + (2..16).map { "proxy-$it" }
+    /** Proxy outbound tags to aggregate, taken from the running config. */
+    private val statsTags: List<String> = proxyTagsFrom(configJson)
+
+    companion object {
+        /**
+         * Every outbound tag the balancer selector `["proxy"]` prefix-matches.
+         * Falls back to just "proxy" (the tag app-built configs always use)
+         * when the config is absent or unparseable.
+         */
+        fun proxyTagsFrom(configJson: String?): List<String> {
+            val fallback = listOf("proxy")
+            if (configJson == null) return fallback
+            return try {
+                val outbounds =
+                    JSONObject(configJson).optJSONArray("outbounds") ?: return fallback
+                val tags = (0 until outbounds.length())
+                    .mapNotNull { outbounds.optJSONObject(it)?.optString("tag") }
+                    .filter { it.startsWith("proxy") }
+                tags.ifEmpty { fallback }
+            } catch (_: Exception) {
+                fallback
+            }
+        }
+    }
 
     /** queryStats for one tag, treating a missing/errored counter as 0 so it
      *  can never abort the aggregate for the other tags. */

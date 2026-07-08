@@ -100,8 +100,12 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
     final pinned = ref.watch(pinnedKeysProvider);
     // Global API announcement — used as a fallback when a key has no announce
     // of its own (same behavior as the Servers-tab group header).
-    final globalAnnouncement =
-        ref.watch(authStateProvider).asData?.value.announcementText?.trim();
+    final globalAnnouncement = ref
+        .watch(authStateProvider)
+        .asData
+        ?.value
+        .announcementText
+        ?.trim();
 
     ref.listen<DefaultServersState>(defaultServersProvider, (previous, next) {
       final previousFailure = previous?.lastFailureType;
@@ -187,8 +191,7 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
 
     // Prefer the key's own announce; otherwise fall back to the global one.
     final ownAnnouncement = first.announcement?.trim();
-    final announcement =
-        (ownAnnouncement != null && ownAnnouncement.isNotEmpty)
+    final announcement = (ownAnnouncement != null && ownAnnouncement.isNotEmpty)
         ? ownAnnouncement
         : (globalAnnouncement != null && globalAnnouncement.isNotEmpty
               ? globalAnnouncement
@@ -226,10 +229,10 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
             child: DebugLongPressWrapper(
               onDebugLongPress: kDebugMode
                   ? () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => ServerXrayConfigScreen(server: config),
-                        ),
-                      )
+                      MaterialPageRoute<void>(
+                        builder: (_) => ServerXrayConfigScreen(server: config),
+                      ),
+                    )
                   : () {},
               child: ServerCard(
                 server: config,
@@ -249,6 +252,7 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
   }
 
   void _onMore(String url, String keyName, List<ServerConfig> configs) {
+    final l10n = AppLocalizations.of(context)!;
     final isPinned = ref.read(pinnedKeysProvider).contains(url);
     showSubscriptionActionsSheet(
       context,
@@ -256,18 +260,18 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
       actions: [
         SubscriptionAction(
           icon: Icons.refresh,
-          label: 'Update subscription',
+          label: l10n.updateSubscriptionAction,
           onTap: () => _onRefresh(url),
         ),
         if (configs.isNotEmpty)
           SubscriptionAction(
             icon: Icons.speed,
-            label: 'Ping',
+            label: l10n.pingAction,
             onTap: () => _onPing(url, configs),
           ),
         SubscriptionAction(
           icon: isPinned ? Icons.push_pin_outlined : Icons.push_pin,
-          label: isPinned ? 'Unpin' : 'Pin',
+          label: isPinned ? l10n.unpinAction : l10n.pinAction,
           onTap: () => ref.read(pinnedKeysProvider.notifier).toggle(url),
         ),
       ],
@@ -280,7 +284,10 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
     final launch = ref.read(linkLauncherProvider);
     final opened = await launch(uri);
     if (!mounted || opened) return;
-    showAppSnackBar(context, message: 'Could not open link');
+    showAppSnackBar(
+      context,
+      message: AppLocalizations.of(context)!.couldNotOpenLink,
+    );
   }
 
   Future<void> _onRefresh(String url) async {
@@ -311,7 +318,10 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
     await ref.read(activeServerProvider.notifier).selectServer(target);
 
     final connectionState = ref.read(connectionProvider);
-    if (connectionState is Connected && currentSelection?.id != target.id) {
+    // Connecting counts too: without it, tapping B while A is still coming up
+    // showed B as selected while the tunnel finished establishing to A.
+    if ((connectionState is Connected || connectionState is Connecting) &&
+        currentSelection?.id != target.id) {
       // connect() handles tearing down the current session and waiting for the
       // native side to fully stop before starting the new server — firing a
       // separate disconnect() here raced the restart (connected, no traffic).
@@ -362,10 +372,7 @@ class _OfflineBadge extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({
-    required this.title,
-    required this.body,
-  });
+  const _EmptyState({required this.title, required this.body});
 
   final String title;
   final String body;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 
+import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/core/theme/app_theme.dart';
 import 'package:arma_proxy_vpn_client/core/utils/byte_format.dart';
 import 'package:arma_proxy_vpn_client/core/utils/expiry_format.dart';
@@ -78,6 +79,7 @@ class SubscriptionKeyBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return GlassCard(
       glow: isPinned,
@@ -143,21 +145,21 @@ class SubscriptionKeyBlock extends StatelessWidget {
                   if (onRefresh != null)
                     _HeaderAction(
                       icon: Icons.refresh,
-                      tooltip: 'Update subscription',
+                      tooltip: l10n.updateSubscriptionAction,
                       busy: isRefreshing,
                       onTap: onRefresh,
                     ),
                   if (onPing != null)
                     _HeaderAction(
                       icon: Icons.speed,
-                      tooltip: 'Ping',
+                      tooltip: l10n.pingAction,
                       busy: isPinging,
                       onTap: onPing,
                     ),
                   if (onMore != null)
                     _HeaderAction(
                       icon: Icons.more_vert,
-                      tooltip: 'Manage',
+                      tooltip: l10n.manageAction,
                       busy: false,
                       onTap: onMore,
                     ),
@@ -240,18 +242,22 @@ class _InfoRow extends StatelessWidget {
     final isUnlimitedExpiry = expireDate.millisecondsSinceEpoch <= 0;
     final expiry = isUnlimitedExpiry ? null : describeExpiry(expireDate);
     final emphasize = expiry != null && (expiry.isUrgent || expiry.isCritical);
-    final expiryColor =
-        emphasize ? colorScheme.error : colorScheme.onSurfaceVariant;
+    final expiryColor = emphasize
+        ? colorScheme.error
+        : colorScheme.onSurfaceVariant;
 
+    final l10n = AppLocalizations.of(context)!;
     final String expiryText;
     if (isUnlimitedExpiry) {
-      expiryText = 'Expires: never';
+      expiryText = l10n.expiresNever;
     } else if (expiry!.isExpired) {
-      expiryText = 'Expired';
+      expiryText = l10n.defaultServersStatusExpired;
     } else {
       // Countdown: months / weeks / days when far out; hours + minutes when
       // less than a day remains.
-      expiryText = 'Expires: ${_formatCountdown(expireDate.difference(_now()))}';
+      expiryText = l10n.expiresCountdown(
+        _formatCountdown(expireDate.difference(_now())),
+      );
     }
 
     final usageText = totalBytes > 0
@@ -367,7 +373,7 @@ class _LinkButtons extends StatelessWidget {
           FilledButton.icon(
             onPressed: () => onOpenUrl(webPageUrl!),
             icon: const Icon(Icons.card_membership_outlined, size: 16),
-            label: const Text('Renew'),
+            label: Text(AppLocalizations.of(context)!.renewAction),
             style: FilledButton.styleFrom(
               visualDensity: VisualDensity.compact,
               padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -381,7 +387,7 @@ class _LinkButtons extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: () => onOpenUrl(supportUrl!),
             icon: const Icon(Icons.support_agent_outlined, size: 16),
-            label: const Text('Support'),
+            label: Text(AppLocalizations.of(context)!.supportAction),
             style: OutlinedButton.styleFrom(
               visualDensity: VisualDensity.compact,
               padding: const EdgeInsets.symmetric(horizontal: 14),

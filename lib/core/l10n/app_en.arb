@@ -344,5 +344,31 @@
     }
   },
   "searchNoResults": "No servers match your search or filters",
-  "routingSettingsSubtitle": "Domain rules & per-app proxy"
+  "routingSettingsSubtitle": "Domain rules & per-app proxy",
+  "updateSubscriptionAction": "Update subscription",
+  "pingAction": "Ping",
+  "manageAction": "Manage",
+  "pinAction": "Pin",
+  "unpinAction": "Unpin",
+  "couldNotOpenLink": "Could not open link",
+  "renewAction": "Renew",
+  "supportAction": "Support",
+  "expiresNever": "Expires: never",
+  "expiresCountdown": "Expires: {countdown}",
+  "@expiresCountdown": {
+    "placeholders": {
+      "countdown": {
+        "type": "String"
+      }
+    }
+  },
+  "pingTypeTitle": "Ping type",
+  "pingTypeSubtitle": "How server latency is measured",
+  "deleteAllAction": "Delete all",
+  "pingTypeHttpTitle": "HTTP (recommended)",
+  "pingTypeHttpSubtitle": "Real end-to-end internet check through the tunnel",
+  "pingTypeTcpTitle": "TCP Connect",
+  "pingTypeTcpSubtitle": "Fast direct TCP handshake to the server port",
+  "pingTypeIcmpTitle": "ICMP",
+  "pingTypeIcmpSubtitle": "System ping to the server, bypassing the tunnel"
 }

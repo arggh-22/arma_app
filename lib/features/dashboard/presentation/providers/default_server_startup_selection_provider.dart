@@ -2,7 +2,9 @@ import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/
 import 'package:arma_proxy_vpn_client/features/server/domain/latency_level.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/active_server_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/latency_provider.dart';
+import 'package:arma_proxy_vpn_client/features/settings/data/datasources/settings_local_datasource.dart';
 import 'package:arma_proxy_vpn_client/features/settings/domain/entities/ping_type.dart';
+import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/theme_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Startup auto-selection of a default server.
@@ -21,10 +23,16 @@ class DefaultServerStartupSelectionController {
   Future<void> autoSelectBestServer() async {
     await _ref.read(defaultServersProvider.notifier).refresh();
 
-    // Respect an existing selection — only auto-pick when nothing is active.
-    // Checked AFTER the refresh so a persisted default-server selection has a
-    // chance to resolve against the freshly-loaded list (e.g. after an upgrade
-    // where only the id, not the config snapshot, was stored).
+    // Respect an existing selection — only auto-pick when the user has never
+    // chosen a server. Checked against the PERSISTED id, not the resolved
+    // activeServerProvider value: the provider resolves null when the
+    // refreshed list transiently fails to produce the selected server (per-key
+    // fetch/parse failure, key momentarily reported inactive), and auto-picking
+    // then would permanently overwrite the user's explicit choice.
+    final prefs = _ref.read(sharedPreferencesProvider);
+    if (SettingsLocalDatasource(prefs).getActiveServerId() != null) {
+      return;
+    }
     if (_ref.read(activeServerProvider) != null) {
       return;
     }

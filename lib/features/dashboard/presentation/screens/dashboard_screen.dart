@@ -8,6 +8,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/auth_provider.dart';
+import 'package:arma_proxy_vpn_client/features/connection/domain/entities/connection_status.dart';
+import 'package:arma_proxy_vpn_client/features/connection/presentation/providers/connection_provider.dart';
 import 'package:arma_proxy_vpn_client/features/connection/presentation/widgets/connection_timer.dart';
 import 'package:arma_proxy_vpn_client/features/connection/presentation/widgets/traffic_stats_card.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/active_server_card.dart';
@@ -109,6 +111,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final hasAnnouncement = hasAnnouncementTitle || hasAnnouncementText;
 
     final colorScheme = Theme.of(context).colorScheme;
+    // Failed connects (permission denied, unreachable server, native error)
+    // must stay visible — the connect button alone just flips back to
+    // DISCONNECTED with no explanation.
+    final connectionError = switch (ref.watch(connectionProvider)) {
+      Disconnected(:final lastError) => lastError,
+      _ => null,
+    };
 
     return Scaffold(
       appBar: AppBar(
@@ -134,6 +143,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   children: [
                     const Gap(4),
                     const ConnectButton(),
+                    if (connectionError != null) ...[
+                      const Gap(12),
+                      Text(
+                        connectionError,
+                        key: const Key('dashboard-connection-error'),
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.error,
+                        ),
+                      ),
+                    ],
                     const Gap(20),
                     // Statistics flank the running time: ↑ upload · timer ·
                     // download ↓. When stats are disabled, show the timer alone.
@@ -183,8 +203,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     key: const Key(
                                       'dashboard-announcement-read-more',
                                     ),
-                                    onPressed: () =>
-                                        _openAnnouncementSheet(announcementText),
+                                    onPressed: () => _openAnnouncementSheet(
+                                      announcementText,
+                                    ),
                                     style: TextButton.styleFrom(
                                       visualDensity: VisualDensity.compact,
                                       padding: const EdgeInsets.symmetric(
@@ -194,8 +215,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                       tapTargetSize:
                                           MaterialTapTargetSize.shrinkWrap,
                                     ),
-                                    child:
-                                        Text(l10n.dashboardAnnouncementReadMore),
+                                    child: Text(
+                                      l10n.dashboardAnnouncementReadMore,
+                                    ),
                                   ),
                                 ),
                             ],
@@ -217,20 +239,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ? Padding(
               padding: const EdgeInsets.only(bottom: 84),
               child: isGuest
-                ? FloatingActionButton.extended(
-                    key: const Key('dashboard-telegram-link-fab'),
-                    heroTag: 'dashboard-telegram-link-fab',
-                    onPressed: () => context.push('/telegram-link'),
-                    icon: const FaIcon(FontAwesomeIcons.telegram, size: 18),
-                    label: Text(l10n.telegramLinkFabLabel),
-                  )
-                : FloatingActionButton(
-                    key: const Key('dashboard-telegram-bot-fab'),
-                    heroTag: 'dashboard-telegram-bot-fab',
-                    tooltip: l10n.dashboardTelegramFabLabel,
-                    onPressed: _openTelegramBot,
-                    child: const FaIcon(FontAwesomeIcons.telegram, size: 20),
-                  ),
+                  ? FloatingActionButton.extended(
+                      key: const Key('dashboard-telegram-link-fab'),
+                      heroTag: 'dashboard-telegram-link-fab',
+                      onPressed: () => context.push('/telegram-link'),
+                      icon: const FaIcon(FontAwesomeIcons.telegram, size: 18),
+                      label: Text(l10n.telegramLinkFabLabel),
+                    )
+                  : FloatingActionButton(
+                      key: const Key('dashboard-telegram-bot-fab'),
+                      heroTag: 'dashboard-telegram-bot-fab',
+                      tooltip: l10n.dashboardTelegramFabLabel,
+                      onPressed: _openTelegramBot,
+                      child: const FaIcon(FontAwesomeIcons.telegram, size: 20),
+                    ),
             )
           : null,
     );

@@ -32,7 +32,7 @@ class XrayConfigBuilder {
     // verbatim, swapping only the local inbound for the app's TUN inbound.
     final raw = server.rawConfig;
     if (raw != null && raw.trim().isNotEmpty) {
-      final merged = _mergeRawConfigForTun(raw, s);
+      final merged = _mergeRawConfigForTun(raw, s, server);
       if (merged != null) return merged;
     }
 
@@ -82,10 +82,7 @@ class XrayConfigBuilder {
 
     final config = <String, dynamic>{
       'log': {'loglevel': 'warning'},
-      'outbounds': [
-        _buildProxyOutbound(server),
-        _buildDirectOutbound(),
-      ],
+      'outbounds': [_buildProxyOutbound(server), _buildDirectOutbound()],
     };
     return jsonEncode(config);
   }
@@ -96,7 +93,11 @@ class XrayConfigBuilder {
   /// are present so traffic stats (QueryStats) keep working.
   ///
   /// Returns `null` if [raw] is not a usable JSON object.
-  static String? _mergeRawConfigForTun(String raw, VpnSettings s) {
+  static String? _mergeRawConfigForTun(
+    String raw,
+    VpnSettings s,
+    ServerConfig server,
+  ) {
     try {
       final decoded = jsonDecode(raw);
       if (decoded is! Map<String, dynamic>) return null;
@@ -115,6 +116,29 @@ class XrayConfigBuilder {
       // subscription's embedded resolver).
       config['dns'] = _buildDns(remoteDns: s.remoteDns, directDns: s.directDns);
 
+      // The servers' own addresses MUST route direct as the FIRST rules (the
+      // TUN-deadlock invariant _buildRouting enforces for built configs):
+      // otherwise Xray's dial to its own server re-enters the TUN. A balancer
+      // profile dials many endpoints, so collect them all from the outbounds.
+      final bypassAddresses = _rawProxyAddresses(outbounds);
+      if (server.address.trim().isNotEmpty) {
+        bypassAddresses.add(server.address.trim());
+      }
+      final directTag = _ensureDirectOutbound(config, outbounds);
+      final bypassIps = bypassAddresses
+          .where(_isIpAddress)
+          .toList(growable: false);
+      final bypassDomains = bypassAddresses
+          .where((a) => !_isIpAddress(a))
+          .map((a) => 'full:$a')
+          .toList(growable: false);
+      final serverBypassRules = <Map<String, dynamic>>[
+        if (bypassIps.isNotEmpty)
+          {'type': 'field', 'outboundTag': directTag, 'ip': bypassIps},
+        if (bypassDomains.isNotEmpty)
+          {'type': 'field', 'outboundTag': directTag, 'domain': bypassDomains},
+      ];
+
       // Prepend the user's routing choices (LAN bypass, region split-tunnel,
       // custom domain rules) ahead of the server's own rules — top-down
       // evaluation means the user's rules win while the server's balancer /
@@ -124,10 +148,14 @@ class XrayConfigBuilder {
         enabledRegions: s.enabledRegions,
         customRules: s.customRules,
       );
-      if (userRules.isNotEmpty) {
+      if (serverBypassRules.isNotEmpty || userRules.isNotEmpty) {
         final routing = _asMap(config['routing']) ?? <String, dynamic>{};
         final existingRules = (routing['rules'] as List?) ?? const [];
-        routing['rules'] = [...userRules, ...existingRules];
+        routing['rules'] = [
+          ...serverBypassRules,
+          ...userRules,
+          ...existingRules,
+        ];
         config['routing'] = routing;
       }
 
@@ -138,6 +166,52 @@ class XrayConfigBuilder {
     } catch (_) {
       return null;
     }
+  }
+
+  /// Every dial address of the raw config's proxy outbounds
+  /// (`settings.vnext[].address` for VLESS/VMess, `settings.servers[].address`
+  /// for Trojan/Shadowsocks). Non-proxy outbounds (freedom/blackhole/dns) are
+  /// skipped.
+  static Set<String> _rawProxyAddresses(List outbounds) {
+    final addresses = <String>{};
+    for (final o in outbounds) {
+      if (o is! Map) continue;
+      final proto = o['protocol'];
+      if (proto == 'freedom' || proto == 'blackhole' || proto == 'dns') {
+        continue;
+      }
+      final settings = o['settings'];
+      if (settings is! Map) continue;
+      for (final listKey in const ['vnext', 'servers']) {
+        final entries = settings[listKey];
+        if (entries is! List) continue;
+        for (final entry in entries) {
+          if (entry is! Map) continue;
+          final address = entry['address'];
+          if (address is String && address.trim().isNotEmpty) {
+            addresses.add(address.trim());
+          }
+        }
+      }
+    }
+    return addresses;
+  }
+
+  /// Returns the tag of the raw config's freedom (direct) outbound, appending
+  /// the app's own one when the subscription didn't ship any — a routing rule
+  /// pointing at a nonexistent outbound tag would break the config.
+  static String _ensureDirectOutbound(
+    Map<String, dynamic> config,
+    List outbounds,
+  ) {
+    for (final o in outbounds) {
+      if (o is! Map || o['protocol'] != 'freedom') continue;
+      final tag = o['tag'];
+      if (tag is String && tag.isNotEmpty) return tag;
+    }
+    final direct = _buildDirectOutbound();
+    config['outbounds'] = [...outbounds, direct];
+    return direct['tag'] as String;
   }
 
   /// Builds a latency-test config from a raw JSON-subscription config: takes
@@ -181,15 +255,9 @@ class XrayConfigBuilder {
   static Map<String, dynamic> _buildPolicy() {
     return {
       'levels': {
-        '0': {
-          'statsUserUplink': true,
-          'statsUserDownlink': true,
-        },
+        '0': {'statsUserUplink': true, 'statsUserDownlink': true},
       },
-      'system': {
-        'statsOutboundUplink': true,
-        'statsOutboundDownlink': true,
-      },
+      'system': {'statsOutboundUplink': true, 'statsOutboundDownlink': true},
     };
   }
 
@@ -205,11 +273,7 @@ class XrayConfigBuilder {
   }) {
     return {
       'servers': [
-        {
-          'address': remoteDns,
-          'domains': <String>[],
-          'port': 53,
-        },
+        {'address': remoteDns, 'domains': <String>[], 'port': 53},
         directDns,
       ],
     };
@@ -227,11 +291,7 @@ class XrayConfigBuilder {
     return {
       'tag': 'tun-in',
       'protocol': 'tun',
-      'settings': {
-        'name': 'tun0',
-        'mtu': 9000,
-        'userLevel': 0,
-      },
+      'settings': {'name': 'tun0', 'mtu': 9000, 'userLevel': 0},
       'sniffing': {
         'enabled': sniffingEnabled,
         'destOverride': ['http', 'tls', 'quic'],
@@ -249,11 +309,7 @@ class XrayConfigBuilder {
       'protocol': 'socks',
       'listen': '127.0.0.1',
       'port': 10808,
-      'settings': {
-        'auth': 'noauth',
-        'udp': true,
-        'userLevel': 0,
-      },
+      'settings': {'auth': 'noauth', 'udp': true, 'userLevel': 0},
       'sniffing': {
         'enabled': true,
         'destOverride': ['http', 'tls', 'quic'],
@@ -299,10 +355,7 @@ class XrayConfigBuilder {
 
     // Mux is NOT applied to Hysteria2 — QUIC has its own multiplexing
     if (muxEnabled && server.protocol != ProtocolType.hysteria2) {
-      outbound['mux'] = {
-        'enabled': true,
-        'concurrency': muxConcurrency,
-      };
+      outbound['mux'] = {'enabled': true, 'concurrency': muxConcurrency};
     }
 
     return outbound;
@@ -337,8 +390,9 @@ class XrayConfigBuilder {
               {
                 'id': server.uuid ?? '',
                 'alterId': server.alterId,
-                'security':
-                    server.encryption == 'none' ? 'auto' : server.encryption,
+                'security': server.encryption == 'none'
+                    ? 'auto'
+                    : server.encryption,
               },
             ],
           },
@@ -415,13 +469,13 @@ class XrayConfigBuilder {
     }
 
     // H2 always forces TLS
-    final effectiveSecurity =
-        server.network == 'h2' ? 'tls' : server.security;
+    final effectiveSecurity = server.network == 'h2' ? 'tls' : server.security;
 
     // Normalize xhttp → splithttp: this AAR's Xray-core registers the transport
     // as "splithttp" (pre-rename). Both names refer to the same protocol.
-    final effectiveNetwork =
-        server.network == 'xhttp' ? 'splithttp' : server.network;
+    final effectiveNetwork = server.network == 'xhttp'
+        ? 'splithttp'
+        : server.network;
     final isXhttp = effectiveNetwork == 'splithttp';
 
     final settings = <String, dynamic>{
@@ -443,8 +497,10 @@ class XrayConfigBuilder {
         'allowInsecure': false,
         'fingerprint': server.fingerprint ?? (isXhttp ? '' : 'chrome'),
       };
-      final alpnList =
-          server.alpn?.split(',').where((s) => s.isNotEmpty).toList();
+      final alpnList = server.alpn
+          ?.split(',')
+          .where((s) => s.isNotEmpty)
+          .toList();
       if (alpnList != null && alpnList.isNotEmpty) {
         tlsSettings['alpn'] = alpnList;
       } else if (isXhttp) {
@@ -480,9 +536,7 @@ class XrayConfigBuilder {
       case 'ws':
         settings['wsSettings'] = {
           'path': server.path ?? '/',
-          'headers': {
-            'Host': server.host ?? server.address,
-          },
+          'headers': {'Host': server.host ?? server.address},
         };
       case 'grpc':
         settings['grpcSettings'] = {
@@ -592,11 +646,7 @@ class XrayConfigBuilder {
     ];
 
     // Catch-all proxy (must be last)
-    rules.add({
-      'type': 'field',
-      'outboundTag': 'proxy',
-      'port': '0-65535',
-    });
+    rules.add({'type': 'field', 'outboundTag': 'proxy', 'port': '0-65535'});
 
     return {'domainStrategy': 'IPIfNonMatch', 'rules': rules};
   }

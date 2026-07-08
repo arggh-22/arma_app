@@ -774,9 +774,9 @@ class SettingsScreen extends ConsumerWidget {
           // Ping type (Health Check) — spec §2. Default HTTP.
           ListTile(
             leading: const Icon(Icons.speed_outlined),
-            title: Text('Ping type', style: theme.textTheme.titleMedium),
+            title: Text(l10n.pingTypeTitle, style: theme.textTheme.titleMedium),
             subtitle: Text(
-              'How server latency is measured',
+              l10n.pingTypeSubtitle,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -787,9 +787,9 @@ class SettingsScreen extends ConsumerWidget {
               key: Key('ping-type-${type.key}'),
               value: type,
               groupValue: pingType,
-              title: Text(_pingTypeTitle(type)),
+              title: Text(_pingTypeTitle(l10n, type)),
               subtitle: Text(
-                _pingTypeSubtitle(type),
+                _pingTypeSubtitle(l10n, type),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
@@ -1189,24 +1189,24 @@ class _OverdueRefreshUpdatedIndicator extends StatelessWidget {
   }
 }
 
-String _pingTypeTitle(PingType type) {
+String _pingTypeTitle(AppLocalizations l10n, PingType type) {
   switch (type) {
     case PingType.http:
-      return 'HTTP (recommended)';
+      return l10n.pingTypeHttpTitle;
     case PingType.tcpConnect:
-      return 'TCP Connect';
+      return l10n.pingTypeTcpTitle;
     case PingType.icmp:
-      return 'ICMP';
+      return l10n.pingTypeIcmpTitle;
   }
 }
 
-String _pingTypeSubtitle(PingType type) {
+String _pingTypeSubtitle(AppLocalizations l10n, PingType type) {
   switch (type) {
     case PingType.http:
-      return 'Real end-to-end internet check through the tunnel';
+      return l10n.pingTypeHttpSubtitle;
     case PingType.tcpConnect:
-      return 'Fast direct TCP handshake to the server port';
+      return l10n.pingTypeTcpSubtitle;
     case PingType.icmp:
-      return 'System ping to the server, bypassing the tunnel';
+      return l10n.pingTypeIcmpSubtitle;
   }
 }

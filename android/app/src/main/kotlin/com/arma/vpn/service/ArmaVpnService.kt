@@ -294,7 +294,7 @@ class ArmaVpnService : VpnService() {
 
             // 8. Start traffic monitoring (delayed 1s to let Xray stats initialize)
             Log.w(TAG, "Step 7: Starting traffic monitor (delayed 1s)")
-            trafficMonitor = TrafficMonitor(coreController!!) { up, down ->
+            trafficMonitor = TrafficMonitor(coreController!!, config) { up, down ->
                 sendStatsToClient(up, down)
                 updateNotification(serverName, up, down)
             }

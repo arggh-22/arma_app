@@ -775,4 +775,65 @@ class AppLocalizationsHy extends AppLocalizations {
 
   @override
   String get routingSettingsSubtitle => 'Դոմենի կանոններ և հավելվածների պրոքսի';
+
+  @override
+  String get updateSubscriptionAction => 'Թարմացնել բաժանորդագրությունը';
+
+  @override
+  String get pingAction => 'Փինգ';
+
+  @override
+  String get manageAction => 'Կառավարել';
+
+  @override
+  String get pinAction => 'Ամրացնել';
+
+  @override
+  String get unpinAction => 'Ապամրացնել';
+
+  @override
+  String get couldNotOpenLink => 'Չհաջողվեց բացել հղումը';
+
+  @override
+  String get renewAction => 'Երկարաձգել';
+
+  @override
+  String get supportAction => 'Աջակցություն';
+
+  @override
+  String get expiresNever => 'Ժամկետ՝ անժամկետ';
+
+  @override
+  String expiresCountdown(String countdown) {
+    return 'Ժամկետը լրանում է՝ $countdown';
+  }
+
+  @override
+  String get pingTypeTitle => 'Փինգի տեսակ';
+
+  @override
+  String get pingTypeSubtitle => 'Ինչպես է չափվում սերվերի ուշացումը';
+
+  @override
+  String get deleteAllAction => 'Ջնջել բոլորը';
+
+  @override
+  String get pingTypeHttpTitle => 'HTTP (խորհուրդ է տրվում)';
+
+  @override
+  String get pingTypeHttpSubtitle =>
+      'Իրական ծայրից ծայր ինտերնետի ստուգում թունելի միջոցով';
+
+  @override
+  String get pingTypeTcpTitle => 'TCP Connect';
+
+  @override
+  String get pingTypeTcpSubtitle => 'Արագ TCP կապ անմիջապես սերվերի պորտին';
+
+  @override
+  String get pingTypeIcmpTitle => 'ICMP';
+
+  @override
+  String get pingTypeIcmpSubtitle =>
+      'Համակարգային ping դեպի սերվեր՝ շրջանցելով թունելը';
 }

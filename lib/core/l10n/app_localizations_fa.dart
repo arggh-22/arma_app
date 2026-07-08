@@ -773,4 +773,65 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get routingSettingsSubtitle => 'قوانین دامنه و پروکسی برای هر برنامه';
+
+  @override
+  String get updateSubscriptionAction => 'به‌روزرسانی اشتراک';
+
+  @override
+  String get pingAction => 'پینگ';
+
+  @override
+  String get manageAction => 'مدیریت';
+
+  @override
+  String get pinAction => 'سنجاق کردن';
+
+  @override
+  String get unpinAction => 'برداشتن سنجاق';
+
+  @override
+  String get couldNotOpenLink => 'باز کردن پیوند ممکن نشد';
+
+  @override
+  String get renewAction => 'تمدید';
+
+  @override
+  String get supportAction => 'پشتیبانی';
+
+  @override
+  String get expiresNever => 'انقضا: هیچ‌وقت';
+
+  @override
+  String expiresCountdown(String countdown) {
+    return 'انقضا: $countdown';
+  }
+
+  @override
+  String get pingTypeTitle => 'نوع پینگ';
+
+  @override
+  String get pingTypeSubtitle => 'نحوه اندازه‌گیری تأخیر سرور';
+
+  @override
+  String get deleteAllAction => 'حذف همه';
+
+  @override
+  String get pingTypeHttpTitle => 'HTTP (پیشنهادی)';
+
+  @override
+  String get pingTypeHttpSubtitle =>
+      'بررسی واقعی و سرتاسری اینترنت از طریق تونل';
+
+  @override
+  String get pingTypeTcpTitle => 'TCP Connect';
+
+  @override
+  String get pingTypeTcpSubtitle =>
+      'دست‌دهی سریع TCP به‌طور مستقیم با پورت سرور';
+
+  @override
+  String get pingTypeIcmpTitle => 'ICMP';
+
+  @override
+  String get pingTypeIcmpSubtitle => 'پینگ سیستمی به سرور، بدون عبور از تونل';
 }

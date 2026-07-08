@@ -137,8 +137,8 @@ void main() {
 
       expect(state.items, hasLength(2));
       expect(state.items.map((item) => item.id), [
-        'default-api-501-1',
-        'default-api-501-2',
+        'default-api-501-vless-example.com-443',
+        'default-api-501-vless-example.com-443-2',
       ]);
       expect(state.items.map((item) => item.name), ['Zone A', 'Zone B']);
       expect(state.items.map((item) => item.subscriptionUrl).toSet(), {subUrl});
@@ -244,8 +244,8 @@ void main() {
         expect(state.items.first.id, 'default-api-601');
         expect(state.items.first.name, 'Key 601');
         expect(state.items.skip(1).map((item) => item.id), [
-          'default-api-602-1',
-          'default-api-602-2',
+          'default-api-602-vless-example.com-443',
+          'default-api-602-vless-example.com-443-2',
         ]);
         expect(state.lastFailureType, isNull);
       },
