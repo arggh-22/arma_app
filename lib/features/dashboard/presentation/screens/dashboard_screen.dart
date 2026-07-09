@@ -14,6 +14,7 @@ import 'package:arma_proxy_vpn_client/features/connection/presentation/widgets/c
 import 'package:arma_proxy_vpn_client/features/connection/presentation/widgets/traffic_stats_card.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/active_server_card.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/connect_button.dart';
+import 'package:arma_proxy_vpn_client/features/dashboard/presentation/providers/default_servers_provider.dart';
 import 'package:arma_proxy_vpn_client/features/dashboard/presentation/widgets/default_servers_section.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/ui_preferences_provider.dart';
 
@@ -131,106 +132,116 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       ),
       body: NotificationListener<UserScrollNotification>(
         onNotification: _onScroll,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
-          child: Column(
-            children: [
-              Container(
-                key: const Key('dashboard-top-visual-group'),
-                width: double.infinity,
-                constraints: const BoxConstraints(minHeight: 180),
-                child: Column(
-                  children: [
-                    const Gap(4),
-                    const ConnectButton(),
-                    if (connectionError != null) ...[
-                      const Gap(12),
-                      Text(
-                        connectionError,
-                        key: const Key('dashboard-connection-error'),
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colorScheme.error,
+        child: RefreshIndicator(
+          // Pull-to-refresh re-fetches the API subscriptions/servers.
+          onRefresh: () => ref.read(defaultServersProvider.notifier).refresh(),
+          child: SingleChildScrollView(
+            // AlwaysScrollable so the pull gesture works even when the
+            // content doesn't fill the viewport.
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+            child: Column(
+              children: [
+                Container(
+                  key: const Key('dashboard-top-visual-group'),
+                  width: double.infinity,
+                  constraints: const BoxConstraints(minHeight: 180),
+                  child: Column(
+                    children: [
+                      const Gap(4),
+                      const ConnectButton(),
+                      if (connectionError != null) ...[
+                        const Gap(12),
+                        Text(
+                          connectionError,
+                          key: const Key('dashboard-connection-error'),
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: colorScheme.error),
                         ),
-                      ),
+                      ],
+                      const Gap(20),
+                      // Statistics flank the running time: ↑ upload · timer ·
+                      // download ↓. When stats are disabled, show the timer alone.
+                      if (uiPreferences.showDashboardStatistics)
+                        const TrafficStatsCard(middle: ConnectionTimer())
+                      else
+                        const ConnectionTimer(),
+                      const Gap(24),
+                      const ActiveServerCard(),
                     ],
-                    const Gap(20),
-                    // Statistics flank the running time: ↑ upload · timer ·
-                    // download ↓. When stats are disabled, show the timer alone.
-                    if (uiPreferences.showDashboardStatistics)
-                      const TrafficStatsCard(middle: ConnectionTimer())
-                    else
-                      const ConnectionTimer(),
-                    const Gap(24),
-                    const ActiveServerCard(),
-                  ],
+                  ),
                 ),
-              ),
-              const Gap(24),
-              SizedBox(
-                key: const Key('dashboard-bottom-visual-group'),
-                width: double.infinity,
-                child: Column(
-                  children: [
-                    if (hasAnnouncement) ...[
-                      Card(
-                        key: const Key('dashboard-announcement-card'),
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(12, 8, 8, 4),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (hasAnnouncementTitle)
-                                Text(
-                                  announcementTitle,
-                                  style: Theme.of(context).textTheme.titleSmall,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              if (hasAnnouncementTitle && hasAnnouncementText)
-                                const Gap(2),
-                              if (hasAnnouncementText)
-                                Text(
-                                  announcementText,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              if (hasAnnouncementText)
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: TextButton(
-                                    key: const Key(
-                                      'dashboard-announcement-read-more',
-                                    ),
-                                    onPressed: () => _openAnnouncementSheet(
-                                      announcementText,
-                                    ),
-                                    style: TextButton.styleFrom(
-                                      visualDensity: VisualDensity.compact,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
+                const Gap(24),
+                SizedBox(
+                  key: const Key('dashboard-bottom-visual-group'),
+                  width: double.infinity,
+                  child: Column(
+                    children: [
+                      if (hasAnnouncement) ...[
+                        Card(
+                          key: const Key('dashboard-announcement-card'),
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 8, 8, 4),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (hasAnnouncementTitle)
+                                  Text(
+                                    announcementTitle,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleSmall,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                if (hasAnnouncementTitle && hasAnnouncementText)
+                                  const Gap(2),
+                                if (hasAnnouncementText)
+                                  Text(
+                                    announcementText,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall,
+                                  ),
+                                if (hasAnnouncementText)
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: TextButton(
+                                      key: const Key(
+                                        'dashboard-announcement-read-more',
                                       ),
-                                      minimumSize: const Size(0, 28),
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    child: Text(
-                                      l10n.dashboardAnnouncementReadMore,
+                                      onPressed: () => _openAnnouncementSheet(
+                                        announcementText,
+                                      ),
+                                      style: TextButton.styleFrom(
+                                        visualDensity: VisualDensity.compact,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                        ),
+                                        minimumSize: const Size(0, 28),
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      child: Text(
+                                        l10n.dashboardAnnouncementReadMore,
+                                      ),
                                     ),
                                   ),
-                                ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      const Gap(12),
+                        const Gap(12),
+                      ],
+                      const DefaultServersSection(),
                     ],
-                    const DefaultServersSection(),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
