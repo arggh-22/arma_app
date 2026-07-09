@@ -60,9 +60,7 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
 
           // Semi-transparent overlay with cutout
           CustomPaint(
-            painter: _ScanOverlayPainter(
-              borderColor: colorScheme.primary,
-            ),
+            painter: _ScanOverlayPainter(borderColor: colorScheme.primary),
             size: Size.infinite,
           ),
 
@@ -74,10 +72,9 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
             child: Text(
               l10n.scanQrInstruction,
               textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: Colors.white),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.white),
             ),
           ),
 
@@ -113,10 +110,7 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
               height: 48,
               child: IconButton(
                 onPressed: () => _controller.switchCamera(),
-                icon: const Icon(
-                  Icons.cameraswitch,
-                  color: Colors.white,
-                ),
+                icon: const Icon(Icons.cameraswitch, color: Colors.white),
               ),
             ),
           ),
@@ -140,9 +134,9 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
     if (config != null) {
       ref.read(serverListProvider.notifier).addServer(config);
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.importSuccess)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.importSuccess)));
       return;
     }
 
@@ -156,9 +150,9 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
     }
 
     // 3. Unrecognized content
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.qrUnrecognized)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.qrUnrecognized)));
     // Allow re-scanning after unrecognized
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) setState(() => _hasDetected = false);
@@ -219,23 +213,19 @@ class _ScanOverlayPainter extends CustomPainter {
     // Draw semi-transparent overlay with cutout
     final overlayPath = Path()
       ..addRect(Rect.fromLTWH(0, 0, size.width, size.height))
-      ..addRRect(RRect.fromRectAndRadius(
-        cutoutRect,
-        const Radius.circular(borderRadius),
-      ))
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          cutoutRect,
+          const Radius.circular(borderRadius),
+        ),
+      )
       ..fillType = PathFillType.evenOdd;
 
-    canvas.drawPath(
-      overlayPath,
-      Paint()..color = Colors.black54,
-    );
+    canvas.drawPath(overlayPath, Paint()..color = Colors.black54);
 
     // Draw border around cutout
     canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        cutoutRect,
-        const Radius.circular(borderRadius),
-      ),
+      RRect.fromRectAndRadius(cutoutRect, const Radius.circular(borderRadius)),
       Paint()
         ..color = borderColor
         ..style = PaintingStyle.stroke

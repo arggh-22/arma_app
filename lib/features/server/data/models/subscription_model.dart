@@ -83,10 +83,9 @@ class SubscriptionModel extends HiveObject {
     uploadBytes: uploadBytes,
     downloadBytes: downloadBytes,
     totalBytes: totalBytes,
-    expireDate:
-        expireMillis != null
-            ? DateTime.fromMillisecondsSinceEpoch(expireMillis!)
-            : null,
+    expireDate: expireMillis != null
+        ? DateTime.fromMillisecondsSinceEpoch(expireMillis!)
+        : null,
     lastUpdated: DateTime.fromMillisecondsSinceEpoch(lastUpdatedMillis),
     addedAt: DateTime.fromMillisecondsSinceEpoch(addedAtMillis),
     autoUpdate: autoUpdate,

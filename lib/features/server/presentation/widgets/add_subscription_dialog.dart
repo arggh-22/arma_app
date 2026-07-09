@@ -173,9 +173,9 @@ class _AddSubscriptionDialogState extends ConsumerState<AddSubscriptionDialog> {
 
       final l10n = AppLocalizations.of(context)!;
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.importedServersCount(count))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.importedServersCount(count))));
     } catch (e) {
       if (!mounted) return;
 

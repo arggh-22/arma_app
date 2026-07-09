@@ -268,9 +268,12 @@ class ApiClient {
       'body': _sanitizeRawBody(request.body),
     });
 
-    final streamedResponse =
-        await _client.send(request).timeout(connectTimeout);
-    final response = await http.Response.fromStream(streamedResponse).timeout(readTimeout);
+    final streamedResponse = await _client
+        .send(request)
+        .timeout(connectTimeout);
+    final response = await http.Response.fromStream(
+      streamedResponse,
+    ).timeout(readTimeout);
     _logDiagnostics('response', {
       'method': method,
       'url': uri.toString(),
@@ -347,7 +350,8 @@ class ApiClient {
     for (final entry in headers.entries) {
       final key = entry.key.toLowerCase();
       final value = entry.value;
-      if (key == 'authorization' || key == AppConfig.apiKeyHeaderName.toLowerCase()) {
+      if (key == 'authorization' ||
+          key == AppConfig.apiKeyHeaderName.toLowerCase()) {
         sanitized[entry.key] = _maskValue(value);
       } else {
         sanitized[entry.key] = value;

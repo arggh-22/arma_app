@@ -74,7 +74,8 @@ class ClashParser {
     final security = (tls == true) ? 'tls' : 'none';
 
     // SNI — Clash uses both 'sni' and 'servername'
-    final sni = _nonEmpty(proxy['sni']?.toString()) ??
+    final sni =
+        _nonEmpty(proxy['sni']?.toString()) ??
         _nonEmpty(proxy['servername']?.toString());
 
     // Network / transport
@@ -98,8 +99,7 @@ class ClashParser {
     // gRPC options
     final grpcOpts = proxy['grpc-opts'];
     if (grpcOpts is YamlMap) {
-      serviceName =
-          _nonEmpty(grpcOpts['grpc-service-name']?.toString());
+      serviceName = _nonEmpty(grpcOpts['grpc-service-name']?.toString());
     }
 
     // HTTP/2 options
@@ -143,9 +143,7 @@ class ClashParser {
       port: port,
       uuid: uuid,
       password: password,
-      encryption: protocol == ProtocolType.vmess
-          ? (cipher ?? 'auto')
-          : 'none',
+      encryption: protocol == ProtocolType.vmess ? (cipher ?? 'auto') : 'none',
       method: protocol == ProtocolType.shadowsocks ? cipher : null,
       network: network,
       xhttpMode: xhttpMode,

@@ -109,9 +109,9 @@ class _QrDisplayContent extends StatelessWidget {
                 child: FilledButton.tonal(
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: shareLink));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(l10n.linkCopied)),
-                    );
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(l10n.linkCopied)));
                   },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -129,9 +129,7 @@ class _QrDisplayContent extends StatelessWidget {
               Expanded(
                 child: FilledButton.tonal(
                   onPressed: () {
-                    SharePlus.instance.share(
-                      ShareParams(text: shareLink),
-                    );
+                    SharePlus.instance.share(ShareParams(text: shareLink));
                   },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,

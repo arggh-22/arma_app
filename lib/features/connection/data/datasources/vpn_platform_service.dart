@@ -183,8 +183,9 @@ class VpnPlatformService {
   /// Returns true if permission is granted (or already granted on older Android).
   Future<bool> requestNotificationPermission() async {
     try {
-      final result =
-          await _methodChannel.invokeMethod<bool>('requestNotificationPermission');
+      final result = await _methodChannel.invokeMethod<bool>(
+        'requestNotificationPermission',
+      );
       return result ?? false;
     } on MissingPluginException {
       debugPrint(
@@ -204,11 +205,14 @@ class VpnPlatformService {
   Future<String> getXrayVersion() async {
     if (_isDesktop) return DesktopXrayManager.instance.version();
     try {
-      final result =
-          await _methodChannel.invokeMethod<String>('getXrayVersion');
+      final result = await _methodChannel.invokeMethod<String>(
+        'getXrayVersion',
+      );
       return result ?? 'Unknown';
     } on MissingPluginException {
-      debugPrint('[VpnPlatformService] getXrayVersion not available on this build');
+      debugPrint(
+        '[VpnPlatformService] getXrayVersion not available on this build',
+      );
       return 'Unknown';
     } on PlatformException catch (e) {
       debugPrint('[VpnPlatformService] getXrayVersion error: ${e.message}');

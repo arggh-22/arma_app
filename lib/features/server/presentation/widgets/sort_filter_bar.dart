@@ -103,9 +103,7 @@ class _SortFilterBarState extends State<SortFilterBar> {
                       borderRadius: const BorderRadius.all(
                         Radius.circular(999),
                       ),
-                      borderSide: BorderSide(
-                        color: colorScheme.outlineVariant,
-                      ),
+                      borderSide: BorderSide(color: colorScheme.outlineVariant),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: const BorderRadius.all(

@@ -32,8 +32,7 @@ class ParserUtils {
   }
 
   /// Returns `true` if [input] exceeds [maxInputLength].
-  static bool exceedsMaxLength(String input) =>
-      input.length > maxInputLength;
+  static bool exceedsMaxLength(String input) => input.length > maxInputLength;
 
   /// Extracts and truncates a server name from [fragment].
   ///

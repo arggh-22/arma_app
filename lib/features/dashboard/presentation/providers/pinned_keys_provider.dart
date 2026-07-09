@@ -42,5 +42,6 @@ class PinnedKeysNotifier extends Notifier<Set<String>> {
   }
 }
 
-final pinnedKeysProvider =
-    NotifierProvider<PinnedKeysNotifier, Set<String>>(PinnedKeysNotifier.new);
+final pinnedKeysProvider = NotifierProvider<PinnedKeysNotifier, Set<String>>(
+  PinnedKeysNotifier.new,
+);

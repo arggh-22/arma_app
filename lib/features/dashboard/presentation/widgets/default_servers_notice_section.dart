@@ -35,10 +35,12 @@ class _DefaultServersNoticeSectionState
       defaultServersProvider.select((s) => s.webPageUrl),
     );
 
-    final showAnnouncement = announcement != null &&
+    final showAnnouncement =
+        announcement != null &&
         announcement.isNotEmpty &&
         announcement != _dismissedAnnouncement;
-    final hasLinks = (supportUrl != null && supportUrl.isNotEmpty) ||
+    final hasLinks =
+        (supportUrl != null && supportUrl.isNotEmpty) ||
         (webPageUrl != null && webPageUrl.isNotEmpty);
 
     if (!showAnnouncement && !hasLinks) {
@@ -77,7 +79,9 @@ class _DefaultServersNoticeSectionState
     final launch = ref.read(linkLauncherProvider);
     final opened = await launch(uri);
     if (!mounted || opened) return;
-    messenger.showSnackBar(const SnackBar(content: Text('Could not open link')));
+    messenger.showSnackBar(
+      const SnackBar(content: Text('Could not open link')),
+    );
   }
 }
 
@@ -109,8 +113,11 @@ class _AnnouncementBanner extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.campaign_outlined,
-                    size: 18, color: colorScheme.onSecondaryContainer),
+                Icon(
+                  Icons.campaign_outlined,
+                  size: 18,
+                  color: colorScheme.onSecondaryContainer,
+                ),
                 const Gap(8),
                 Expanded(
                   child: Text(

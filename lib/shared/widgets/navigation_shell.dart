@@ -49,8 +49,16 @@ class NavigationShell extends StatelessWidget {
   );
 
   List<_NavItem> _items(AppLocalizations l10n) => [
-    _NavItem(icon: Icons.home_outlined, selectedIcon: Icons.home, label: l10n.navHome),
-    _NavItem(icon: Icons.dns_outlined, selectedIcon: Icons.dns, label: l10n.servers),
+    _NavItem(
+      icon: Icons.home_outlined,
+      selectedIcon: Icons.home,
+      label: l10n.navHome,
+    ),
+    _NavItem(
+      icon: Icons.dns_outlined,
+      selectedIcon: Icons.dns,
+      label: l10n.servers,
+    ),
     _NavItem(
       icon: Icons.settings_outlined,
       selectedIcon: Icons.settings,
@@ -61,7 +69,9 @@ class NavigationShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return _isDesktop ? _buildDesktop(context, l10n) : _buildMobile(context, l10n);
+    return _isDesktop
+        ? _buildDesktop(context, l10n)
+        : _buildMobile(context, l10n);
   }
 
   // ── Mobile: floating pill bottom bar (unchanged) ──────────────────────────

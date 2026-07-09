@@ -20,10 +20,7 @@ class DomainRuleModel extends HiveObject {
   /// Maps this Hive model to the domain [DomainRule] entity.
   DomainRule toDomain() {
     const actions = ['proxy', 'direct', 'block'];
-    return DomainRule(
-      domain: domain,
-      action: actions[actionIndex.clamp(0, 2)],
-    );
+    return DomainRule(domain: domain, action: actions[actionIndex.clamp(0, 2)]);
   }
 
   /// Creates a [DomainRuleModel] from a domain [DomainRule] entity.

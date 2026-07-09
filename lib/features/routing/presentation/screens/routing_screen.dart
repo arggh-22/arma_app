@@ -36,10 +36,7 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
         children: [
           // Bypass LAN toggle (now using Riverpod instead of setState)
           SwitchListTile(
-            title: Text(
-              l10n.bypassLan,
-              style: theme.textTheme.titleMedium,
-            ),
+            title: Text(l10n.bypassLan, style: theme.textTheme.titleMedium),
             subtitle: Text(
               l10n.bypassLanSubtitle,
               style: theme.textTheme.bodyMedium,
@@ -55,8 +52,9 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
             leading: const Icon(Icons.public),
             title: Text(
               l10n.regionPresets,
-              style: theme.textTheme.labelLarge
-                  ?.copyWith(color: colorScheme.primary),
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: colorScheme.primary,
+              ),
             ),
             initiallyExpanded: true,
             children: const [RegionPresetsSection()],
@@ -68,8 +66,9 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
             leading: const Icon(Icons.domain),
             title: Text(
               l10n.domainRules,
-              style: theme.textTheme.labelLarge
-                  ?.copyWith(color: colorScheme.primary),
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: colorScheme.primary,
+              ),
             ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
@@ -77,8 +76,9 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
                 if (settings.customRules.isNotEmpty)
                   Text(
                     '${settings.customRules.length}',
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: colorScheme.onSurfaceVariant),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 const SizedBox(width: 8),
                 const Icon(Icons.expand_more),
@@ -91,8 +91,9 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
                   child: Center(
                     child: Text(
                       l10n.noRulesYet,
-                      style: theme.textTheme.bodyMedium
-                          ?.copyWith(color: colorScheme.onSurfaceVariant),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 )
@@ -127,8 +128,10 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
                 }),
               // Add Rule button
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
@@ -157,8 +160,9 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
             leading: const Icon(Icons.apps),
             title: Text(
               l10n.perAppProxy,
-              style: theme.textTheme.labelLarge
-                  ?.copyWith(color: colorScheme.primary),
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: colorScheme.primary,
+              ),
             ),
             children: [
               // Enable toggle
@@ -182,8 +186,7 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
                         children: [
                           // Blacklist / Whitelist SegmentedButton
                           Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: SegmentedButton<String>(
                               segments: [
                                 ButtonSegment(
@@ -202,8 +205,7 @@ class _RoutingScreenState extends ConsumerState<RoutingScreen> {
                                     .setPerAppMode(v.first);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content:
-                                        Text(l10n.switchedToMode(v.first)),
+                                    content: Text(l10n.switchedToMode(v.first)),
                                     duration: const Duration(seconds: 2),
                                   ),
                                 );

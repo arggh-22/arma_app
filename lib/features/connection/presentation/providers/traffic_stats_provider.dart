@@ -21,18 +21,21 @@ class TrafficStatsNotifier extends _$TrafficStatsNotifier {
     _eventSubscription = _platformService.vpnEvents
         .where((e) => e['type'] == 'stats')
         .listen((event) {
-      final uplink = (event['uplink'] as num?)?.toInt() ?? 0;
-      final downlink = (event['downlink'] as num?)?.toInt() ?? 0;
-      
-      // Only update if stats are non-zero or if we already have non-zero stats
-      // (avoid initial 0,0 spam from Xray stats warmup)
-      if (uplink > 0 || downlink > 0 || state.uplinkBytesPerSecond > 0 || state.downlinkBytesPerSecond > 0) {
-        state = TrafficStats(
-          uplinkBytesPerSecond: uplink,
-          downlinkBytesPerSecond: downlink,
-        );
-      }
-    });
+          final uplink = (event['uplink'] as num?)?.toInt() ?? 0;
+          final downlink = (event['downlink'] as num?)?.toInt() ?? 0;
+
+          // Only update if stats are non-zero or if we already have non-zero stats
+          // (avoid initial 0,0 spam from Xray stats warmup)
+          if (uplink > 0 ||
+              downlink > 0 ||
+              state.uplinkBytesPerSecond > 0 ||
+              state.downlinkBytesPerSecond > 0) {
+            state = TrafficStats(
+              uplinkBytesPerSecond: uplink,
+              downlinkBytesPerSecond: downlink,
+            );
+          }
+        });
 
     ref.onDispose(() => _eventSubscription?.cancel());
 

@@ -1,10 +1,6 @@
 /// DTO for `/auth/telegram/link/` response payload.
 class TelegramLinkResponse {
-  const TelegramLinkResponse({
-    required this.detail,
-    this.status,
-    this.code,
-  });
+  const TelegramLinkResponse({required this.detail, this.status, this.code});
 
   final String detail;
   final String? status;
@@ -25,10 +21,6 @@ class TelegramLinkResponse {
       throw const FormatException('Invalid telegram link payload: code');
     }
 
-    return TelegramLinkResponse(
-      detail: detail,
-      status: status,
-      code: code,
-    );
+    return TelegramLinkResponse(detail: detail, status: status, code: code);
   }
 }

@@ -17,30 +17,31 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('top visual group contains connect, status timer, active server, and stats path', (
-    tester,
-  ) async {
-    await _pumpDashboard(tester, showStats: true);
+  testWidgets(
+    'top visual group contains connect, status timer, active server, and stats path',
+    (tester) async {
+      await _pumpDashboard(tester, showStats: true);
 
-    final topGroup = find.byKey(const Key('dashboard-top-visual-group'));
-    expect(topGroup, findsOneWidget);
-    expect(
-      find.descendant(of: topGroup, matching: find.byType(ConnectButton)),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(of: topGroup, matching: find.byType(ConnectionTimer)),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(of: topGroup, matching: find.byType(ActiveServerCard)),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(of: topGroup, matching: find.byType(TrafficStatsCard)),
-      findsOneWidget,
-    );
-  });
+      final topGroup = find.byKey(const Key('dashboard-top-visual-group'));
+      expect(topGroup, findsOneWidget);
+      expect(
+        find.descendant(of: topGroup, matching: find.byType(ConnectButton)),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: topGroup, matching: find.byType(ConnectionTimer)),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: topGroup, matching: find.byType(ActiveServerCard)),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: topGroup, matching: find.byType(TrafficStatsCard)),
+        findsOneWidget,
+      );
+    },
+  );
 
   testWidgets('top visual group hides stats card when preference disabled', (
     tester,
@@ -68,7 +69,9 @@ Future<void> _pumpDashboard(
         uiPreferencesProvider.overrideWith(
           () => _TestUiPreferencesNotifier(showStats: showStats),
         ),
-        defaultServersProvider.overrideWith(() => _TestDefaultServersNotifier()),
+        defaultServersProvider.overrideWith(
+          () => _TestDefaultServersNotifier(),
+        ),
         authStateProvider.overrideWith(() => _TestAuthStateNotifier()),
         dashboardTelegramLauncherProvider.overrideWithValue((_) async => true),
       ],

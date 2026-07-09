@@ -49,8 +49,7 @@ void main() {
     });
 
     test('defaults security to tls when not specified', () {
-      const link =
-          'trojan://pass-default@server.com:443#DefaultTLS';
+      const link = 'trojan://pass-default@server.com:443#DefaultTLS';
 
       final result = TrojanParser.parse(link);
 
@@ -59,8 +58,7 @@ void main() {
     });
 
     test('defaults name to address:port when fragment missing', () {
-      const link =
-          'trojan://pass@noname-trojan.com:8443?type=tcp&security=tls';
+      const link = 'trojan://pass@noname-trojan.com:8443?type=tcp&security=tls';
 
       final result = TrojanParser.parse(link);
 
@@ -69,8 +67,7 @@ void main() {
     });
 
     test('returns null for empty password', () {
-      const link =
-          'trojan://@server.com:443?type=tcp&security=tls#NoPass';
+      const link = 'trojan://@server.com:443?type=tcp&security=tls#NoPass';
 
       final result = TrojanParser.parse(link);
 

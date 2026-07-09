@@ -111,7 +111,10 @@ class XrayConfigBuilder {
       server,
       settings: settings,
       inboundsOverride: [
-        _buildSocksInbound(socksPort, sniffingEnabled: settings?.sniffingEnabled ?? true),
+        _buildSocksInbound(
+          socksPort,
+          sniffingEnabled: settings?.sniffingEnabled ?? true,
+        ),
         _buildHttpInbound(httpPort),
       ],
     );

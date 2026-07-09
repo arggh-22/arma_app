@@ -34,8 +34,10 @@ class LogService {
   ///
   /// Evicts the oldest line when buffer exceeds [maxLines].
   void addLine(String line) {
-    final timestamp =
-        DateTime.now().toIso8601String().substring(11, 19); // HH:MM:SS
+    final timestamp = DateTime.now().toIso8601String().substring(
+      11,
+      19,
+    ); // HH:MM:SS
     final timestamped = '[$timestamp] $line';
     _buffer.add(timestamped);
     if (_buffer.length > maxLines) {
@@ -55,10 +57,7 @@ class LogService {
     final file = File('${dir.path}/arma_vpn_log_$timestamp.txt');
     await file.writeAsString(_buffer.join('\n'));
     await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile(file.path)],
-        subject: 'Arma VPN Logs',
-      ),
+      ShareParams(files: [XFile(file.path)], subject: 'Arma VPN Logs'),
     );
   }
 

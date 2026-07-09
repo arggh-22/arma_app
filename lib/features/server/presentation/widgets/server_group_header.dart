@@ -92,8 +92,8 @@ class ServerGroupHeader extends ConsumerWidget {
             child: Text(
               '$groupName ($serverCount)',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
           ),
         ],
@@ -110,9 +110,14 @@ class ServerGroupHeader extends ConsumerWidget {
     // Notice shown under the sub name: the subscription's own `announce`
     // header if present, otherwise the global API announcement (the same
     // "if VPN doesn't work, refresh" notice shown on the home dashboard).
-    final globalNotice =
-        ref.watch(authStateProvider).asData?.value.announcementText;
-    final notice = _hasLink(sub.announcement) ? sub.announcement! : globalNotice;
+    final globalNotice = ref
+        .watch(authStateProvider)
+        .asData
+        ?.value
+        .announcementText;
+    final notice = _hasLink(sub.announcement)
+        ? sub.announcement!
+        : globalNotice;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -167,10 +172,7 @@ class ServerGroupHeader extends ConsumerWidget {
               // 3-dot overflow menu (Update / Check / Copy URL / Delete All)
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert, size: 20),
-                constraints: const BoxConstraints(
-                  minWidth: 32,
-                  minHeight: 32,
-                ),
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 padding: EdgeInsets.zero,
                 onSelected: (value) {
                   switch (value) {
@@ -225,8 +227,11 @@ class ServerGroupHeader extends ConsumerWidget {
                     value: 'deleteAll',
                     child: Row(
                       children: [
-                        Icon(Icons.delete_outline, size: 20,
-                            color: colorScheme.error),
+                        Icon(
+                          Icons.delete_outline,
+                          size: 20,
+                          color: colorScheme.error,
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           'Delete all',
@@ -311,7 +316,11 @@ class ServerGroupHeader extends ConsumerWidget {
     );
   }
 
-  Widget _buildLinkButtons(BuildContext context, WidgetRef ref, Subscription sub) {
+  Widget _buildLinkButtons(
+    BuildContext context,
+    WidgetRef ref,
+    Subscription sub,
+  ) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -388,22 +397,28 @@ class ServerGroupHeader extends ConsumerWidget {
   }
 
   Widget _buildInfoRow(
-      BuildContext context, AppLocalizations l10n, Subscription sub) {
+    BuildContext context,
+    AppLocalizations l10n,
+    Subscription sub,
+  ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final parts = <InlineSpan>[];
 
     // Server count
-    parts.add(TextSpan(
-      text: l10n.subscriptionInfoFormat(serverCount),
-      style: theme.textTheme.bodySmall?.copyWith(
-        color: colorScheme.onSurfaceVariant,
+    parts.add(
+      TextSpan(
+        text: l10n.subscriptionInfoFormat(serverCount),
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
       ),
-    ));
+    );
 
     // Expiry / unlimited marker.
     final expireDate = sub.expireDate;
-    final isUnlimited = expireDate == null || expireDate.millisecondsSinceEpoch <= 0;
+    final isUnlimited =
+        expireDate == null || expireDate.millisecondsSinceEpoch <= 0;
     if (isUnlimited) {
       parts.add(
         WidgetSpan(
@@ -424,12 +439,14 @@ class ServerGroupHeader extends ConsumerWidget {
           ? colorScheme.error
           : colorScheme.onSurfaceVariant;
 
-      parts.add(TextSpan(
-        text: '  ·  ',
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: colorScheme.onSurfaceVariant,
+      parts.add(
+        TextSpan(
+          text: '  ·  ',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
         ),
-      ));
+      );
 
       // Warning icon when less than a day remains (or expired).
       if (expiry.isCritical) {
@@ -448,19 +465,20 @@ class ServerGroupHeader extends ConsumerWidget {
         );
       }
 
-      parts.add(TextSpan(
-        text: 'expires ${expiry.label}',
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: expiryColor,
-          fontWeight:
-              (expiry.isUrgent || expiry.isCritical) ? FontWeight.bold : null,
+      parts.add(
+        TextSpan(
+          text: 'expires ${expiry.label}',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: expiryColor,
+            fontWeight: (expiry.isUrgent || expiry.isCritical)
+                ? FontWeight.bold
+                : null,
+          ),
         ),
-      ));
+      );
     }
 
-    return RichText(
-      text: TextSpan(children: parts),
-    );
+    return RichText(text: TextSpan(children: parts));
   }
 }
 

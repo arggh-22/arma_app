@@ -9,13 +9,13 @@ import 'package:arma_proxy_vpn_client/features/settings/domain/entities/ping_typ
 import 'package:flutter_test/flutter_test.dart';
 
 ServerConfig _server(String address, int port) => ServerConfig(
-      id: 's',
-      name: 'S',
-      protocol: ProtocolType.vless,
-      address: address,
-      port: port,
-      addedAt: DateTime.utc(2026, 1, 1),
-    );
+  id: 's',
+  name: 'S',
+  protocol: ProtocolType.vless,
+  address: address,
+  port: port,
+  addedAt: DateTime.utc(2026, 1, 1),
+);
 
 void main() {
   group('latencyProbeFor', () {
@@ -32,8 +32,9 @@ void main() {
       final server = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
       addTearDown(() => server.close());
 
-      final ms = await const TcpConnectProbe()
-          .measure(_server('127.0.0.1', server.port));
+      final ms = await const TcpConnectProbe().measure(
+        _server('127.0.0.1', server.port),
+      );
 
       expect(ms, isNot(kLatencyFailed));
       expect(ms, greaterThanOrEqualTo(0));
@@ -45,8 +46,9 @@ void main() {
       final closedPort = probe.port;
       await probe.close();
 
-      final ms = await const TcpConnectProbe()
-          .measure(_server('127.0.0.1', closedPort));
+      final ms = await const TcpConnectProbe().measure(
+        _server('127.0.0.1', closedPort),
+      );
 
       expect(ms, kLatencyFailed);
     });

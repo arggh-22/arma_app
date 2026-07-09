@@ -22,5 +22,6 @@ class PingTypeNotifier extends Notifier<PingType> {
   }
 }
 
-final pingTypeProvider =
-    NotifierProvider<PingTypeNotifier, PingType>(PingTypeNotifier.new);
+final pingTypeProvider = NotifierProvider<PingTypeNotifier, PingType>(
+  PingTypeNotifier.new,
+);

@@ -92,10 +92,7 @@ class _PasteConfigDialogState extends ConsumerState<PasteConfigDialog> {
         content: Text('${l10n.importSuccess} — ${config.name}'),
         duration: AppConstants.snackBarDurationDefault,
         backgroundColor: Colors.green.shade700,
-        action: SnackBarAction(
-          label: l10n.viewAction,
-          onPressed: () {},
-        ),
+        action: SnackBarAction(label: l10n.viewAction, onPressed: () {}),
       ),
     );
   }
@@ -129,9 +126,7 @@ class _PasteConfigDialogState extends ConsumerState<PasteConfigDialog> {
           autofocus: true,
           decoration: InputDecoration(
             hintText: l10n.pasteConfigHint,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             errorText: _errorText,
           ),
         ),

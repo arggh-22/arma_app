@@ -50,35 +50,43 @@ void main() {
       }
     });
 
-    test('getValidToken returns persisted token when not near expiry', () async {
-      final repository = AuthRepositoryImpl(
-        apiClient: apiClient,
-        authLocalDatasource: authLocalDatasource,
-        deviceIdService: deviceIdService,
-        appVersion: '1.2.3',
-        osType: 'android',
-        now: () => fixedNow,
-      );
-      await authLocalDatasource.writeAuthState(
-        AuthState(
-          token: 'persisted-token',
-          isAuthenticated: true,
-          expiresAt: fixedNow.add(const Duration(minutes: 30)),
-          deviceId: 'android-device-id',
-          userId: 1,
-        ),
-      );
+    test(
+      'getValidToken returns persisted token when not near expiry',
+      () async {
+        final repository = AuthRepositoryImpl(
+          apiClient: apiClient,
+          authLocalDatasource: authLocalDatasource,
+          deviceIdService: deviceIdService,
+          appVersion: '1.2.3',
+          osType: 'android',
+          now: () => fixedNow,
+        );
+        await authLocalDatasource.writeAuthState(
+          AuthState(
+            token: 'persisted-token',
+            isAuthenticated: true,
+            expiresAt: fixedNow.add(const Duration(minutes: 30)),
+            deviceId: 'android-device-id',
+            userId: 1,
+          ),
+        );
 
-      final token = await repository.getValidToken();
+        final token = await repository.getValidToken();
 
-      expect(token, 'persisted-token');
-      expect(apiClient.authCalls, 0);
-    });
+        expect(token, 'persisted-token');
+        expect(apiClient.authCalls, 0);
+      },
+    );
 
     test('getValidToken re-authenticates when token is near expiry', () async {
-      apiClient.deviceAuthHandler = ({required deviceId, required osType, required appVersion}) async {
-        return const DeviceAuthResponse(token: 'new-token', isGuest: false, userId: 42);
-      };
+      apiClient.deviceAuthHandler =
+          ({required deviceId, required osType, required appVersion}) async {
+            return const DeviceAuthResponse(
+              token: 'new-token',
+              isGuest: false,
+              userId: 42,
+            );
+          };
       final repository = AuthRepositoryImpl(
         apiClient: apiClient,
         authLocalDatasource: authLocalDatasource,
@@ -104,90 +112,104 @@ void main() {
       expect(authLocalDatasource.readAuthState().token, 'new-token');
     });
 
-    test('executeWithAuthRetry clears stale token, re-auths, and replays once on 401', () async {
-      apiClient.deviceAuthHandler = ({required deviceId, required osType, required appVersion}) async {
-        return const DeviceAuthResponse(token: 'fresh-token', isGuest: false, userId: 7);
-      };
-      final repository = AuthRepositoryImpl(
-        apiClient: apiClient,
-        authLocalDatasource: authLocalDatasource,
-        deviceIdService: deviceIdService,
-        appVersion: '1.2.3',
-        osType: 'android',
-        now: () => fixedNow,
-      );
-      await authLocalDatasource.writeAuthState(
-        AuthState(
-          token: 'stale-token',
-          isAuthenticated: true,
-          expiresAt: fixedNow.add(const Duration(hours: 1)),
-          deviceId: 'android-device-id',
-          userId: 1,
-        ),
-      );
-      var requestCalls = 0;
+    test(
+      'executeWithAuthRetry clears stale token, re-auths, and replays once on 401',
+      () async {
+        apiClient.deviceAuthHandler =
+            ({required deviceId, required osType, required appVersion}) async {
+              return const DeviceAuthResponse(
+                token: 'fresh-token',
+                isGuest: false,
+                userId: 7,
+              );
+            };
+        final repository = AuthRepositoryImpl(
+          apiClient: apiClient,
+          authLocalDatasource: authLocalDatasource,
+          deviceIdService: deviceIdService,
+          appVersion: '1.2.3',
+          osType: 'android',
+          now: () => fixedNow,
+        );
+        await authLocalDatasource.writeAuthState(
+          AuthState(
+            token: 'stale-token',
+            isAuthenticated: true,
+            expiresAt: fixedNow.add(const Duration(hours: 1)),
+            deviceId: 'android-device-id',
+            userId: 1,
+          ),
+        );
+        var requestCalls = 0;
 
-      final result = await repository.executeWithAuthRetry<String>((token) async {
-        requestCalls++;
-        if (requestCalls == 1) {
+        final result = await repository.executeWithAuthRetry<String>((
+          token,
+        ) async {
+          requestCalls++;
+          if (requestCalls == 1) {
+            throw const ApiClientException(
+              type: ApiClientErrorType.unauthorized,
+              message: 'Unauthorized request',
+              statusCode: 401,
+            );
+          }
+          return 'ok:$token';
+        });
+
+        expect(result, 'ok:fresh-token');
+        expect(requestCalls, 2);
+        expect(apiClient.authCalls, 1);
+      },
+    );
+
+    test(
+      'executeWithAuthRetry throws typed auth failure when re-auth fails',
+      () async {
+        apiClient.deviceAuthHandler =
+            ({required deviceId, required osType, required appVersion}) {
+              throw const ApiClientException(
+                type: ApiClientErrorType.network,
+                message: 'network',
+              );
+            };
+        final repository = AuthRepositoryImpl(
+          apiClient: apiClient,
+          authLocalDatasource: authLocalDatasource,
+          deviceIdService: deviceIdService,
+          appVersion: '1.2.3',
+          osType: 'android',
+          now: () => fixedNow,
+        );
+        await authLocalDatasource.writeAuthState(
+          AuthState(
+            token: 'stale-token',
+            isAuthenticated: true,
+            expiresAt: fixedNow.add(const Duration(hours: 1)),
+            deviceId: 'android-device-id',
+            userId: 1,
+          ),
+        );
+
+        final call = repository.executeWithAuthRetry<void>((_) async {
           throw const ApiClientException(
             type: ApiClientErrorType.unauthorized,
             message: 'Unauthorized request',
             statusCode: 401,
           );
-        }
-        return 'ok:$token';
-      });
+        });
 
-      expect(result, 'ok:fresh-token');
-      expect(requestCalls, 2);
-      expect(apiClient.authCalls, 1);
-    });
-
-    test('executeWithAuthRetry throws typed auth failure when re-auth fails', () async {
-      apiClient.deviceAuthHandler = ({required deviceId, required osType, required appVersion}) {
-        throw const ApiClientException(
-          type: ApiClientErrorType.network,
-          message: 'network',
-        );
-      };
-      final repository = AuthRepositoryImpl(
-        apiClient: apiClient,
-        authLocalDatasource: authLocalDatasource,
-        deviceIdService: deviceIdService,
-        appVersion: '1.2.3',
-        osType: 'android',
-        now: () => fixedNow,
-      );
-      await authLocalDatasource.writeAuthState(
-        AuthState(
-          token: 'stale-token',
-          isAuthenticated: true,
-          expiresAt: fixedNow.add(const Duration(hours: 1)),
-          deviceId: 'android-device-id',
-          userId: 1,
-        ),
-      );
-
-      final call = repository.executeWithAuthRetry<void>((_) async {
-        throw const ApiClientException(
-          type: ApiClientErrorType.unauthorized,
-          message: 'Unauthorized request',
-          statusCode: 401,
-        );
-      });
-
-      await expectLater(
-        call,
-        throwsA(
-          isA<AuthRepositoryException>().having(
-            (e) => e.type,
-            'type',
-            AuthRepositoryFailureType.authenticationFailed,
+        await expectLater(
+          call,
+          throwsA(
+            isA<AuthRepositoryException>().having(
+              (e) => e.type,
+              'type',
+              AuthRepositoryFailureType.authenticationFailed,
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   });
 }
 
@@ -204,7 +226,8 @@ class _StubApiClient extends ApiClient {
     required String deviceId,
     required String osType,
     required String appVersion,
-  })? deviceAuthHandler;
+  })?
+  deviceAuthHandler;
 
   @override
   Future<DeviceAuthResponse> authenticateDevice({
@@ -221,11 +244,7 @@ class _StubApiClient extends ApiClient {
         userId: 1,
       );
     }
-    return handler(
-      deviceId: deviceId,
-      osType: osType,
-      appVersion: appVersion,
-    );
+    return handler(deviceId: deviceId, osType: osType, appVersion: appVersion);
   }
 
   @override

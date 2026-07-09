@@ -31,7 +31,9 @@ class RulesUpdateService {
     final client = http.Client();
     try {
       for (final entry in downloads.entries) {
-        final response = await client.get(Uri.parse(entry.value)).timeout(_timeout);
+        final response = await client
+            .get(Uri.parse(entry.value))
+            .timeout(_timeout);
         if (response.statusCode != 200) {
           throw HttpException(
             'Failed to download ${entry.key}: HTTP ${response.statusCode}',
@@ -60,4 +62,3 @@ class RulesUpdateService {
     return updatedCount;
   }
 }
-

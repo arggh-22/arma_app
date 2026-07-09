@@ -19,34 +19,34 @@ const _gb = 1073741824;
 class _Servers extends ServerListNotifier {
   @override
   Future<List<ServerConfig>> build() async => [
-        ServerConfig(
-          id: 'srv-1',
-          name: 'Node 1',
-          protocol: ProtocolType.vless,
-          address: 'a.example.com',
-          port: 443,
-          subscriptionId: 'sub-1',
-          groupName: 'ARMA VPN',
-          addedAt: DateTime.utc(2026, 1, 1),
-        ),
-      ];
+    ServerConfig(
+      id: 'srv-1',
+      name: 'Node 1',
+      protocol: ProtocolType.vless,
+      address: 'a.example.com',
+      port: 443,
+      subscriptionId: 'sub-1',
+      groupName: 'ARMA VPN',
+      addedAt: DateTime.utc(2026, 1, 1),
+    ),
+  ];
 }
 
 class _Subs extends SubscriptionNotifier {
   @override
   List<Subscription> build() => [
-        Subscription(
-          id: 'sub-1',
-          name: 'ARMA VPN',
-          url: 'https://example.com/sub',
-          totalBytes: 10 * _gb,
-          downloadBytes: _gb,
-          uploadBytes: 0,
-          expireDate: DateTime.now().add(const Duration(days: 12)),
-          lastUpdated: DateTime.utc(2026, 1, 1),
-          addedAt: DateTime.utc(2026, 1, 1),
-        ),
-      ];
+    Subscription(
+      id: 'sub-1',
+      name: 'ARMA VPN',
+      url: 'https://example.com/sub',
+      totalBytes: 10 * _gb,
+      downloadBytes: _gb,
+      uploadBytes: 0,
+      expireDate: DateTime.now().add(const Duration(days: 12)),
+      lastUpdated: DateTime.utc(2026, 1, 1),
+      addedAt: DateTime.utc(2026, 1, 1),
+    ),
+  ];
 }
 
 class _Active extends ActiveServerNotifier {
@@ -62,11 +62,11 @@ class _Latency extends LatencyNotifier {
 class _SortFilter extends SortFilterNotifier {
   @override
   SortFilterState build() => (
-        sort: SortCriteria.defaultOrder,
-        filter: FilterCriteria.all,
-        query: '',
-        protocol: null,
-      );
+    sort: SortCriteria.defaultOrder,
+    filter: FilterCriteria.all,
+    query: '',
+    protocol: null,
+  );
 }
 
 class _Defaults extends DefaultServersNotifier {
@@ -75,8 +75,9 @@ class _Defaults extends DefaultServersNotifier {
 }
 
 void main() {
-  testWidgets('servers screen shows the subscription data-usage bar',
-      (tester) async {
+  testWidgets('servers screen shows the subscription data-usage bar', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [

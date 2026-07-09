@@ -40,17 +40,16 @@ class AntiCensorshipSettings {
     int? sleepMax,
     bool? paddingEnabled,
     bool? mixedSniEnabled,
-  }) =>
-      AntiCensorshipSettings(
-        profile: profile ?? this.profile,
-        fragmentEnabled: fragmentEnabled ?? this.fragmentEnabled,
-        fragmentMin: fragmentMin ?? this.fragmentMin,
-        fragmentMax: fragmentMax ?? this.fragmentMax,
-        sleepMin: sleepMin ?? this.sleepMin,
-        sleepMax: sleepMax ?? this.sleepMax,
-        paddingEnabled: paddingEnabled ?? this.paddingEnabled,
-        mixedSniEnabled: mixedSniEnabled ?? this.mixedSniEnabled,
-      );
+  }) => AntiCensorshipSettings(
+    profile: profile ?? this.profile,
+    fragmentEnabled: fragmentEnabled ?? this.fragmentEnabled,
+    fragmentMin: fragmentMin ?? this.fragmentMin,
+    fragmentMax: fragmentMax ?? this.fragmentMax,
+    sleepMin: sleepMin ?? this.sleepMin,
+    sleepMax: sleepMax ?? this.sleepMax,
+    paddingEnabled: paddingEnabled ?? this.paddingEnabled,
+    mixedSniEnabled: mixedSniEnabled ?? this.mixedSniEnabled,
+  );
 }
 
 @Riverpod(keepAlive: true)

@@ -49,13 +49,7 @@ class TrafficStatsCard extends ConsumerWidget {
       fit: BoxFit.scaleDown,
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          upload,
-          const Gap(16),
-          middle!,
-          const Gap(16),
-          download,
-        ],
+        children: [upload, const Gap(16), middle!, const Gap(16), download],
       ),
     );
   }
@@ -76,7 +70,9 @@ class _TelemetryCapsule extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final accentColor = isDark ? accent : Color.lerp(accent, Colors.black, 0.3)!;
+    final accentColor = isDark
+        ? accent
+        : Color.lerp(accent, Colors.black, 0.3)!;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),

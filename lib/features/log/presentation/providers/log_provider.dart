@@ -22,11 +22,11 @@ LogService logService(Ref ref) {
   final subscription = vpnService.vpnEvents
       .where((event) => event['type'] == 'debug')
       .listen((event) {
-    final message = event['message'] as String? ?? '';
-    if (message.isNotEmpty) {
-      service.addLine(message);
-    }
-  });
+        final message = event['message'] as String? ?? '';
+        if (message.isNotEmpty) {
+          service.addLine(message);
+        }
+      });
 
   ref.onDispose(() {
     subscription.cancel();

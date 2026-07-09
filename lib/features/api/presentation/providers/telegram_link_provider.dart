@@ -79,7 +79,8 @@ class TelegramLinkNotifier extends Notifier<TelegramLinkState> {
   Future<TelegramLinkOutcome> _submitValidated(String normalizedCode) async {
     try {
       final outcome = await _repository.linkTelegram(normalizedCode);
-      final linked = outcome.type == TelegramLinkOutcomeType.linked ||
+      final linked =
+          outcome.type == TelegramLinkOutcomeType.linked ||
           outcome.type == TelegramLinkOutcomeType.alreadyLinked;
       state = state.copyWith(
         isSubmitting: false,
@@ -94,7 +95,9 @@ class TelegramLinkNotifier extends Notifier<TelegramLinkState> {
       }
       return outcome;
     } catch (_) {
-      const fallback = TelegramLinkOutcome(type: TelegramLinkOutcomeType.unknown);
+      const fallback = TelegramLinkOutcome(
+        type: TelegramLinkOutcomeType.unknown,
+      );
       state = state.copyWith(
         isSubmitting: false,
         lastOutcome: fallback,

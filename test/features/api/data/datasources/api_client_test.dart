@@ -34,7 +34,10 @@ void main() {
 
       expect(response, isA<DeviceAuthResponse>());
       expect(capturedRequest.method, 'POST');
-      expect(capturedRequest.url.toString(), 'https://example.com/api/v1/auth/device/');
+      expect(
+        capturedRequest.url.toString(),
+        'https://example.com/api/v1/auth/device/',
+      );
       expect(capturedRequest.headers['X-API-Key'], 'test-api-key');
       expect(capturedRequest.headers['content-type'], 'application/json');
       expect(
@@ -43,29 +46,35 @@ void main() {
       );
     });
 
-    test('getKeys sends Authorization Token header and maps response list', () async {
-      late http.Request capturedRequest;
-      final client = MockClient((request) async {
-        capturedRequest = request;
-        return http.Response(
-          '[{"id":1,"name":"Main","key_body":"vless://example","subscription_url":"https://example.com/sub","expire_date":"2026-05-24T18:30:00Z","is_active":true,"status":"active","used_traffic":10,"data_limit":20}]',
-          200,
-          headers: {'content-type': 'application/json'},
+    test(
+      'getKeys sends Authorization Token header and maps response list',
+      () async {
+        late http.Request capturedRequest;
+        final client = MockClient((request) async {
+          capturedRequest = request;
+          return http.Response(
+            '[{"id":1,"name":"Main","key_body":"vless://example","subscription_url":"https://example.com/sub","expire_date":"2026-05-24T18:30:00Z","is_active":true,"status":"active","used_traffic":10,"data_limit":20}]',
+            200,
+            headers: {'content-type': 'application/json'},
+          );
+        });
+        final apiClient = ApiClient(
+          client: client,
+          baseUrl: 'https://example.com/api/v1',
         );
-      });
-      final apiClient = ApiClient(
-        client: client,
-        baseUrl: 'https://example.com/api/v1',
-      );
 
-      final keys = await apiClient.getKeys('token-abc');
+        final keys = await apiClient.getKeys('token-abc');
 
-      expect(capturedRequest.method, 'GET');
-      expect(capturedRequest.url.toString(), 'https://example.com/api/v1/keys/');
-      expect(capturedRequest.headers['Authorization'], 'Token token-abc');
-      expect(keys, isA<List<DefaultServerKeyModel>>());
-      expect(keys, hasLength(1));
-    });
+        expect(capturedRequest.method, 'GET');
+        expect(
+          capturedRequest.url.toString(),
+          'https://example.com/api/v1/keys/',
+        );
+        expect(capturedRequest.headers['Authorization'], 'Token token-abc');
+        expect(keys, isA<List<DefaultServerKeyModel>>());
+        expect(keys, hasLength(1));
+      },
+    );
 
     test('retries once for transient 5xx then succeeds', () async {
       var attempts = 0;
@@ -142,7 +151,11 @@ void main() {
         throwsA(
           isA<ApiClientException>()
               .having((e) => e.statusCode, 'statusCode', 401)
-              .having((e) => e.message.contains('token-secret-very-long'), 'contains token', isFalse),
+              .having(
+                (e) => e.message.contains('token-secret-very-long'),
+                'contains token',
+                isFalse,
+              ),
         ),
       );
       expect(attempts, 1);
@@ -175,7 +188,10 @@ void main() {
         capturedRequest.url.toString(),
         'https://example.com/api/v1/auth/telegram/link-code/',
       );
-      expect(capturedRequest.headers['Authorization'], 'Token bearer-token-123');
+      expect(
+        capturedRequest.headers['Authorization'],
+        'Token bearer-token-123',
+      );
       expect(capturedRequest.headers['content-type'], 'application/json');
       expect(capturedRequest.body, '{"code":"123456"}');
     });

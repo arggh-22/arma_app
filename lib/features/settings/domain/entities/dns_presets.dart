@@ -168,12 +168,11 @@ class DnsFilteringOptions {
     bool? blockAdultContent,
     bool? blockTrackers,
     String? customBlockList,
-  }) =>
-      DnsFilteringOptions(
-        blockAds: blockAds ?? this.blockAds,
-        blockMalware: blockMalware ?? this.blockMalware,
-        blockAdultContent: blockAdultContent ?? this.blockAdultContent,
-        blockTrackers: blockTrackers ?? this.blockTrackers,
-        customBlockList: customBlockList ?? this.customBlockList,
-      );
+  }) => DnsFilteringOptions(
+    blockAds: blockAds ?? this.blockAds,
+    blockMalware: blockMalware ?? this.blockMalware,
+    blockAdultContent: blockAdultContent ?? this.blockAdultContent,
+    blockTrackers: blockTrackers ?? this.blockTrackers,
+    customBlockList: customBlockList ?? this.customBlockList,
+  );
 }

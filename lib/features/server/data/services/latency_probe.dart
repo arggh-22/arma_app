@@ -105,8 +105,10 @@ class IcmpProbe implements LatencyProbe {
       args = ['-c', '1', '-W', '$timeoutSecs', server.address];
     }
     try {
-      final result = await Process.run('ping', args)
-          .timeout(kLatencyProbeTimeout + const Duration(seconds: 1));
+      final result = await Process.run(
+        'ping',
+        args,
+      ).timeout(kLatencyProbeTimeout + const Duration(seconds: 1));
       if (result.exitCode != 0) return kLatencyFailed;
       final ms = _parsePingMs('${result.stdout}');
       return ms ?? kLatencyFailed;

@@ -23,20 +23,19 @@ Subscription _sub({
   String? supportUrl,
   String? webPageUrl,
   String? announcement,
-}) =>
-    Subscription(
-      id: 'sub-1',
-      name: 'ARMA VPN',
-      url: 'https://example.com/sub',
-      totalBytes: totalBytes,
-      downloadBytes: downloadBytes,
-      supportUrl: supportUrl,
-      webPageUrl: webPageUrl,
-      announcement: announcement,
-      expireDate: DateTime.now().add(const Duration(days: 12)),
-      lastUpdated: DateTime.utc(2026, 1, 1),
-      addedAt: DateTime.utc(2026, 1, 1),
-    );
+}) => Subscription(
+  id: 'sub-1',
+  name: 'ARMA VPN',
+  url: 'https://example.com/sub',
+  totalBytes: totalBytes,
+  downloadBytes: downloadBytes,
+  supportUrl: supportUrl,
+  webPageUrl: webPageUrl,
+  announcement: announcement,
+  expireDate: DateTime.now().add(const Duration(days: 12)),
+  lastUpdated: DateTime.utc(2026, 1, 1),
+  addedAt: DateTime.utc(2026, 1, 1),
+);
 
 Future<void> _pump(
   WidgetTester tester,
@@ -72,22 +71,26 @@ Future<void> _pump(
 }
 
 void main() {
-  testWidgets('shows the data-usage progress bar for a subscription with a total',
-      (tester) async {
-    await _pump(tester, _sub(totalBytes: 10 * _gb, downloadBytes: _gb));
+  testWidgets(
+    'shows the data-usage progress bar for a subscription with a total',
+    (tester) async {
+      await _pump(tester, _sub(totalBytes: 10 * _gb, downloadBytes: _gb));
 
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
-    expect(find.text('1.0 GB / 10 GB'), findsOneWidget);
-  });
+      expect(find.byType(LinearProgressIndicator), findsOneWidget);
+      expect(find.text('1.0 GB / 10 GB'), findsOneWidget);
+    },
+  );
 
-  testWidgets('hides the usage bar when the subscription has no data total',
-      (tester) async {
+  testWidgets('hides the usage bar when the subscription has no data total', (
+    tester,
+  ) async {
     await _pump(tester, _sub());
     expect(find.byType(LinearProgressIndicator), findsNothing);
   });
 
-  testWidgets('shows a used-only line for an unlimited plan (no total)',
-      (tester) async {
+  testWidgets('shows a used-only line for an unlimited plan (no total)', (
+    tester,
+  ) async {
     // Unlimited: usage present but no `total` (e.g. total omitted from header).
     await _pump(tester, _sub(downloadBytes: 2 * _gb));
     expect(find.byType(LinearProgressIndicator), findsNothing);
@@ -100,8 +103,9 @@ void main() {
     expect(find.text('2.0 GB / ∞'), findsOneWidget);
   });
 
-  testWidgets('shows Support/Renew links and launches their urls',
-      (tester) async {
+  testWidgets('shows Support/Renew links and launches their urls', (
+    tester,
+  ) async {
     final launched = <String>[];
     await _pump(
       tester,
@@ -126,18 +130,22 @@ void main() {
     expect(launched, ['https://cabinet.example.com', 'https://t.me/support']);
   });
 
-  testWidgets('hides Support/Renew when the subscription has no links',
-      (tester) async {
+  testWidgets('hides Support/Renew when the subscription has no links', (
+    tester,
+  ) async {
     await _pump(tester, _sub());
     expect(find.text('Support'), findsNothing);
     expect(find.text('Renew'), findsNothing);
   });
 
-  testWidgets('shows the subscription announcement text in full',
-      (tester) async {
+  testWidgets('shows the subscription announcement text in full', (
+    tester,
+  ) async {
     await _pump(
       tester,
-      _sub(announcement: 'Scheduled maintenance from 2:00 to 4:00 UTC tonight.'),
+      _sub(
+        announcement: 'Scheduled maintenance from 2:00 to 4:00 UTC tonight.',
+      ),
     );
     expect(
       find.text('Scheduled maintenance from 2:00 to 4:00 UTC tonight.'),
@@ -145,8 +153,9 @@ void main() {
     );
   });
 
-  testWidgets('falls back to the global API announcement under the sub name',
-      (tester) async {
+  testWidgets('falls back to the global API announcement under the sub name', (
+    tester,
+  ) async {
     await _pump(
       tester,
       _sub(),

@@ -48,5 +48,5 @@ class DefaultServersSortFilterNotifier extends Notifier<SortFilterState> {
 
 final defaultServersSortFilterProvider =
     NotifierProvider<DefaultServersSortFilterNotifier, SortFilterState>(
-  DefaultServersSortFilterNotifier.new,
-);
+      DefaultServersSortFilterNotifier.new,
+    );

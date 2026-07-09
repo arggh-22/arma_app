@@ -13,7 +13,9 @@ void main() {
     late DefaultServerCacheDatasource datasource;
 
     setUp(() async {
-      hiveDir = await Directory.systemTemp.createTemp('default_server_cache_test_');
+      hiveDir = await Directory.systemTemp.createTemp(
+        'default_server_cache_test_',
+      );
       Hive.init(hiveDir.path);
       box = await Hive.openBox<dynamic>(DefaultServerCacheDatasource.boxName);
       datasource = DefaultServerCacheDatasource(box);

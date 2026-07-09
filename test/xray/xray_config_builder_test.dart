@@ -27,33 +27,32 @@ ServerConfig _makeServer({
   String? spiderX,
   String? method,
   String encryption = 'none',
-}) =>
-    ServerConfig(
-      id: 'test-id',
-      name: 'Test Server',
-      protocol: protocol,
-      address: address,
-      port: port,
-      uuid: uuid,
-      password: password,
-      network: network,
-      security: security,
-      sni: sni,
-      host: host,
-      path: path,
-      alpn: alpn,
-      fingerprint: fingerprint,
-      flow: flow,
-      alterId: alterId,
-      serviceName: serviceName,
-      authority: authority,
-      publicKey: publicKey,
-      shortId: shortId,
-      spiderX: spiderX,
-      method: method,
-      encryption: encryption,
-      addedAt: DateTime(2024, 1, 1),
-    );
+}) => ServerConfig(
+  id: 'test-id',
+  name: 'Test Server',
+  protocol: protocol,
+  address: address,
+  port: port,
+  uuid: uuid,
+  password: password,
+  network: network,
+  security: security,
+  sni: sni,
+  host: host,
+  path: path,
+  alpn: alpn,
+  fingerprint: fingerprint,
+  flow: flow,
+  alterId: alterId,
+  serviceName: serviceName,
+  authority: authority,
+  publicKey: publicKey,
+  shortId: shortId,
+  spiderX: spiderX,
+  method: method,
+  encryption: encryption,
+  addedAt: DateTime(2024, 1, 1),
+);
 
 void main() {
   group('VLESS protocol', () {
@@ -68,8 +67,8 @@ void main() {
         fingerprint: 'chrome',
       );
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
       final outbounds = json['outbounds'] as List;
       final proxy = outbounds[0] as Map<String, dynamic>;
 
@@ -83,13 +82,11 @@ void main() {
       expect(users['flow'], 'xtls-rprx-vision');
       expect(users['encryption'], 'none');
 
-      final streamSettings =
-          proxy['streamSettings'] as Map<String, dynamic>;
+      final streamSettings = proxy['streamSettings'] as Map<String, dynamic>;
       expect(streamSettings.containsKey('realitySettings'), isTrue);
       expect(streamSettings.containsKey('tlsSettings'), isFalse);
 
-      final reality =
-          streamSettings['realitySettings'] as Map<String, dynamic>;
+      final reality = streamSettings['realitySettings'] as Map<String, dynamic>;
       expect(reality['publicKey'], 'testPK');
       expect(reality['shortId'], 'abc');
       expect(reality['spiderX'], '/test');
@@ -105,8 +102,8 @@ void main() {
         host: 'ws.example.com',
       );
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
       final outbounds = json['outbounds'] as List;
       final proxy = outbounds[0] as Map<String, dynamic>;
       final settings = proxy['settings'] as Map<String, dynamic>;
@@ -116,8 +113,7 @@ void main() {
       // Flow MUST be cleared for non-TCP transport
       expect(users['flow'], '');
 
-      final streamSettings =
-          proxy['streamSettings'] as Map<String, dynamic>;
+      final streamSettings = proxy['streamSettings'] as Map<String, dynamic>;
       expect(streamSettings.containsKey('tlsSettings'), isTrue);
       expect(streamSettings.containsKey('wsSettings'), isTrue);
     });
@@ -133,12 +129,10 @@ void main() {
         shortId: 'def',
       );
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
-      final proxy =
-          (json['outbounds'] as List)[0] as Map<String, dynamic>;
-      final streamSettings =
-          proxy['streamSettings'] as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
+      final proxy = (json['outbounds'] as List)[0] as Map<String, dynamic>;
+      final streamSettings = proxy['streamSettings'] as Map<String, dynamic>;
 
       expect(streamSettings.containsKey('realitySettings'), isTrue);
       expect(streamSettings.containsKey('grpcSettings'), isTrue);
@@ -156,10 +150,9 @@ void main() {
         alterId: 0,
       );
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
-      final proxy =
-          (json['outbounds'] as List)[0] as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
+      final proxy = (json['outbounds'] as List)[0] as Map<String, dynamic>;
 
       expect(proxy['protocol'], 'vmess');
 
@@ -181,12 +174,10 @@ void main() {
         sni: 'ws.vmess.com',
       );
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
-      final proxy =
-          (json['outbounds'] as List)[0] as Map<String, dynamic>;
-      final streamSettings =
-          proxy['streamSettings'] as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
+      final proxy = (json['outbounds'] as List)[0] as Map<String, dynamic>;
+      final streamSettings = proxy['streamSettings'] as Map<String, dynamic>;
 
       expect(streamSettings.containsKey('wsSettings'), isTrue);
       expect(streamSettings.containsKey('tlsSettings'), isTrue);
@@ -205,10 +196,9 @@ void main() {
         sni: 'trojan.example.com',
       );
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
-      final proxy =
-          (json['outbounds'] as List)[0] as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
+      final proxy = (json['outbounds'] as List)[0] as Map<String, dynamic>;
 
       expect(proxy['protocol'], 'trojan');
 
@@ -216,8 +206,7 @@ void main() {
       expect(settings.containsKey('servers'), isTrue);
       expect(settings.containsKey('vnext'), isFalse);
 
-      final servers =
-          (settings['servers'] as List)[0] as Map<String, dynamic>;
+      final servers = (settings['servers'] as List)[0] as Map<String, dynamic>;
       expect(servers['password'], 'mypass');
       expect(servers['address'], 'test.example.com');
       expect(servers['port'], 443);
@@ -232,10 +221,9 @@ void main() {
         password: 'sspass',
       );
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
-      final proxy =
-          (json['outbounds'] as List)[0] as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
+      final proxy = (json['outbounds'] as List)[0] as Map<String, dynamic>;
 
       expect(proxy['protocol'], 'shadowsocks');
 
@@ -243,8 +231,7 @@ void main() {
       expect(settings.containsKey('servers'), isTrue);
       expect(settings.containsKey('vnext'), isFalse);
 
-      final servers =
-          (settings['servers'] as List)[0] as Map<String, dynamic>;
+      final servers = (settings['servers'] as List)[0] as Map<String, dynamic>;
       expect(servers['method'], 'aes-256-gcm');
       expect(servers['password'], 'sspass');
     });
@@ -254,12 +241,10 @@ void main() {
     test('TCP transport', () {
       final server = _makeServer(network: 'tcp');
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
-      final proxy =
-          (json['outbounds'] as List)[0] as Map<String, dynamic>;
-      final streamSettings =
-          proxy['streamSettings'] as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
+      final proxy = (json['outbounds'] as List)[0] as Map<String, dynamic>;
+      final streamSettings = proxy['streamSettings'] as Map<String, dynamic>;
 
       expect(streamSettings['network'], 'tcp');
       expect(streamSettings.containsKey('tcpSettings'), isTrue);
@@ -276,12 +261,10 @@ void main() {
         host: 'ws.host.com',
       );
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
-      final proxy =
-          (json['outbounds'] as List)[0] as Map<String, dynamic>;
-      final streamSettings =
-          proxy['streamSettings'] as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
+      final proxy = (json['outbounds'] as List)[0] as Map<String, dynamic>;
+      final streamSettings = proxy['streamSettings'] as Map<String, dynamic>;
 
       expect(streamSettings.containsKey('wsSettings'), isTrue);
       final ws = streamSettings['wsSettings'] as Map<String, dynamic>;
@@ -297,12 +280,10 @@ void main() {
         authority: 'grpc.auth.com',
       );
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
-      final proxy =
-          (json['outbounds'] as List)[0] as Map<String, dynamic>;
-      final streamSettings =
-          proxy['streamSettings'] as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
+      final proxy = (json['outbounds'] as List)[0] as Map<String, dynamic>;
+      final streamSettings = proxy['streamSettings'] as Map<String, dynamic>;
 
       expect(streamSettings.containsKey('grpcSettings'), isTrue);
       final grpc = streamSettings['grpcSettings'] as Map<String, dynamic>;
@@ -319,12 +300,10 @@ void main() {
         path: '/h2path',
       );
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
-      final proxy =
-          (json['outbounds'] as List)[0] as Map<String, dynamic>;
-      final streamSettings =
-          proxy['streamSettings'] as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
+      final proxy = (json['outbounds'] as List)[0] as Map<String, dynamic>;
+      final streamSettings = proxy['streamSettings'] as Map<String, dynamic>;
 
       // H2 always forces TLS
       expect(streamSettings['security'], 'tls');
@@ -345,10 +324,9 @@ void main() {
         sni: 'cdn.example.com',
       );
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
-      final proxy =
-          (json['outbounds'] as List)[0] as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
+      final proxy = (json['outbounds'] as List)[0] as Map<String, dynamic>;
       final stream = proxy['streamSettings'] as Map<String, dynamic>;
 
       // Must use 'splithttp' network name (not 'xhttp') — AAR only
@@ -389,10 +367,11 @@ void main() {
         alpn: 'http/1.1',
       );
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
-      final stream = (json['outbounds'] as List)[0]['streamSettings']
-          as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
+      final stream =
+          (json['outbounds'] as List)[0]['streamSettings']
+              as Map<String, dynamic>;
       final tls = stream['tlsSettings'] as Map<String, dynamic>;
       // User explicitly set alpn=http/1.1 — must be respected (for servers that
       // reject h2 POST; user can override default h2 behaviour this way)
@@ -406,10 +385,11 @@ void main() {
         fingerprint: 'firefox',
       );
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
-      final stream = (json['outbounds'] as List)[0]['streamSettings']
-          as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
+      final stream =
+          (json['outbounds'] as List)[0]['streamSettings']
+              as Map<String, dynamic>;
       final tls = stream['tlsSettings'] as Map<String, dynamic>;
       // User explicitly set fingerprint=firefox, must be respected
       expect(tls['fingerprint'], 'firefox');
@@ -424,10 +404,11 @@ void main() {
         sni: 'cdn.example.com',
       );
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
-      final stream = (json['outbounds'] as List)[0]['streamSettings']
-          as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
+      final stream =
+          (json['outbounds'] as List)[0]['streamSettings']
+              as Map<String, dynamic>;
       final tls = stream['tlsSettings'] as Map<String, dynamic>;
       // All transports use Chrome fingerprint by default
       expect(tls['fingerprint'], 'chrome');
@@ -449,10 +430,11 @@ void main() {
         addedAt: DateTime(2024, 1, 1),
       );
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
-      final stream = (json['outbounds'] as List)[0]['streamSettings']
-          as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
+      final stream =
+          (json['outbounds'] as List)[0]['streamSettings']
+              as Map<String, dynamic>;
 
       final settings = stream['splithttpSettings'] as Map<String, dynamic>;
       expect(settings['mode'], 'stream-up');
@@ -465,10 +447,11 @@ void main() {
         path: '/path',
       );
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
-      final stream = (json['outbounds'] as List)[0]['streamSettings']
-          as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
+      final stream =
+          (json['outbounds'] as List)[0]['streamSettings']
+              as Map<String, dynamic>;
 
       expect(stream['network'], 'splithttp');
       expect(stream.containsKey('splithttpSettings'), isTrue);
@@ -481,10 +464,9 @@ void main() {
         flow: 'xtls-rprx-vision', // should be ignored for non-tcp
       );
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
-      final proxy =
-          (json['outbounds'] as List)[0] as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
+      final proxy = (json['outbounds'] as List)[0] as Map<String, dynamic>;
       final settings = proxy['settings'] as Map<String, dynamic>;
       final users =
           ((settings['vnext'] as List)[0]['users'] as List)[0]
@@ -498,8 +480,8 @@ void main() {
     test('always includes stats and policy', () {
       final server = _makeServer();
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
 
       expect(json.containsKey('stats'), isTrue);
       expect(json['stats'], isEmpty);
@@ -513,8 +495,8 @@ void main() {
     test('includes split DNS', () {
       final server = _makeServer();
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
       final dns = json['dns'] as Map<String, dynamic>;
       final servers = dns['servers'] as List;
 
@@ -525,14 +507,16 @@ void main() {
     test('includes LAN bypass routing', () {
       final server = _makeServer();
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
       final routing = json['routing'] as Map<String, dynamic>;
       final rules = routing['rules'] as List;
 
       // Find geoip:private → direct rule
       final privateIpRule = rules.firstWhere(
-        (r) => (r as Map<String, dynamic>)['ip']?.contains('geoip:private') == true,
+        (r) =>
+            (r as Map<String, dynamic>)['ip']?.contains('geoip:private') ==
+            true,
         orElse: () => null,
       );
       expect(privateIpRule, isNotNull);
@@ -540,7 +524,11 @@ void main() {
 
       // Find geosite:private → direct rule
       final privateDomainRule = rules.firstWhere(
-        (r) => (r as Map<String, dynamic>)['domain']?.contains('geosite:private') == true,
+        (r) =>
+            (r as Map<String, dynamic>)['domain']?.contains(
+              'geosite:private',
+            ) ==
+            true,
         orElse: () => null,
       );
       expect(privateDomainRule, isNotNull);
@@ -550,8 +538,8 @@ void main() {
     test('has three outbounds: proxy, direct, block', () {
       final server = _makeServer();
 
-      final json = jsonDecode(XrayConfigBuilder.build(server))
-          as Map<String, dynamic>;
+      final json =
+          jsonDecode(XrayConfigBuilder.build(server)) as Map<String, dynamic>;
       final outbounds = json['outbounds'] as List;
 
       expect(outbounds.length, 3);

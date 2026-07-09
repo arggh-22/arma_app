@@ -2,10 +2,7 @@ import 'package:arma_proxy_vpn_client/features/api/domain/entities/default_serve
 
 /// Persisted snapshot for default server API payloads.
 class DefaultServerCacheModel {
-  const DefaultServerCacheModel({
-    required this.fetchedAt,
-    required this.keys,
-  });
+  const DefaultServerCacheModel({required this.fetchedAt, required this.keys});
 
   final DateTime fetchedAt;
   final List<DefaultServerKey> keys;
@@ -42,9 +39,6 @@ class DefaultServerCacheModel {
         })
         .toList(growable: false);
 
-    return DefaultServerCacheModel(
-      fetchedAt: fetchedAt,
-      keys: keys,
-    );
+    return DefaultServerCacheModel(fetchedAt: fetchedAt, keys: keys);
   }
 }

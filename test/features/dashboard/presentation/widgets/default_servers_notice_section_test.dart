@@ -32,8 +32,9 @@ void main() {
     expect(find.text('Scheduled maintenance tonight'), findsNothing);
   });
 
-  testWidgets('shows support/renew buttons and launches their urls',
-      (tester) async {
+  testWidgets('shows support/renew buttons and launches their urls', (
+    tester,
+  ) async {
     final launched = <String>[];
 
     await _pump(
@@ -59,7 +60,10 @@ void main() {
     await tester.tap(find.byKey(const Key('default-servers-renew')));
     await tester.pump();
 
-    expect(launched, ['https://t.me/support_bot', 'https://cabinet.example.com']);
+    expect(launched, [
+      'https://t.me/support_bot',
+      'https://cabinet.example.com',
+    ]);
   });
 
   testWidgets('renders nothing when there are no notices', (tester) async {
@@ -91,8 +95,7 @@ Future<void> _pump(
     ProviderScope(
       overrides: [
         defaultServersProvider.overrideWith(() => _TestNotifier(state)),
-        if (launcher != null)
-          linkLauncherProvider.overrideWithValue(launcher),
+        if (launcher != null) linkLauncherProvider.overrideWithValue(launcher),
       ],
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,

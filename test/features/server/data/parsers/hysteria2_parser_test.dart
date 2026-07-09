@@ -38,8 +38,7 @@ void main() {
     });
 
     test('handles missing obfs params gracefully', () {
-      const link =
-          'hysteria2://auth@server.com:443?sni=server.com#NoObfs';
+      const link = 'hysteria2://auth@server.com:443?sni=server.com#NoObfs';
 
       final result = Hysteria2Parser.parse(link);
 
@@ -86,8 +85,7 @@ void main() {
       const russianName =
           '%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0%20'
           '%D0%A1%D0%B5%D1%80%D0%B2%D0%B5%D1%80';
-      final link =
-          'hysteria2://auth@ru-server.com:443#$russianName';
+      final link = 'hysteria2://auth@ru-server.com:443#$russianName';
 
       final result = Hysteria2Parser.parse(link);
 

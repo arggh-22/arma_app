@@ -160,8 +160,7 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: colorScheme,
       splashFactory: InkSparkle.splashFactory,
-      textTheme: Typography.material2021(colorScheme: colorScheme)
-          .englishLike
+      textTheme: Typography.material2021(colorScheme: colorScheme).englishLike
           .copyWith(
             // Tight-tracked, bold headlines for the "armored" brand feel.
             headlineLarge: const TextStyle(
@@ -351,9 +350,7 @@ class AppTheme {
       ),
       listTileTheme: ListTileThemeData(
         iconColor: colorScheme.onSurfaceVariant,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

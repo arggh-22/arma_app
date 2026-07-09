@@ -17,9 +17,7 @@ class ProtocolBadge extends StatelessWidget {
     final accent = AppColors.protocolColor(protocol);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     // Bright accents need darkening to stay readable on light surfaces.
-    final textColor = isDark
-        ? accent
-        : Color.lerp(accent, Colors.black, 0.35)!;
+    final textColor = isDark ? accent : Color.lerp(accent, Colors.black, 0.35)!;
 
     return Semantics(
       label: 'Protocol: ${protocol.label}',

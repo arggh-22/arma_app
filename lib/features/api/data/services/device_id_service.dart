@@ -43,10 +43,9 @@ class DeviceIdService {
   Future<String> resolveDeviceId() async {
     final stored = _authLocalDatasource.readDeviceId();
     final platformId = await _platformDeviceIdReader();
-    final stableId =
-        (platformId != null && platformId.trim().isNotEmpty)
-            ? platformId.trim()
-            : null;
+    final stableId = (platformId != null && platformId.trim().isNotEmpty)
+        ? platformId.trim()
+        : null;
 
     if (stableId != null) {
       if (stored != stableId) {

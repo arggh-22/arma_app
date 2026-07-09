@@ -20,5 +20,6 @@ class RevealServerNotifier extends Notifier<String?> {
   void clear() => state = null;
 }
 
-final revealServerProvider =
-    NotifierProvider<RevealServerNotifier, String?>(RevealServerNotifier.new);
+final revealServerProvider = NotifierProvider<RevealServerNotifier, String?>(
+  RevealServerNotifier.new,
+);

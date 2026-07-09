@@ -15,11 +15,7 @@ import 'package:arma_proxy_vpn_client/features/server/domain/latency_level.dart'
 /// Wrapped in InkWell for tap-to-retest (SERV-03).
 /// Fixed 56dp width to prevent layout shift.
 class LatencyIndicator extends StatelessWidget {
-  const LatencyIndicator({
-    super.key,
-    this.latency,
-    this.onTap,
-  });
+  const LatencyIndicator({super.key, this.latency, this.onTap});
 
   /// Latency in milliseconds. Null = untested, -2 = testing, -1 = failed.
   final int? latency;

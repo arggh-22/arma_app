@@ -45,12 +45,8 @@ void main() {
     final radioGroup = tester
         .widget<RadioGroup<DefaultServerAutoUpdateInterval>>(
           find.ancestor(
-            of: find.byKey(
-              const Key('default-server-auto-update-disabled'),
-            ),
-            matching: find.byType(
-              RadioGroup<DefaultServerAutoUpdateInterval>,
-            ),
+            of: find.byKey(const Key('default-server-auto-update-disabled')),
+            matching: find.byType(RadioGroup<DefaultServerAutoUpdateInterval>),
           ),
         );
     expect(radioGroup.groupValue, DefaultServerAutoUpdateInterval.disabled);

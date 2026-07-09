@@ -71,7 +71,10 @@ class _ServerXrayConfigScreenState extends State<ServerXrayConfigScreen>
   @override
   Widget build(BuildContext context) {
     // Safety guard — this screen must never appear in release builds
-    assert(kDebugMode, 'ServerXrayConfigScreen must only be used in debug mode');
+    assert(
+      kDebugMode,
+      'ServerXrayConfigScreen must only be used in debug mode',
+    );
 
     final theme = Theme.of(context);
     final server = widget.server;
@@ -154,11 +157,13 @@ class _ServerInfoCard extends StatelessWidget {
           _InfoChip(label: 'Protocol', value: server.protocol.label),
           _InfoChip(label: 'Network', value: server.network),
           _InfoChip(label: 'Security', value: server.security),
-          _InfoChip(label: 'Address', value: '${server.address}:${server.port}'),
+          _InfoChip(
+            label: 'Address',
+            value: '${server.address}:${server.port}',
+          ),
           if (server.network == 'xhttp' || server.network == 'splithttp')
             _InfoChip(label: 'XHTTP Mode', value: server.xhttpMode),
-          if (server.sni != null)
-            _InfoChip(label: 'SNI', value: server.sni!),
+          if (server.sni != null) _InfoChip(label: 'SNI', value: server.sni!),
           if (server.path != null)
             _InfoChip(label: 'Path', value: server.path!),
           if (server.host != null)
@@ -186,9 +191,7 @@ class _InfoChip extends StatelessWidget {
         children: [
           TextSpan(
             text: '$label: ',
-            style: TextStyle(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
+            style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
           ),
           TextSpan(
             text: value,

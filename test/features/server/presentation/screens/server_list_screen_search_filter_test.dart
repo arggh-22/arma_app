@@ -68,28 +68,26 @@ void main() {
 
     expect(find.text('Tokyo-01'), findsNothing);
     expect(find.text('Berlin-02'), findsNothing);
-    expect(
-      find.byKey(const Key('server-filter-empty-hint')),
-      findsOneWidget,
-    );
+    expect(find.byKey(const Key('server-filter-empty-hint')), findsOneWidget);
   });
 
-  testWidgets('desktop renders servers in a grid (Wrap) without breaking them', (
-    tester,
-  ) async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
-    try {
-      await _pumpScreen(tester);
+  testWidgets(
+    'desktop renders servers in a grid (Wrap) without breaking them',
+    (tester) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+      try {
+        await _pumpScreen(tester);
 
-      // Cards still render (grid didn't clip/break them)...
-      expect(find.text('Tokyo-01'), findsOneWidget);
-      expect(find.text('Berlin-02'), findsOneWidget);
-      // ...and the group's servers are laid out in a Wrap grid on desktop.
-      expect(find.byType(Wrap), findsWidgets);
-    } finally {
-      debugDefaultTargetPlatformOverride = null;
-    }
-  });
+        // Cards still render (grid didn't clip/break them)...
+        expect(find.text('Tokyo-01'), findsOneWidget);
+        expect(find.text('Berlin-02'), findsOneWidget);
+        // ...and the group's servers are laid out in a Wrap grid on desktop.
+        expect(find.byType(Wrap), findsWidgets);
+      } finally {
+        debugDefaultTargetPlatformOverride = null;
+      }
+    },
+  );
 }
 
 Future<void> _pumpScreen(WidgetTester tester) async {

@@ -17,9 +17,13 @@ void main() {
     late SettingsLocalDatasource settingsDatasource;
 
     setUp(() async {
-      hiveDir = await Directory.systemTemp.createTemp('default_server_refresh_');
+      hiveDir = await Directory.systemTemp.createTemp(
+        'default_server_refresh_',
+      );
       Hive.init(hiveDir.path);
-      cacheBox = await Hive.openBox<dynamic>(DefaultServerCacheDatasource.boxName);
+      cacheBox = await Hive.openBox<dynamic>(
+        DefaultServerCacheDatasource.boxName,
+      );
       cacheDatasource = DefaultServerCacheDatasource(cacheBox);
       SharedPreferences.setMockInitialValues(<String, Object>{});
       final prefs = await SharedPreferences.getInstance();
@@ -42,7 +46,10 @@ void main() {
         final now = DateTime.utc(2026, 5, 24, 12);
         final service = DefaultServerRefreshService(
           fetchKeys: () async => [
-            _sampleKey(id: 1, expireDate: now.subtract(const Duration(days: 1))),
+            _sampleKey(
+              id: 1,
+              expireDate: now.subtract(const Duration(days: 1)),
+            ),
             _sampleKey(id: 2, expireDate: now.add(const Duration(days: 1))),
           ],
           cacheDatasource: cacheDatasource,
@@ -58,48 +65,54 @@ void main() {
         expect(cache, isNotNull);
         expect(cache!.fetchedAt, now);
         expect(cache.keys.map((key) => key.id), [2]);
-        expect(settingsDatasource.getDefaultServerAutoUpdateLastSuccessAt(), now);
+        expect(
+          settingsDatasource.getDefaultServerAutoUpdateLastSuccessAt(),
+          now,
+        );
       },
     );
 
-    test('refreshNow surfaces unauthorized failure without local retries', () async {
-      var calls = 0;
-      final now = DateTime.utc(2026, 5, 24, 12);
-      final service = DefaultServerRefreshService(
-        fetchKeys: () async {
-          calls++;
-          throw const ApiClientException(
-            type: ApiClientErrorType.unauthorized,
-            message: 'Unauthorized request',
-            statusCode: 401,
-          );
-        },
-        cacheDatasource: cacheDatasource,
-        settingsDatasource: settingsDatasource,
-        now: () => now,
-      );
+    test(
+      'refreshNow surfaces unauthorized failure without local retries',
+      () async {
+        var calls = 0;
+        final now = DateTime.utc(2026, 5, 24, 12);
+        final service = DefaultServerRefreshService(
+          fetchKeys: () async {
+            calls++;
+            throw const ApiClientException(
+              type: ApiClientErrorType.unauthorized,
+              message: 'Unauthorized request',
+              statusCode: 401,
+            );
+          },
+          cacheDatasource: cacheDatasource,
+          settingsDatasource: settingsDatasource,
+          now: () => now,
+        );
 
-      await expectLater(
-        service.refreshNow(),
-        throwsA(
-          isA<ApiClientException>().having(
-            (error) => error.type,
-            'type',
-            ApiClientErrorType.unauthorized,
+        await expectLater(
+          service.refreshNow(),
+          throwsA(
+            isA<ApiClientException>().having(
+              (error) => error.type,
+              'type',
+              ApiClientErrorType.unauthorized,
+            ),
           ),
-        ),
-      );
-      expect(calls, 1);
-      expect(await cacheDatasource.read(), isNull);
-      expect(settingsDatasource.getDefaultServerAutoUpdateLastSuccessAt(), isNull);
-    });
+        );
+        expect(calls, 1);
+        expect(await cacheDatasource.read(), isNull);
+        expect(
+          settingsDatasource.getDefaultServerAutoUpdateLastSuccessAt(),
+          isNull,
+        );
+      },
+    );
   });
 }
 
-DefaultServerKey _sampleKey({
-  required int id,
-  required DateTime expireDate,
-}) {
+DefaultServerKey _sampleKey({required int id, required DateTime expireDate}) {
   return DefaultServerKey(
     id: id,
     name: 'Server $id',

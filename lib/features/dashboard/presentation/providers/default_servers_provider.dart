@@ -135,10 +135,12 @@ class DefaultServersState {
       announcement: identical(announcement, _unset)
           ? this.announcement
           : announcement as String?,
-      supportUrl:
-          identical(supportUrl, _unset) ? this.supportUrl : supportUrl as String?,
-      webPageUrl:
-          identical(webPageUrl, _unset) ? this.webPageUrl : webPageUrl as String?,
+      supportUrl: identical(supportUrl, _unset)
+          ? this.supportUrl
+          : supportUrl as String?,
+      webPageUrl: identical(webPageUrl, _unset)
+          ? this.webPageUrl
+          : webPageUrl as String?,
       profileUpdateAlways: profileUpdateAlways ?? this.profileUpdateAlways,
     );
   }
@@ -237,7 +239,8 @@ class DefaultServersNotifier extends _$DefaultServersNotifier {
         announcement ??= _blankToNull(resolved.announcement);
         supportUrl ??= _blankToNull(resolved.supportUrl);
         webPageUrl ??= _blankToNull(resolved.profileWebPageUrl);
-        profileUpdateAlways = profileUpdateAlways || resolved.profileUpdateAlways;
+        profileUpdateAlways =
+            profileUpdateAlways || resolved.profileUpdateAlways;
       } on Object {
         allItems.addAll(DefaultServerItemMapper.mapAll(key));
       }

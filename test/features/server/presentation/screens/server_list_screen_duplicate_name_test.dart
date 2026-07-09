@@ -18,30 +18,30 @@ import 'package:flutter_test/flutter_test.dart';
 // Two distinct subscriptions that share the same profile-title ("ARMA VPN") —
 // the arma admin panel can hand out several keys under one brand name.
 ServerConfig _srv(String id, String subId) => ServerConfig(
-      id: id,
-      name: id,
-      protocol: ProtocolType.vless,
-      address: '$id.example.com',
-      port: 443,
-      subscriptionId: subId,
-      groupName: 'ARMA VPN',
-      addedAt: DateTime.utc(2026, 1, 1),
-    );
+  id: id,
+  name: id,
+  protocol: ProtocolType.vless,
+  address: '$id.example.com',
+  port: 443,
+  subscriptionId: subId,
+  groupName: 'ARMA VPN',
+  addedAt: DateTime.utc(2026, 1, 1),
+);
 
 Subscription _sub(String id) => Subscription(
-      id: id,
-      name: 'ARMA VPN',
-      url: 'https://example.com/$id',
-      lastUpdated: DateTime.utc(2026, 1, 1),
-      addedAt: DateTime.utc(2026, 1, 1),
-    );
+  id: id,
+  name: 'ARMA VPN',
+  url: 'https://example.com/$id',
+  lastUpdated: DateTime.utc(2026, 1, 1),
+  addedAt: DateTime.utc(2026, 1, 1),
+);
 
 class _Servers extends ServerListNotifier {
   @override
   Future<List<ServerConfig>> build() async => [
-        _srv('a1', 'sub-a'),
-        _srv('b1', 'sub-b'),
-      ];
+    _srv('a1', 'sub-a'),
+    _srv('b1', 'sub-b'),
+  ];
 }
 
 class _Subs extends SubscriptionNotifier {
@@ -62,11 +62,11 @@ class _Latency extends LatencyNotifier {
 class _SortFilter extends SortFilterNotifier {
   @override
   SortFilterState build() => (
-        sort: SortCriteria.defaultOrder,
-        filter: FilterCriteria.all,
-        query: '',
-        protocol: null,
-      );
+    sort: SortCriteria.defaultOrder,
+    filter: FilterCriteria.all,
+    query: '',
+    protocol: null,
+  );
 }
 
 class _Defaults extends DefaultServersNotifier {

@@ -5,28 +5,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 ServerConfig _server({String? rawConfig}) => ServerConfig(
-      id: 's1',
-      name: 'Node',
-      protocol: ProtocolType.vless,
-      address: 'example.com',
-      port: 443,
-      rawConfig: rawConfig,
-      addedAt: DateTime.utc(2026, 1, 1),
-    );
+  id: 's1',
+  name: 'Node',
+  protocol: ProtocolType.vless,
+  address: 'example.com',
+  port: 443,
+  rawConfig: rawConfig,
+  addedAt: DateTime.utc(2026, 1, 1),
+);
 
 Future<void> _pump(WidgetTester tester, ServerConfig server) async {
   await tester.pumpWidget(
     MaterialApp(
-      home: Scaffold(
-        body: ServerCard(server: server, isSelected: false),
-      ),
+      home: Scaffold(body: ServerCard(server: server, isSelected: false)),
     ),
   );
 }
 
 void main() {
-  testWidgets('shows a JSON badge when the server carries a raw JSON config',
-      (tester) async {
+  testWidgets('shows a JSON badge when the server carries a raw JSON config', (
+    tester,
+  ) async {
     await _pump(tester, _server(rawConfig: '{"outbounds":[]}'));
     expect(find.text('JSON'), findsOneWidget);
     // Protocol badge still present.

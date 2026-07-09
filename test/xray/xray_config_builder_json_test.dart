@@ -29,16 +29,16 @@ const _rawProfile = '''
 ''';
 
 ServerConfig _rawServer() => ServerConfig(
-      id: 'default-api-1',
-      name: 'Auto',
-      protocol: ProtocolType.vless,
-      address: 'srv-101.net-infra.systems',
-      port: 8443,
-      network: 'xhttp',
-      security: 'reality',
-      rawConfig: _rawProfile,
-      addedAt: DateTime.utc(2026, 1, 1),
-    );
+  id: 'default-api-1',
+  name: 'Auto',
+  protocol: ProtocolType.vless,
+  address: 'srv-101.net-infra.systems',
+  port: 8443,
+  network: 'xhttp',
+  security: 'reality',
+  rawConfig: _rawProfile,
+  addedAt: DateTime.utc(2026, 1, 1),
+);
 
 void main() {
   group('XrayConfigBuilder with rawConfig', () {
@@ -92,7 +92,10 @@ void main() {
       final config = jsonDecode(json) as Map<String, dynamic>;
 
       final inbounds = (config['inbounds'] as List).cast<Map>();
-      expect(inbounds.map((i) => i['protocol']), containsAll(['socks', 'http']));
+      expect(
+        inbounds.map((i) => i['protocol']),
+        containsAll(['socks', 'http']),
+      );
       expect(inbounds.map((i) => i['protocol']), isNot(contains('tun')));
       // Loopback-only, on the ports the desktop manager expects.
       expect(inbounds.every((i) => i['listen'] == '127.0.0.1'), isTrue);
@@ -105,24 +108,30 @@ void main() {
       expect(config.containsKey('routing'), isTrue);
     });
 
-    test('buildForProxy() field-based (no rawConfig) has socks/http + proxy', () {
-      final json = XrayConfigBuilder.buildForProxy(
-        _rawServer().copyWith(rawConfig: null),
-        socksPort: 20000,
-        httpPort: 20001,
-      );
-      final config = jsonDecode(json) as Map<String, dynamic>;
-      final inbounds = (config['inbounds'] as List).cast<Map>();
-      expect(inbounds.map((i) => i['protocol']), containsAll(['socks', 'http']));
-      expect(
-        inbounds.firstWhere((i) => i['protocol'] == 'http')['port'],
-        20001,
-      );
-      // Custom ports flow through.
-      expect(
-        inbounds.firstWhere((i) => i['protocol'] == 'socks')['port'],
-        20000,
-      );
-    });
+    test(
+      'buildForProxy() field-based (no rawConfig) has socks/http + proxy',
+      () {
+        final json = XrayConfigBuilder.buildForProxy(
+          _rawServer().copyWith(rawConfig: null),
+          socksPort: 20000,
+          httpPort: 20001,
+        );
+        final config = jsonDecode(json) as Map<String, dynamic>;
+        final inbounds = (config['inbounds'] as List).cast<Map>();
+        expect(
+          inbounds.map((i) => i['protocol']),
+          containsAll(['socks', 'http']),
+        );
+        expect(
+          inbounds.firstWhere((i) => i['protocol'] == 'http')['port'],
+          20001,
+        );
+        // Custom ports flow through.
+        expect(
+          inbounds.firstWhere((i) => i['protocol'] == 'socks')['port'],
+          20000,
+        );
+      },
+    );
   });
 }

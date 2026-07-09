@@ -38,8 +38,9 @@ void main() {
     });
 
     test('parses SIP002 format with plugin param', () {
-      final methodPassword =
-          base64Encode(utf8.encode('chacha20-ietf-poly1305:mypassword'));
+      final methodPassword = base64Encode(
+        utf8.encode('chacha20-ietf-poly1305:mypassword'),
+      );
       final link =
           'ss://$methodPassword@server.com:443'
           '?plugin=obfs-local%3Bobfs%3Dhttp%3Bobfs-host%3Dexample.com'
@@ -54,8 +55,9 @@ void main() {
     });
 
     test('rejects unknown encryption method', () {
-      final methodPassword =
-          base64Encode(utf8.encode('unknown-cipher:password'));
+      final methodPassword = base64Encode(
+        utf8.encode('unknown-cipher:password'),
+      );
       final link = 'ss://$methodPassword@server.com:8388#BadMethod';
 
       final result = ShadowsocksParser.parse(link);

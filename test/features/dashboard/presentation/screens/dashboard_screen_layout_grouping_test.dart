@@ -14,26 +14,30 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('keeps a single scroll root with explicit top/bottom visual groups', (
-    tester,
-  ) async {
-    await _pumpDashboard(tester);
+  testWidgets(
+    'keeps a single scroll root with explicit top/bottom visual groups',
+    (tester) async {
+      await _pumpDashboard(tester);
 
-    expect(find.byType(SingleChildScrollView), findsOneWidget);
-    expect(find.byKey(const Key('dashboard-top-visual-group')), findsOneWidget);
-    expect(
-      find.byKey(const Key('dashboard-bottom-visual-group')),
-      findsOneWidget,
-    );
+      expect(find.byType(SingleChildScrollView), findsOneWidget);
+      expect(
+        find.byKey(const Key('dashboard-top-visual-group')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('dashboard-bottom-visual-group')),
+        findsOneWidget,
+      );
 
-    final topY = tester
-        .getTopLeft(find.byKey(const Key('dashboard-top-visual-group')))
-        .dy;
-    final bottomY = tester
-        .getTopLeft(find.byKey(const Key('dashboard-bottom-visual-group')))
-        .dy;
-    expect(topY, lessThan(bottomY));
-  });
+      final topY = tester
+          .getTopLeft(find.byKey(const Key('dashboard-top-visual-group')))
+          .dy;
+      final bottomY = tester
+          .getTopLeft(find.byKey(const Key('dashboard-bottom-visual-group')))
+          .dy;
+      expect(topY, lessThan(bottomY));
+    },
+  );
 
   testWidgets('bottom visual group keeps announcement before default servers', (
     tester,
@@ -71,17 +75,16 @@ void main() {
   });
 }
 
-Future<void> _pumpDashboard(
-  WidgetTester tester, {
-  AuthState? authState,
-}) async {
+Future<void> _pumpDashboard(WidgetTester tester, {AuthState? authState}) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         connectionProvider.overrideWith(() => _TestConnectionNotifier()),
         activeServerProvider.overrideWith(() => _TestActiveServerNotifier()),
         uiPreferencesProvider.overrideWith(() => _TestUiPreferencesNotifier()),
-        defaultServersProvider.overrideWith(() => _TestDefaultServersNotifier()),
+        defaultServersProvider.overrideWith(
+          () => _TestDefaultServersNotifier(),
+        ),
         authStateProvider.overrideWith(
           () => _TestAuthStateNotifier(
             authState ??

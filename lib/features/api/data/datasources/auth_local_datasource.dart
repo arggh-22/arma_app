@@ -49,10 +49,7 @@ class AuthLocalDatasource {
         }
       }
 
-      return Hive.openBox<dynamic>(
-        authStateBoxName,
-        encryptionCipher: cipher,
-      );
+      return Hive.openBox<dynamic>(authStateBoxName, encryptionCipher: cipher);
     }
   }
 

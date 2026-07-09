@@ -20,12 +20,12 @@ class ShareLinkGenerator {
   ///
   /// Uses a Dart 3 switch expression for exhaustive protocol dispatch.
   static String generate(ServerConfig server) => switch (server.protocol) {
-        ProtocolType.vless => _generateVlessLink(server),
-        ProtocolType.vmess => _generateVmessLink(server),
-        ProtocolType.trojan => _generateTrojanLink(server),
-        ProtocolType.shadowsocks => _generateSsLink(server),
-        ProtocolType.hysteria2 => _generateHy2Link(server),
-      };
+    ProtocolType.vless => _generateVlessLink(server),
+    ProtocolType.vmess => _generateVmessLink(server),
+    ProtocolType.trojan => _generateTrojanLink(server),
+    ProtocolType.shadowsocks => _generateSsLink(server),
+    ProtocolType.hysteria2 => _generateHy2Link(server),
+  };
 
   /// Generates a VLESS share link.
   ///
@@ -52,9 +52,7 @@ class ShareLinkGenerator {
       params['mode'] = server.xhttpMode;
     }
 
-    final query = params.entries
-        .map((e) => '${e.key}=${e.value}')
-        .join('&');
+    final query = params.entries.map((e) => '${e.key}=${e.value}').join('&');
     final fragment = Uri.encodeComponent(server.name);
 
     return 'vless://${server.uuid}@${server.address}:${server.port}'
@@ -108,9 +106,7 @@ class ShareLinkGenerator {
       params['mode'] = server.xhttpMode;
     }
 
-    final query = params.entries
-        .map((e) => '${e.key}=${e.value}')
-        .join('&');
+    final query = params.entries.map((e) => '${e.key}=${e.value}').join('&');
     final fragment = Uri.encodeComponent(server.name);
     final password = Uri.encodeComponent(server.password ?? '');
 
@@ -140,9 +136,7 @@ class ShareLinkGenerator {
     _addIfNotEmpty(params, 'obfs', server.obfs);
     _addIfNotEmpty(params, 'obfs-password', server.obfsPassword);
 
-    final query = params.entries
-        .map((e) => '${e.key}=${e.value}')
-        .join('&');
+    final query = params.entries.map((e) => '${e.key}=${e.value}').join('&');
     final fragment = Uri.encodeComponent(server.name);
     final password = Uri.encodeComponent(server.password ?? '');
 

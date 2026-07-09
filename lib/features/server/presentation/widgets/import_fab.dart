@@ -64,10 +64,7 @@ class _ImportFabState extends ConsumerState<ImportFab>
     });
   }
 
-  Future<void> _importFromClipboard(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
+  Future<void> _importFromClipboard(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     // Clear any existing snackbars so they don't block the FAB
@@ -146,11 +143,9 @@ class _ImportFabState extends ConsumerState<ImportFab>
     );
 
     try {
-      final importedCount = await ref.read(subscriptionProvider.notifier).addSubscription(
-            url: url,
-            name: '',
-            userAgent: 'arma',
-          );
+      final importedCount = await ref
+          .read(subscriptionProvider.notifier)
+          .addSubscription(url: url, name: '', userAgent: 'arma');
 
       if (!context.mounted) return;
       messenger.clearSnackBars();
@@ -306,15 +301,17 @@ class _ImportFabState extends ConsumerState<ImportFab>
                   label: l10n.scanQr,
                   onTap: () async {
                     _toggle();
-                    final scannedResult = await Navigator.of(context).push<String>(
-                      MaterialPageRoute<String>(
-                        builder: (_) => const QrScannerScreen(),
-                      ),
-                    );
+                    final scannedResult = await Navigator.of(context)
+                        .push<String>(
+                          MaterialPageRoute<String>(
+                            builder: (_) => const QrScannerScreen(),
+                          ),
+                        );
                     if (!context.mounted || scannedResult == null) return;
 
                     final value = scannedResult.trim();
-                    if (value.startsWith('http://') || value.startsWith('https://')) {
+                    if (value.startsWith('http://') ||
+                        value.startsWith('https://')) {
                       await _importSubscriptionUrl(context, ref, value);
                       return;
                     }
@@ -406,10 +403,7 @@ class _MiniFabOption extends StatelessWidget {
               ),
             ],
           ),
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.labelMedium,
-          ),
+          child: Text(label, style: Theme.of(context).textTheme.labelMedium),
         ),
         const SizedBox(width: 8),
         SizedBox(

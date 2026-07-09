@@ -57,31 +57,34 @@ void main() {
       await env.dispose();
     });
 
-    test('platform-id unavailable path persists deterministic UUID fallback', () async {
-      final env = await _openDatasource();
+    test(
+      'platform-id unavailable path persists deterministic UUID fallback',
+      () async {
+        final env = await _openDatasource();
 
-      var platformCalls = 0;
-      var nextUuid = 'uuid-fallback-fixed';
-      final service = DeviceIdService(
-        env.datasource,
-        platformDeviceIdReader: () async {
-          platformCalls++;
-          return null;
-        },
-        uuidGenerator: () => nextUuid,
-      );
+        var platformCalls = 0;
+        var nextUuid = 'uuid-fallback-fixed';
+        final service = DeviceIdService(
+          env.datasource,
+          platformDeviceIdReader: () async {
+            platformCalls++;
+            return null;
+          },
+          uuidGenerator: () => nextUuid,
+        );
 
-      final first = await service.resolveDeviceId();
-      nextUuid = 'uuid-fallback-changed';
-      final second = await service.resolveDeviceId();
+        final first = await service.resolveDeviceId();
+        nextUuid = 'uuid-fallback-changed';
+        final second = await service.resolveDeviceId();
 
-      expect(first, 'uuid-fallback-fixed');
-      expect(second, 'uuid-fallback-fixed');
-      expect(env.datasource.readDeviceId(), 'uuid-fallback-fixed');
-      expect(platformCalls, 2);
+        expect(first, 'uuid-fallback-fixed');
+        expect(second, 'uuid-fallback-fixed');
+        expect(env.datasource.readDeviceId(), 'uuid-fallback-fixed');
+        expect(platformCalls, 2);
 
-      await env.dispose();
-    });
+        await env.dispose();
+      },
+    );
   });
 }
 

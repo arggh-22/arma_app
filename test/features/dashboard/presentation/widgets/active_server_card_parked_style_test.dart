@@ -9,43 +9,45 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('neutral card stays without parked emphasis when no server selected', (
-    tester,
-  ) async {
-    await _pumpCard(tester, server: null);
+  testWidgets(
+    'neutral card stays without parked emphasis when no server selected',
+    (tester) async {
+      await _pumpCard(tester, server: null);
 
-    final card = tester.widget<GlassCard>(find.byType(GlassCard));
+      final card = tester.widget<GlassCard>(find.byType(GlassCard));
 
-    expect(card.glow, isFalse);
-    expect(card.borderColor, isNull);
-  });
+      expect(card.glow, isFalse);
+      expect(card.borderColor, isNull);
+    },
+  );
 
-  testWidgets('selected server gets parked highlight border and tinted surface', (
-    tester,
-  ) async {
-    await _pumpCard(
-      tester,
-      server: ServerConfig(
-        id: 'server-1',
-        name: 'Primary',
-        protocol: ProtocolType.vless,
-        address: 'example.com',
-        port: 443,
-        addedAt: DateTime.utc(2026, 1, 1),
-      ),
-    );
+  testWidgets(
+    'selected server gets parked highlight border and tinted surface',
+    (tester) async {
+      await _pumpCard(
+        tester,
+        server: ServerConfig(
+          id: 'server-1',
+          name: 'Primary',
+          protocol: ProtocolType.vless,
+          address: 'example.com',
+          port: 443,
+          addedAt: DateTime.utc(2026, 1, 1),
+        ),
+      );
 
-    final card = tester.widget<GlassCard>(find.byType(GlassCard));
-    final theme = Theme.of(tester.element(find.byType(ActiveServerCard)));
+      final card = tester.widget<GlassCard>(find.byType(GlassCard));
+      final theme = Theme.of(tester.element(find.byType(ActiveServerCard)));
 
-    expect(card.glow, isTrue);
-    expect(card.borderColor, isNotNull);
-    expect(
-      card.borderColor!.toARGB32() & 0x00FFFFFF,
-      theme.colorScheme.primary.toARGB32() & 0x00FFFFFF,
-    );
-    expect(card.fillAlpha, greaterThan(0.05));
-  });
+      expect(card.glow, isTrue);
+      expect(card.borderColor, isNotNull);
+      expect(
+        card.borderColor!.toARGB32() & 0x00FFFFFF,
+        theme.colorScheme.primary.toARGB32() & 0x00FFFFFF,
+      );
+      expect(card.fillAlpha, greaterThan(0.05));
+    },
+  );
 }
 
 Future<void> _pumpCard(
@@ -55,7 +57,9 @@ Future<void> _pumpCard(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        activeServerProvider.overrideWith(() => _TestActiveServerNotifier(server)),
+        activeServerProvider.overrideWith(
+          () => _TestActiveServerNotifier(server),
+        ),
       ],
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,

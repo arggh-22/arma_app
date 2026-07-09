@@ -23,13 +23,13 @@ class _TestDefaultServers extends DefaultServersNotifier {
 
   @override
   DefaultServersState build() => DefaultServersState(
-        items: items,
-        isRefreshing: false,
-        isOfflineData: false,
-        lastFailureType: null,
-        hasPendingRetry: false,
-        retryAttempt: 0,
-      );
+    items: items,
+    isRefreshing: false,
+    isOfflineData: false,
+    lastFailureType: null,
+    hasPendingRetry: false,
+    retryAttempt: 0,
+  );
 }
 
 ServerConfig _cfg(String id, {String name = 'Server', String addr = 'a.com'}) =>
@@ -44,16 +44,16 @@ ServerConfig _cfg(String id, {String name = 'Server', String addr = 'a.com'}) =>
     );
 
 DefaultServerItem _item(ServerConfig cfg) => DefaultServerItem(
-      id: cfg.id,
-      name: cfg.name,
-      status: 'active',
-      usedTraffic: 0,
-      dataLimit: 1,
-      subscriptionUrl: 'https://example.com/sub',
-      expireDate: DateTime.utc(2027, 1, 1),
-      isActive: true,
-      serverConfig: cfg,
-    );
+  id: cfg.id,
+  name: cfg.name,
+  status: 'active',
+  usedTraffic: 0,
+  dataLimit: 1,
+  subscriptionUrl: 'https://example.com/sub',
+  expireDate: DateTime.utc(2027, 1, 1),
+  isActive: true,
+  serverConfig: cfg,
+);
 
 ProviderContainer _container(
   SharedPreferences prefs, {
@@ -70,42 +70,46 @@ ProviderContainer _container(
 }
 
 void main() {
-  test('default-server selection survives a restart (snapshot fallback)',
-      () async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final defaultServer = _cfg('default-api-104-1', name: 'Germany');
+  test(
+    'default-server selection survives a restart (snapshot fallback)',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final defaultServer = _cfg('default-api-104-1', name: 'Germany');
 
-    final s1 = _container(prefs);
-    await s1.read(activeServerProvider.notifier).selectServer(defaultServer);
-    s1.dispose();
+      final s1 = _container(prefs);
+      await s1.read(activeServerProvider.notifier).selectServer(defaultServer);
+      s1.dispose();
 
-    // Restart with the default list not yet loaded → restored from snapshot.
-    final s2 = _container(prefs);
-    addTearDown(s2.dispose);
+      // Restart with the default list not yet loaded → restored from snapshot.
+      final s2 = _container(prefs);
+      addTearDown(s2.dispose);
 
-    final restored = s2.read(activeServerProvider);
-    expect(restored, isNotNull);
-    expect(restored!.id, 'default-api-104-1');
-    expect(restored.name, 'Germany');
-  });
+      final restored = s2.read(activeServerProvider);
+      expect(restored, isNotNull);
+      expect(restored!.id, 'default-api-104-1');
+      expect(restored.name, 'Germany');
+    },
+  );
 
-  test('default-server resolves fresh from the live list when present',
-      () async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final stale = _cfg('default-api-104-1', name: 'Germany', addr: 'old.com');
-    final fresh = _cfg('default-api-104-1', name: 'Germany', addr: 'new.com');
+  test(
+    'default-server resolves fresh from the live list when present',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final stale = _cfg('default-api-104-1', name: 'Germany', addr: 'old.com');
+      final fresh = _cfg('default-api-104-1', name: 'Germany', addr: 'new.com');
 
-    final s1 = _container(prefs);
-    await s1.read(activeServerProvider.notifier).selectServer(stale);
-    s1.dispose();
+      final s1 = _container(prefs);
+      await s1.read(activeServerProvider.notifier).selectServer(stale);
+      s1.dispose();
 
-    // Live list has the same id with a fresh address → prefer the live one.
-    final s2 = _container(prefs, defaults: [_item(fresh)]);
-    addTearDown(s2.dispose);
-    expect(s2.read(activeServerProvider)?.address, 'new.com');
-  });
+      // Live list has the same id with a fresh address → prefer the live one.
+      final s2 = _container(prefs, defaults: [_item(fresh)]);
+      addTearDown(s2.dispose);
+      expect(s2.read(activeServerProvider)?.address, 'new.com');
+    },
+  );
 
   test('default-server clears when it is gone from the loaded list', () async {
     SharedPreferences.setMockInitialValues({});

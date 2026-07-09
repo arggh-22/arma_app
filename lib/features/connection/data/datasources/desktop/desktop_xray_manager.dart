@@ -50,14 +50,11 @@ class DesktopXrayManager {
 
   bool get isRunning => _process != null;
 
-  String get _binaryFileName => Platform.isWindows ? '$_binaryName.exe' : _binaryName;
+  String get _binaryFileName =>
+      Platform.isWindows ? '$_binaryName.exe' : _binaryName;
 
   void _emitStatus(String state, {String? message}) {
-    _events.add({
-      'type': 'status',
-      'state': state,
-      'message': ?message,
-    });
+    _events.add({'type': 'status', 'state': state, 'message': ?message});
   }
 
   /// Extracts the bundled xray binary + geo assets into the app-support dir
@@ -141,9 +138,7 @@ class DesktopXrayManager {
           .listen((l) => debugPrint('[xray:err] $l'));
 
       // Detect an immediate crash (bad config / missing binary perms).
-      unawaited(
-        process.exitCode.then((code) => _onProcessExit(code)),
-      );
+      unawaited(process.exitCode.then((code) => _onProcessExit(code)));
 
       // Give xray a moment to bind the inbounds before declaring success.
       await Future.delayed(const Duration(milliseconds: 600));
@@ -311,7 +306,9 @@ class DesktopXrayManager {
   Future<String> version() async {
     try {
       final dir = await _ensureRuntime();
-      final result = await Process.run('${dir.path}/$_binaryFileName', ['version']);
+      final result = await Process.run('${dir.path}/$_binaryFileName', [
+        'version',
+      ]);
       final out = (result.stdout as String).trim();
       return out.isEmpty ? 'Unknown' : out.split('\n').first;
     } on Object catch (e) {

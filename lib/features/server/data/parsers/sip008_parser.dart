@@ -72,8 +72,8 @@ class Sip008Parser {
     final name = (remarks != null && remarks.isNotEmpty)
         ? remarks
         : (tag != null && tag.isNotEmpty)
-            ? tag
-            : '$server:$port';
+        ? tag
+        : '$server:$port';
 
     return ServerConfig(
       id: const Uuid().v4(),

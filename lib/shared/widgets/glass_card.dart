@@ -47,8 +47,7 @@ class GlassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final radius =
-        borderRadius ?? BorderRadius.circular(ArmaTokens.radiusCard);
+    final radius = borderRadius ?? BorderRadius.circular(ArmaTokens.radiusCard);
     final fill = isDark
         ? ArmaTokens.glassFill(fillAlpha)
         : Theme.of(context).colorScheme.surface;

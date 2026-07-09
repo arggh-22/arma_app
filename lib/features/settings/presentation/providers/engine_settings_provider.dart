@@ -24,12 +24,11 @@ class EngineSettings {
     bool? sniffingEnabled,
     bool? muxEnabled,
     int? muxConcurrency,
-  }) =>
-      EngineSettings(
-        sniffingEnabled: sniffingEnabled ?? this.sniffingEnabled,
-        muxEnabled: muxEnabled ?? this.muxEnabled,
-        muxConcurrency: muxConcurrency ?? this.muxConcurrency,
-      );
+  }) => EngineSettings(
+    sniffingEnabled: sniffingEnabled ?? this.sniffingEnabled,
+    muxEnabled: muxEnabled ?? this.muxEnabled,
+    muxConcurrency: muxConcurrency ?? this.muxConcurrency,
+  );
 }
 
 @Riverpod(keepAlive: true)

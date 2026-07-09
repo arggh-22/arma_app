@@ -1109,9 +1109,10 @@ class _DesktopServerGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final maxWidth = constraints.maxWidth;
-        final columns = (maxWidth / (_minCardWidth + _spacing))
-            .floor()
-            .clamp(1, 3);
+        final columns = (maxWidth / (_minCardWidth + _spacing)).floor().clamp(
+          1,
+          3,
+        );
         if (columns <= 1) {
           // Narrow desktop window — behave like the mobile column.
           return Column(children: cards);

@@ -28,10 +28,7 @@ class EmptyServerState extends StatelessWidget {
             color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
           ),
           const Gap(16),
-          Text(
-            l10n.noServersYet,
-            style: theme.textTheme.headlineSmall,
-          ),
+          Text(l10n.noServersYet, style: theme.textTheme.headlineSmall),
           const Gap(8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),

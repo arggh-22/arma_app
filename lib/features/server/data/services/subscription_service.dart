@@ -70,7 +70,8 @@ class SubscriptionService {
   /// HTTP client. Injectable for testing; defaults to a shared client.
   final http.Client _client;
 
-  SubscriptionService({http.Client? client}) : _client = client ?? http.Client();
+  SubscriptionService({http.Client? client})
+    : _client = client ?? http.Client();
 
   /// Fetch a subscription URL, parse the body, and return servers + userinfo.
   ///
@@ -99,9 +100,7 @@ class SubscriptionService {
     final response = fetched.response;
 
     if (response.statusCode != 200) {
-      throw Exception(
-        'Subscription fetch failed: HTTP ${response.statusCode}',
-      );
+      throw Exception('Subscription fetch failed: HTTP ${response.statusCode}');
     }
 
     // T-03-15: Body size check to prevent resource exhaustion
@@ -129,10 +128,12 @@ class SubscriptionService {
 
     // Tag servers with subscription ID and group name
     final taggedServers = servers
-        .map((s) => s.copyWith(
-              subscriptionId: subscription.id,
-              groupName: effectiveGroupName,
-            ))
+        .map(
+          (s) => s.copyWith(
+            subscriptionId: subscription.id,
+            groupName: effectiveGroupName,
+          ),
+        )
         .toList();
 
     return SubscriptionFetchResult(
@@ -142,7 +143,7 @@ class SubscriptionService {
       profileUpdateIntervalHours: profileUpdateIntervalHours,
       profileUpdateAlways:
           (response.headers['profile-update-always']?.trim().toLowerCase()) ==
-              'true',
+          'true',
       supportUrl: response.headers['support-url']?.trim(),
       profileWebPageUrl: response.headers['profile-web-page-url']?.trim(),
       announcement: _decodeAnnouncement(response.headers['announce']),
@@ -187,8 +188,9 @@ class SubscriptionService {
   ) async {
     final originalUri = Uri.parse(url);
 
-    final originalResponse =
-        await _client.get(originalUri, headers: headers).timeout(_timeout);
+    final originalResponse = await _client
+        .get(originalUri, headers: headers)
+        .timeout(_timeout);
     final originalServers = originalResponse.statusCode == 200
         ? SubscriptionParser.parseBody(originalResponse.body)
         : const <ServerConfig>[];
@@ -200,8 +202,9 @@ class SubscriptionService {
     // — but never downgrade a usable response to a broken one.
     final jsonUri = _withJsonFormat(url);
     if (jsonUri != originalUri) {
-      final jsonResponse =
-          await _client.get(jsonUri, headers: headers).timeout(_timeout);
+      final jsonResponse = await _client
+          .get(jsonUri, headers: headers)
+          .timeout(_timeout);
       final jsonServers = jsonResponse.statusCode == 200
           ? SubscriptionParser.parseBody(jsonResponse.body)
           : const <ServerConfig>[];
@@ -218,7 +221,9 @@ class SubscriptionService {
   static Uri _withJsonFormat(String url) {
     final uri = Uri.parse(url);
     if (uri.queryParameters['format'] == 'json') return uri;
-    final query = uri.query.isEmpty ? 'format=json' : '${uri.query}&format=json';
+    final query = uri.query.isEmpty
+        ? 'format=json'
+        : '${uri.query}&format=json';
     return uri.replace(query: query);
   }
 
@@ -261,7 +266,9 @@ class SubscriptionService {
 
   String? _extractFilenameFromContentDisposition(String? contentDisposition) {
     if (contentDisposition == null || contentDisposition.isEmpty) return null;
-    final match = RegExp(r'filename="?([^";]+)"?').firstMatch(contentDisposition);
+    final match = RegExp(
+      r'filename="?([^";]+)"?',
+    ).firstMatch(contentDisposition);
     return match?.group(1)?.trim();
   }
 
@@ -288,7 +295,10 @@ class SubscriptionService {
       final payload = trimmed.substring('base64:'.length).trim();
       if (payload.isEmpty) return null;
       try {
-        final decoded = utf8.decode(base64Decode(payload), allowMalformed: false);
+        final decoded = utf8.decode(
+          base64Decode(payload),
+          allowMalformed: false,
+        );
         return decoded.trim();
       } catch (_) {
         return null;

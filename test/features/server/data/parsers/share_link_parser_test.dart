@@ -60,8 +60,7 @@ void main() {
     });
 
     test('dispatches hysteria2:// to Hysteria2Parser', () {
-      const link =
-          'hysteria2://auth@server.com:443#Hy2Test';
+      const link = 'hysteria2://auth@server.com:443#Hy2Test';
 
       final result = ShareLinkParser.parse(link);
 

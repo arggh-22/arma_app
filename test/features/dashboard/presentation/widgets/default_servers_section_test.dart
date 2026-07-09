@@ -18,15 +18,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('renders one collapsible block per API key, servers collapsed',
-      (tester) async {
+  testWidgets('renders one collapsible block per API key, servers collapsed', (
+    tester,
+  ) async {
     final notifier = TestDefaultServersNotifier(
-      _state(items: [
-        _item(id: '1', name: 'A'),
-        _item(id: '2', name: 'B'),
-        _item(id: '3', name: 'C'),
-        _item(id: '4', name: 'D'),
-      ]),
+      _state(
+        items: [
+          _item(id: '1', name: 'A'),
+          _item(id: '2', name: 'B'),
+          _item(id: '3', name: 'C'),
+          _item(id: '4', name: 'D'),
+        ],
+      ),
     );
 
     await _pumpSection(tester, defaultServersNotifier: notifier);
@@ -41,7 +44,9 @@ void main() {
 
   testWidgets('expanding a block reveals its server cards', (tester) async {
     final notifier = TestDefaultServersNotifier(
-      _state(items: [_item(id: '1', name: 'Alpha')]),
+      _state(
+        items: [_item(id: '1', name: 'Alpha')],
+      ),
     );
 
     await _pumpSection(tester, defaultServersNotifier: notifier);
@@ -54,14 +59,17 @@ void main() {
     expect(find.text('Alpha'), findsOneWidget);
   });
 
-  testWidgets('per-block Ping tests only that block\'s servers',
-      (tester) async {
+  testWidgets('per-block Ping tests only that block\'s servers', (
+    tester,
+  ) async {
     final latency = TestLatencyNotifier();
     final notifier = TestDefaultServersNotifier(
-      _state(items: [
-        _item(id: '1', name: 'A'),
-        _item(id: '2', name: 'B'),
-      ]),
+      _state(
+        items: [
+          _item(id: '1', name: 'A'),
+          _item(id: '2', name: 'B'),
+        ],
+      ),
     );
 
     await _pumpSection(
@@ -79,26 +87,29 @@ void main() {
     ]);
   });
 
-  testWidgets('shows the subscription data-usage text in the block header',
-      (tester) async {
+  testWidgets('shows the subscription data-usage text in the block header', (
+    tester,
+  ) async {
     const gb = 1073741824;
     final notifier = TestDefaultServersNotifier(
-      _state(items: [
-        _item(
-          id: '1',
-          name: 'A',
-          subscriptionUrl: 'https://example.com/sub',
-          usedTraffic: gb,
-          dataLimit: 10 * gb,
-        ),
-        _item(
-          id: '2',
-          name: 'B',
-          subscriptionUrl: 'https://example.com/sub',
-          usedTraffic: gb,
-          dataLimit: 10 * gb,
-        ),
-      ]),
+      _state(
+        items: [
+          _item(
+            id: '1',
+            name: 'A',
+            subscriptionUrl: 'https://example.com/sub',
+            usedTraffic: gb,
+            dataLimit: 10 * gb,
+          ),
+          _item(
+            id: '2',
+            name: 'B',
+            subscriptionUrl: 'https://example.com/sub',
+            usedTraffic: gb,
+            dataLimit: 10 * gb,
+          ),
+        ],
+      ),
     );
 
     await _pumpSection(tester, defaultServersNotifier: notifier);
@@ -108,26 +119,27 @@ void main() {
     expect(find.text('1.0 GB / 10 GB'), findsOneWidget);
   });
 
-  testWidgets(
-    'refresh action shows spinner while keeping the block visible',
-    (tester) async {
-      final refreshCompleter = Completer<void>();
-      final notifier = TestDefaultServersNotifier(
-        _state(items: [_item(id: '1', name: 'Visible')]),
-        onRefresh: () => refreshCompleter.future,
-      );
+  testWidgets('refresh action shows spinner while keeping the block visible', (
+    tester,
+  ) async {
+    final refreshCompleter = Completer<void>();
+    final notifier = TestDefaultServersNotifier(
+      _state(
+        items: [_item(id: '1', name: 'Visible')],
+      ),
+      onRefresh: () => refreshCompleter.future,
+    );
 
-      await _pumpSection(tester, defaultServersNotifier: notifier);
-      await tester.tap(find.byIcon(Icons.refresh));
-      await tester.pump();
+    await _pumpSection(tester, defaultServersNotifier: notifier);
+    await tester.tap(find.byIcon(Icons.refresh));
+    await tester.pump();
 
-      expect(find.text('Key-1'), findsOneWidget);
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.text('Key-1'), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-      refreshCompleter.complete();
-      await tester.pumpAndSettle();
-    },
-  );
+    refreshCompleter.complete();
+    await tester.pumpAndSettle();
+  });
 
   testWidgets('shows offline badge and empty-state guidance', (tester) async {
     final notifier = TestDefaultServersNotifier(
@@ -148,11 +160,14 @@ void main() {
     );
   });
 
-  testWidgets('shows timeout failure snackbar on refresh failure',
-      (tester) async {
+  testWidgets('shows timeout failure snackbar on refresh failure', (
+    tester,
+  ) async {
     late TestDefaultServersNotifier notifier;
     notifier = TestDefaultServersNotifier(
-      _state(items: [_item(id: '1', name: 'X')]),
+      _state(
+        items: [_item(id: '1', name: 'X')],
+      ),
       onRefresh: () async {
         notifier.state = notifier.state.copyWith(
           lastFailureType: DefaultServersFailureType.timeout,
@@ -171,13 +186,16 @@ void main() {
     );
   });
 
-  testWidgets('matching active server card shows selected indicator',
-      (tester) async {
+  testWidgets('matching active server card shows selected indicator', (
+    tester,
+  ) async {
     final selectedServer = _serverConfig(id: 'sel', name: 'Selected');
     final notifier = TestDefaultServersNotifier(
-      _state(items: [
-        _item(id: 'sel', name: 'Selected', serverConfig: selectedServer),
-      ]),
+      _state(
+        items: [
+          _item(id: 'sel', name: 'Selected', serverConfig: selectedServer),
+        ],
+      ),
     );
 
     await _pumpSection(
@@ -198,7 +216,9 @@ void main() {
 
   testWidgets('disconnected tap selects active server only', (tester) async {
     final defaultNotifier = TestDefaultServersNotifier(
-      _state(items: [_item(id: 'new', name: 'New server')]),
+      _state(
+        items: [_item(id: 'new', name: 'New server')],
+      ),
     );
     final activeNotifier = TestActiveServerNotifier();
     final connectionNotifier = TestConnectionNotifier();
@@ -219,51 +239,51 @@ void main() {
     expect(connectionNotifier.events, isEmpty);
   });
 
-  testWidgets(
-    'connected tap on different server selects then reconnects',
-    (tester) async {
-      final oldServer = _serverConfig(id: 'old', name: 'Old server');
-      final newServer = _serverConfig(id: 'new', name: 'New server');
-      final defaultNotifier = TestDefaultServersNotifier(
-        _state(items: [
-          _item(id: 'new', name: 'New server', serverConfig: newServer),
-        ]),
-      );
-      final activeNotifier = TestActiveServerNotifier(initialServer: oldServer);
-      final connectionNotifier = TestConnectionNotifier(
-        initialState: Connected(
-          serverName: 'Old server',
-          connectedAt: DateTime.utc(2026, 1, 1),
-        ),
-      );
+  testWidgets('connected tap on different server selects then reconnects', (
+    tester,
+  ) async {
+    final oldServer = _serverConfig(id: 'old', name: 'Old server');
+    final newServer = _serverConfig(id: 'new', name: 'New server');
+    final defaultNotifier = TestDefaultServersNotifier(
+      _state(
+        items: [_item(id: 'new', name: 'New server', serverConfig: newServer)],
+      ),
+    );
+    final activeNotifier = TestActiveServerNotifier(initialServer: oldServer);
+    final connectionNotifier = TestConnectionNotifier(
+      initialState: Connected(
+        serverName: 'Old server',
+        connectedAt: DateTime.utc(2026, 1, 1),
+      ),
+    );
 
-      await _pumpSection(
-        tester,
-        defaultServersNotifier: defaultNotifier,
-        activeServerNotifier: activeNotifier,
-        connectionNotifier: connectionNotifier,
-      );
+    await _pumpSection(
+      tester,
+      defaultServersNotifier: defaultNotifier,
+      activeServerNotifier: activeNotifier,
+      connectionNotifier: connectionNotifier,
+    );
 
-      await tester.tap(find.text('Key-new'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('New server'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Key-new'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('New server'));
+    await tester.pumpAndSettle();
 
-      expect(activeNotifier.selectedIds, ['new']);
-      // The UI now delegates the reconnect to connect(), which itself tears
-      // down the current session (and waits for the native side) before
-      // starting the new server — so the tap issues a single connect call.
-      expect(connectionNotifier.events, ['connect:new']);
-    },
-  );
+    expect(activeNotifier.selectedIds, ['new']);
+    // The UI now delegates the reconnect to connect(), which itself tears
+    // down the current session (and waits for the native side) before
+    // starting the new server — so the tap issues a single connect call.
+    expect(connectionNotifier.events, ['connect:new']);
+  });
 
-  testWidgets('reveal request expands the owning block and shows the card',
-      (tester) async {
+  testWidgets('reveal request expands the owning block and shows the card', (
+    tester,
+  ) async {
     final server = _serverConfig(id: 'default-api-1', name: 'Reveal me');
     final notifier = TestDefaultServersNotifier(
-      _state(items: [
-        _item(id: '1', name: 'Reveal me', serverConfig: server),
-      ]),
+      _state(
+        items: [_item(id: '1', name: 'Reveal me', serverConfig: server)],
+      ),
     );
 
     await _pumpSection(tester, defaultServersNotifier: notifier);
@@ -283,17 +303,20 @@ void main() {
     expect(container.read(revealServerProvider), isNull);
   });
 
-  testWidgets('renew/support buttons appear only when the block is expanded',
-      (tester) async {
+  testWidgets('renew/support buttons appear only when the block is expanded', (
+    tester,
+  ) async {
     final notifier = TestDefaultServersNotifier(
-      _state(items: [
-        _item(
-          id: '1',
-          name: 'A',
-          webPageUrl: 'https://example.com/renew',
-          supportUrl: 'https://example.com/support',
-        ),
-      ]),
+      _state(
+        items: [
+          _item(
+            id: '1',
+            name: 'A',
+            webPageUrl: 'https://example.com/renew',
+            supportUrl: 'https://example.com/support',
+          ),
+        ],
+      ),
     );
 
     await _pumpSection(tester, defaultServersNotifier: notifier);
@@ -309,12 +332,13 @@ void main() {
     expect(find.text('Support'), findsOneWidget);
   });
 
-  testWidgets('inactive key renders as a warning block with no server cards',
-      (tester) async {
+  testWidgets('inactive key renders as a warning block with no server cards', (
+    tester,
+  ) async {
     final defaultNotifier = TestDefaultServersNotifier(
-      _state(items: [
-        _item(id: 'expired', name: 'Expired server', isActive: false),
-      ]),
+      _state(
+        items: [_item(id: 'expired', name: 'Expired server', isActive: false)],
+      ),
     );
 
     await _pumpSection(tester, defaultServersNotifier: defaultNotifier);
@@ -354,9 +378,7 @@ Future<void> _pumpSection(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: const Scaffold(
-          body: SingleChildScrollView(
-            child: DefaultServersSection(),
-          ),
+          body: SingleChildScrollView(child: DefaultServersSection()),
         ),
       ),
     ),

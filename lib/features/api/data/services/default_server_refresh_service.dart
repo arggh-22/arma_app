@@ -41,17 +41,13 @@ class DefaultServerRefreshService {
     final prunedKeys = _pruneExpiredKeys(fetchedKeys, reference: fetchedAt);
 
     await _cacheDatasource.write(
-      DefaultServerCacheModel(
-        fetchedAt: fetchedAt,
-        keys: prunedKeys,
-      ),
+      DefaultServerCacheModel(fetchedAt: fetchedAt, keys: prunedKeys),
     );
-    await _settingsDatasource.setDefaultServerAutoUpdateLastSuccessAt(fetchedAt);
+    await _settingsDatasource.setDefaultServerAutoUpdateLastSuccessAt(
+      fetchedAt,
+    );
 
-    return DefaultServerRefreshResult(
-      fetchedAt: fetchedAt,
-      keys: prunedKeys,
-    );
+    return DefaultServerRefreshResult(fetchedAt: fetchedAt, keys: prunedKeys);
   }
 
   List<DefaultServerKey> _pruneExpiredKeys(
@@ -64,16 +60,15 @@ class DefaultServerRefreshService {
   }
 }
 
-final defaultServerRefreshServiceProvider = Provider<DefaultServerRefreshService>(
-  (ref) {
-    final cacheDatasource = ref.watch(defaultServerCacheDatasourceProvider);
-    final prefs = ref.watch(sharedPreferencesProvider);
-    final settingsDatasource = SettingsLocalDatasource(prefs);
+final defaultServerRefreshServiceProvider =
+    Provider<DefaultServerRefreshService>((ref) {
+      final cacheDatasource = ref.watch(defaultServerCacheDatasourceProvider);
+      final prefs = ref.watch(sharedPreferencesProvider);
+      final settingsDatasource = SettingsLocalDatasource(prefs);
 
-    return DefaultServerRefreshService(
-      fetchKeys: () => ref.refresh(defaultServerKeysProvider.future),
-      cacheDatasource: cacheDatasource,
-      settingsDatasource: settingsDatasource,
-    );
-  },
-);
+      return DefaultServerRefreshService(
+        fetchKeys: () => ref.refresh(defaultServerKeysProvider.future),
+        cacheDatasource: cacheDatasource,
+        settingsDatasource: settingsDatasource,
+      );
+    });

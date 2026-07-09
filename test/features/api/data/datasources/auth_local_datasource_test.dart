@@ -54,10 +54,7 @@ void main() {
 
     test('clears auth state to unauthenticated default', () async {
       await datasource.writeAuthState(
-        const AuthState(
-          token: 'token-123',
-          isAuthenticated: true,
-        ),
+        const AuthState(token: 'token-123', isAuthenticated: true),
       );
 
       await datasource.clearAuthState();
@@ -86,7 +83,8 @@ void main() {
     });
 
     test('stores and reuses cipher key material from secure storage', () async {
-      final firstKey = secureStorage[AuthLocalDatasource.authCipherKeyStorageKey];
+      final firstKey =
+          secureStorage[AuthLocalDatasource.authCipherKeyStorageKey];
       expect(firstKey, isNotNull);
 
       await authBox.close();

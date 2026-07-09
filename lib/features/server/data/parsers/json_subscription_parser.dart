@@ -61,7 +61,10 @@ class JsonSubscriptionParser {
     return results;
   }
 
-  static ServerConfig? _parseEntry(Map<String, dynamic> entry, {required int index}) {
+  static ServerConfig? _parseEntry(
+    Map<String, dynamic> entry, {
+    required int index,
+  }) {
     final outbound = _primaryOutbound(entry);
     if (outbound == null) return null;
 
@@ -83,14 +86,17 @@ class JsonSubscriptionParser {
 
     final isVlessVmess =
         protocol == ProtocolType.vless || protocol == ProtocolType.vmess;
-    final isTrojanSs = protocol == ProtocolType.trojan ||
-        protocol == ProtocolType.shadowsocks;
+    final isTrojanSs =
+        protocol == ProtocolType.trojan || protocol == ProtocolType.shadowsocks;
 
     final remarks = _strAt(entry, 'remarks')?.trim();
     final name = (remarks != null && remarks.isNotEmpty)
         ? remarks
         : '$address:$port';
-    final description = _strAt(_asMap(entry['meta']), 'serverDescription')?.trim();
+    final description = _strAt(
+      _asMap(entry['meta']),
+      'serverDescription',
+    )?.trim();
 
     return ServerConfig(
       id: _uuid.v4(),

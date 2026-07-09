@@ -82,8 +82,7 @@ class _LogViewerScreenState extends ConsumerState<LogViewerScreen> {
       case _LogFilter.info:
         // Info = exclude warn/error lines
         filtered = filtered
-            .where((line) =>
-                !_isWarningLine(line) && !_isErrorLine(line))
+            .where((line) => !_isWarningLine(line) && !_isErrorLine(line))
             .toList();
       case _LogFilter.warning:
         filtered = filtered.where(_isWarningLine).toList();

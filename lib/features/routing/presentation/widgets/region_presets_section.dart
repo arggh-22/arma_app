@@ -13,7 +13,8 @@ class RegionPresetsSection extends ConsumerStatefulWidget {
   const RegionPresetsSection({super.key});
 
   @override
-  ConsumerState<RegionPresetsSection> createState() => _RegionPresetsSectionState();
+  ConsumerState<RegionPresetsSection> createState() =>
+      _RegionPresetsSectionState();
 }
 
 class _RegionPresetsSectionState extends ConsumerState<RegionPresetsSection> {
@@ -100,7 +101,9 @@ class _RegionPresetsSectionState extends ConsumerState<RegionPresetsSection> {
                 return ListTile(
                   dense: true,
                   leading: Icon(
-                    selected ? Icons.check_circle : Icons.radio_button_unchecked,
+                    selected
+                        ? Icons.check_circle
+                        : Icons.radio_button_unchecked,
                     size: 18,
                     color: statusColor,
                   ),
@@ -126,8 +129,9 @@ class _RegionPresetsSectionState extends ConsumerState<RegionPresetsSection> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Text(
             l10n.bundledRulesNote,
-            style: theme.textTheme.bodySmall
-                ?.copyWith(color: colorScheme.onSurfaceVariant),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
         // Update Rules button
@@ -140,7 +144,8 @@ class _RegionPresetsSectionState extends ConsumerState<RegionPresetsSection> {
                     final messenger = ScaffoldMessenger.of(context);
                     setState(() => _isUpdatingRules = true);
                     try {
-                      final updatedCount = await RulesUpdateService().updateRules();
+                      final updatedCount = await RulesUpdateService()
+                          .updateRules();
                       if (!mounted) return;
                       messenger.showSnackBar(
                         SnackBar(

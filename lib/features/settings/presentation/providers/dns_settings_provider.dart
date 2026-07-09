@@ -50,16 +50,15 @@ class DnsSettings {
     String? fakeIpCidr,
     String? presetId,
     DnsFilteringOptions? filtering,
-  }) =>
-      DnsSettings(
-        protocol: protocol ?? this.protocol,
-        remoteDns: remoteDns ?? this.remoteDns,
-        directDns: directDns ?? this.directDns,
-        fakeIpEnabled: fakeIpEnabled ?? this.fakeIpEnabled,
-        fakeIpCidr: fakeIpCidr ?? this.fakeIpCidr,
-        presetId: presetId ?? this.presetId,
-        filtering: filtering ?? this.filtering,
-      );
+  }) => DnsSettings(
+    protocol: protocol ?? this.protocol,
+    remoteDns: remoteDns ?? this.remoteDns,
+    directDns: directDns ?? this.directDns,
+    fakeIpEnabled: fakeIpEnabled ?? this.fakeIpEnabled,
+    fakeIpCidr: fakeIpCidr ?? this.fakeIpCidr,
+    presetId: presetId ?? this.presetId,
+    filtering: filtering ?? this.filtering,
+  );
 }
 
 @Riverpod(keepAlive: true)

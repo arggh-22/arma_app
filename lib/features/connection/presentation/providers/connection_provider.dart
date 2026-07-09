@@ -80,10 +80,13 @@ class ConnectionNotifier extends _$ConnectionNotifier
   Future<void> resyncState() async {
     try {
       final running = await _platformService.isRunning;
-      debugPrint('[ConnectionNotifier] resyncState: isRunning=$running, currentState=$state');
+      debugPrint(
+        '[ConnectionNotifier] resyncState: isRunning=$running, currentState=$state',
+      );
       if (running && state is! Connected) {
-        final serverName =
-            state is Connecting ? (state as Connecting).serverName : 'Active';
+        final serverName = state is Connecting
+            ? (state as Connecting).serverName
+            : 'Active';
         state = Connected(serverName: serverName, connectedAt: DateTime.now());
         _cancelStateTimeout();
       } else if (!running && state is! Disconnected) {
@@ -99,7 +102,9 @@ class ConnectionNotifier extends _$ConnectionNotifier
     await Future.delayed(const Duration(milliseconds: 800));
     try {
       final running = await _platformService.isRunning;
-      debugPrint('[ConnectionNotifier] _syncInitialState: isRunning=$running, currentState=$state');
+      debugPrint(
+        '[ConnectionNotifier] _syncInitialState: isRunning=$running, currentState=$state',
+      );
       if (running && state is Disconnected) {
         state = Connected(serverName: 'Active', connectedAt: DateTime.now());
       }
@@ -110,7 +115,9 @@ class ConnectionNotifier extends _$ConnectionNotifier
 
   /// Connect to the given [server].
   Future<void> connect(ServerConfig server, {bool isManual = true}) async {
-    debugPrint('[ConnectionNotifier] connect(${server.name}) — current state: $state');
+    debugPrint(
+      '[ConnectionNotifier] connect(${server.name}) — current state: $state',
+    );
 
     // Switching servers / reconnecting: tear down any existing (or pending)
     // session and WAIT until the native side reports it is fully stopped
@@ -148,8 +155,10 @@ class ConnectionNotifier extends _$ConnectionNotifier
     // every dial silently hangs. Xray dials this same address:port directly, so
     // if we can't even open TCP here, the tunnel cannot work either.
     final reachable = await _isServerReachable(server);
-    debugPrint('[ConnectionNotifier] reachability ${server.address}:${server.port} '
-        '= $reachable');
+    debugPrint(
+      '[ConnectionNotifier] reachability ${server.address}:${server.port} '
+      '= $reachable',
+    );
     if (!reachable) {
       state = Disconnected(
         'Server unreachable (${server.address}:${server.port})',
@@ -182,10 +191,7 @@ class ConnectionNotifier extends _$ConnectionNotifier
           selectedApps: vpnSettings.selectedApps,
         );
       } else {
-        await _platformService.setPerAppConfig(
-          mode: null,
-          selectedApps: [],
-        );
+        await _platformService.setPerAppConfig(mode: null, selectedApps: []);
       }
     } catch (e) {
       debugPrint('[ConnectionNotifier] setPerAppConfig not available: $e');
@@ -290,7 +296,9 @@ class ConnectionNotifier extends _$ConnectionNotifier
   /// Handle status events from the native VPN process via EventChannel.
   void _handleStatusEvent(Map<String, dynamic> event) {
     final status = event['state'] as String?;
-    debugPrint('[ConnectionNotifier] _handleStatusEvent: status=$status, current=$state');
+    debugPrint(
+      '[ConnectionNotifier] _handleStatusEvent: status=$status, current=$state',
+    );
     _cancelStateTimeout();
     switch (status) {
       case 'connecting':
@@ -299,8 +307,9 @@ class ConnectionNotifier extends _$ConnectionNotifier
           _startStateTimeout(_connectingTimeout);
         }
       case 'connected':
-        final serverName =
-            state is Connecting ? (state as Connecting).serverName : 'Active';
+        final serverName = state is Connecting
+            ? (state as Connecting).serverName
+            : 'Active';
         _fallbackAttempts = 0;
         state = Connected(serverName: serverName, connectedAt: DateTime.now());
       case 'disconnected':
@@ -310,8 +319,7 @@ class ConnectionNotifier extends _$ConnectionNotifier
       case 'error':
         ref.read(trafficStatsProvider.notifier).reset();
         _durationTimer?.cancel();
-        state =
-            Disconnected(event['message'] as String? ?? 'Connection error');
+        state = Disconnected(event['message'] as String? ?? 'Connection error');
         _attemptAutoFallback();
     }
   }
@@ -351,5 +359,4 @@ class ConnectionNotifier extends _$ConnectionNotifier
       debugPrint('[ConnectionNotifier] Auto-fallback error: $e');
     }
   }
-
 }

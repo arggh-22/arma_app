@@ -39,7 +39,10 @@ void main() {
       // Manual (clipboard-imported) groups still expose the "…" management
       // button so they can be pinged / pinned / deleted.
       expect(
-        find.descendant(of: importedHeader, matching: find.byIcon(Icons.more_vert)),
+        find.descendant(
+          of: importedHeader,
+          matching: find.byIcon(Icons.more_vert),
+        ),
         findsOneWidget,
       );
       await tester.tap(
@@ -66,38 +69,37 @@ void main() {
     },
   );
 
-  testWidgets(
-    'default servers are not rendered on the servers tab',
-    (tester) async {
-      await _pumpScreen(
-        tester,
-        servers: [
-          _server(id: 'imported-1', name: 'Imported 1'),
-          _server(id: 'imported-2', name: 'Imported 2'),
-        ],
-        defaults: [
-          _item(
-            id: 'default-1',
-            name: 'Default 1',
-            subscriptionUrl: 'https://example.com/default-group-a',
-            groupName: 'Default Group A',
-          ),
-          _item(
-            id: 'default-2',
-            name: 'Default 2',
-            subscriptionUrl: 'https://example.com/default-group-a',
-            groupName: 'Default Group A',
-          ),
-        ],
-      );
+  testWidgets('default servers are not rendered on the servers tab', (
+    tester,
+  ) async {
+    await _pumpScreen(
+      tester,
+      servers: [
+        _server(id: 'imported-1', name: 'Imported 1'),
+        _server(id: 'imported-2', name: 'Imported 2'),
+      ],
+      defaults: [
+        _item(
+          id: 'default-1',
+          name: 'Default 1',
+          subscriptionUrl: 'https://example.com/default-group-a',
+          groupName: 'Default Group A',
+        ),
+        _item(
+          id: 'default-2',
+          name: 'Default 2',
+          subscriptionUrl: 'https://example.com/default-group-a',
+          groupName: 'Default Group A',
+        ),
+      ],
+    );
 
-      expect(find.text('Default Group A (2)'), findsNothing);
-      expect(find.text('Default 1'), findsNothing);
-      expect(find.text('Default 2'), findsNothing);
-      expect(find.text('Imported 1'), findsOneWidget);
-      expect(find.text('Imported 2'), findsOneWidget);
-    },
-  );
+    expect(find.text('Default Group A (2)'), findsNothing);
+    expect(find.text('Default 1'), findsNothing);
+    expect(find.text('Default 2'), findsNothing);
+    expect(find.text('Imported 1'), findsOneWidget);
+    expect(find.text('Imported 2'), findsOneWidget);
+  });
 
   testWidgets('multi-select keeps imported affordances while hiding defaults', (
     tester,

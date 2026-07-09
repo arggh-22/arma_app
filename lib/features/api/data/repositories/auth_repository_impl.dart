@@ -76,7 +76,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<T> executeWithAuthRetry<T>(Future<T> Function(String token) action) async {
+  Future<T> executeWithAuthRetry<T>(
+    Future<T> Function(String token) action,
+  ) async {
     final initialToken = await getValidToken();
 
     try {

@@ -65,8 +65,7 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
       uploadBytes: uploadBytes ?? existing.uploadBytes,
       downloadBytes: downloadBytes ?? existing.downloadBytes,
       totalBytes: totalBytes ?? existing.totalBytes,
-      expireMillis:
-          expireDate?.millisecondsSinceEpoch ?? existing.expireMillis,
+      expireMillis: expireDate?.millisecondsSinceEpoch ?? existing.expireMillis,
       lastUpdatedMillis: DateTime.now().millisecondsSinceEpoch,
       addedAtMillis: existing.addedAtMillis,
       autoUpdate: existing.autoUpdate,

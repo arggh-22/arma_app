@@ -67,20 +67,20 @@ class ServerCard extends StatelessWidget {
         : isActive
         ? colorScheme.primary.withValues(alpha: isDark ? 0.10 : 0.06)
         : (isDark
-            ? ArmaTokens.glassFill(0.05)
-            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.45));
+              ? ArmaTokens.glassFill(0.05)
+              : colorScheme.surfaceContainerHighest.withValues(alpha: 0.45));
     final Color borderColor = isActive
         ? colorScheme.primary.withValues(alpha: 0.55)
         : colorScheme.outlineVariant.withValues(alpha: isDark ? 0.45 : 0.9);
 
     // Source-format tag (json / base64 / …). Falls back to "JSON" for legacy
     // configs persisted before configFormat existed but that carry a rawConfig.
-    final formatLabel = (server.configFormat != null &&
-            server.configFormat!.trim().isNotEmpty)
+    final formatLabel =
+        (server.configFormat != null && server.configFormat!.trim().isNotEmpty)
         ? server.configFormat!.trim().toUpperCase()
         : ((server.rawConfig != null && server.rawConfig!.isNotEmpty)
-            ? 'JSON'
-            : null);
+              ? 'JSON'
+              : null);
 
     return Semantics(
       label:
@@ -101,10 +101,7 @@ class ServerCard extends StatelessWidget {
             onLongPress: onLongPress,
             borderRadius: BorderRadius.circular(12),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 10,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               child: Row(
                 children: [
                   // Multi-select checkbox
@@ -156,10 +153,7 @@ class ServerCard extends StatelessWidget {
                   const Gap(8),
 
                   // Latency indicator
-                  LatencyIndicator(
-                    latency: latency,
-                    onTap: onLatencyTap,
-                  ),
+                  LatencyIndicator(latency: latency, onTap: onLatencyTap),
 
                   // Active checkmark (only in normal mode)
                   if (!isMultiSelect && isSelected) ...[
@@ -192,8 +186,7 @@ class _FormatBadge extends StatelessWidget {
     final theme = Theme.of(context);
     final accent = theme.colorScheme.primary;
     final isDark = theme.brightness == Brightness.dark;
-    final textColor =
-        isDark ? accent : Color.lerp(accent, Colors.black, 0.35)!;
+    final textColor = isDark ? accent : Color.lerp(accent, Colors.black, 0.35)!;
 
     return Semantics(
       label: '$label config',

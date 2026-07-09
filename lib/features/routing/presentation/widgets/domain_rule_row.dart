@@ -19,11 +19,11 @@ class DomainRuleRow extends StatelessWidget {
   });
 
   Color _actionColor(String action, ColorScheme cs) => switch (action) {
-        'proxy' => cs.primary,
-        'direct' => Colors.green,
-        'block' => cs.error,
-        _ => cs.primary,
-      };
+    'proxy' => cs.primary,
+    'direct' => Colors.green,
+    'block' => cs.error,
+    _ => cs.primary,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -41,10 +41,7 @@ class DomainRuleRow extends StatelessWidget {
             Container(
               width: 8,
               height: 8,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-              ),
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             ),
             const SizedBox(width: 8),
             // Domain text
@@ -77,10 +74,7 @@ class DomainRuleRow extends StatelessWidget {
               color: cs.onSurfaceVariant,
               onPressed: onDelete,
               padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(
-                minWidth: 48,
-                minHeight: 48,
-              ),
+              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
             ),
           ],
         ),

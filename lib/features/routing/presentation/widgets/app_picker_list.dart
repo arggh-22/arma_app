@@ -76,8 +76,9 @@ class _AppPickerListState extends ConsumerState<AppPickerList> {
             alignment: Alignment.centerRight,
             child: Text(
               l10n.appsSelectedCount(settings.selectedApps.length),
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
         ),
@@ -92,8 +93,9 @@ class _AppPickerListState extends ConsumerState<AppPickerList> {
                 const SizedBox(height: 8),
                 Text(
                   l10n.loadingApps,
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(color: colorScheme.onSurfaceVariant),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
@@ -139,15 +141,18 @@ class _AppPickerListState extends ConsumerState<AppPickerList> {
                         onPressed: settings.selectedApps.isEmpty
                             ? null
                             : () => ref
-                                .read(routingSettingsProvider.notifier)
-                                .setSelectedApps([]),
+                                  .read(routingSettingsProvider.notifier)
+                                  .setSelectedApps([]),
                         child: const Text('Clear all'),
                       ),
                     ],
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
@@ -215,8 +220,10 @@ class _AppPickerListState extends ConsumerState<AppPickerList> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           trailing: selected
-                              ? Icon(Icons.check_circle,
-                                  color: colorScheme.primary)
+                              ? Icon(
+                                  Icons.check_circle,
+                                  color: colorScheme.primary,
+                                )
                               : const Icon(Icons.radio_button_unchecked),
                           onTap: () => ref
                               .read(routingSettingsProvider.notifier)

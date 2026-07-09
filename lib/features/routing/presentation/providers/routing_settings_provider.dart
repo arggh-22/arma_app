@@ -34,15 +34,14 @@ class RoutingSettings {
     bool? perAppEnabled,
     String? perAppMode,
     List<String>? selectedApps,
-  }) =>
-      RoutingSettings(
-        bypassLan: bypassLan ?? this.bypassLan,
-        enabledRegions: enabledRegions ?? this.enabledRegions,
-        customRules: customRules ?? this.customRules,
-        perAppEnabled: perAppEnabled ?? this.perAppEnabled,
-        perAppMode: perAppMode ?? this.perAppMode,
-        selectedApps: selectedApps ?? this.selectedApps,
-      );
+  }) => RoutingSettings(
+    bypassLan: bypassLan ?? this.bypassLan,
+    enabledRegions: enabledRegions ?? this.enabledRegions,
+    customRules: customRules ?? this.customRules,
+    perAppEnabled: perAppEnabled ?? this.perAppEnabled,
+    perAppMode: perAppMode ?? this.perAppMode,
+    selectedApps: selectedApps ?? this.selectedApps,
+  );
 }
 
 /// Riverpod notifier managing all routing settings with persistence.

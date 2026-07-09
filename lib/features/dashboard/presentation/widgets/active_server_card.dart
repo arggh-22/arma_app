@@ -36,71 +36,71 @@ class ActiveServerCard extends ConsumerWidget {
       padding: EdgeInsets.zero,
       onTap: () => _onTap(context, ref, server),
       child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: server == null
-              ? Row(
-                  children: [
-                    Icon(
-                      Icons.dns_outlined,
-                      size: 20,
-                      color: colorScheme.onSurfaceVariant,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: server == null
+            ? Row(
+                children: [
+                  Icon(
+                    Icons.dns_outlined,
+                    size: 20,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  const Gap(8),
+                  Expanded(
+                    child: Text(
+                      l10n.noServerSelected,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                    const Gap(8),
-                    Expanded(
-                      child: Text(
-                        l10n.noServerSelected,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
+                  ),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 20,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ],
+              )
+            : Row(
+                children: [
+                  ProtocolBadge(protocol: server.protocol),
+                  const Gap(8),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            server.name,
+                            style: theme.textTheme.titleSmall,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                    ),
-                    Icon(
-                      Icons.chevron_right,
-                      size: 20,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ],
-                )
-              : Row(
-                  children: [
-                    ProtocolBadge(protocol: server.protocol),
-                    const Gap(8),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              server.name,
-                              style: theme.textTheme.titleSmall,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                        const Gap(8),
+                        Flexible(
+                          child: Text(
+                            // Default servers show the app/brand name;
+                            // imported servers show their subscription name.
+                            server.id.startsWith('default-api')
+                                ? l10n.appName
+                                : server.groupName,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const Gap(8),
-                          Flexible(
-                            child: Text(
-                              // Default servers show the app/brand name;
-                              // imported servers show their subscription name.
-                              server.id.startsWith('default-api')
-                                  ? l10n.appName
-                                  : server.groupName,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                    Icon(
-                      Icons.chevron_right,
-                      size: 20,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ],
-                ),
+                  ),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 20,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ],
+              ),
       ),
     );
   }

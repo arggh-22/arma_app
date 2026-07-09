@@ -43,41 +43,47 @@ class ConnectButton extends ConsumerWidget {
       164.0,
     );
 
-    final (statusWord, icon, ringColor, glowAlpha, isPulsing, semanticLabel) =
-        switch (status) {
-          Disconnected() => (
-            l10n.notConnected.toUpperCase(),
-            Icons.power_settings_new,
-            colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-            0.12,
-            false,
-            'Connect',
-          ),
-          Connecting() => (
-            l10n.connecting.toUpperCase(),
-            Icons.shield_outlined,
-            colorScheme.primary,
-            0.30,
-            true,
-            'Connecting',
-          ),
-          Connected() => (
-            l10n.connected.toUpperCase(),
-            Icons.shield,
-            colorScheme.primary,
-            0.45,
-            false,
-            'Disconnect',
-          ),
-          Disconnecting() => (
-            l10n.disconnecting.toUpperCase(),
-            Icons.shield_outlined,
-            colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-            0.10,
-            false,
-            'Disconnecting',
-          ),
-        };
+    final (
+      statusWord,
+      icon,
+      ringColor,
+      glowAlpha,
+      isPulsing,
+      semanticLabel,
+    ) = switch (status) {
+      Disconnected() => (
+        l10n.notConnected.toUpperCase(),
+        Icons.power_settings_new,
+        colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+        0.12,
+        false,
+        'Connect',
+      ),
+      Connecting() => (
+        l10n.connecting.toUpperCase(),
+        Icons.shield_outlined,
+        colorScheme.primary,
+        0.30,
+        true,
+        'Connecting',
+      ),
+      Connected() => (
+        l10n.connected.toUpperCase(),
+        Icons.shield,
+        colorScheme.primary,
+        0.45,
+        false,
+        'Disconnect',
+      ),
+      Disconnecting() => (
+        l10n.disconnecting.toUpperCase(),
+        Icons.shield_outlined,
+        colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+        0.10,
+        false,
+        'Disconnecting',
+      ),
+    };
 
     final isActive = status is Connected || status is Connecting;
     final contentColor = isActive
@@ -165,88 +171,92 @@ class ConnectButton extends ConsumerWidget {
           opacity: status is Disconnecting ? 0.45 : 1.0,
           duration: const Duration(milliseconds: 600),
           curve: Curves.easeOut,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 400),
-            curve: Curves.easeOut,
-            width: diameter,
-            height: diameter,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: isDark
-                    ? [
-                        ArmaTokens.indigoDeep.withValues(
-                          alpha: isActive ? 0.55 : 0.18,
-                        ),
-                        ArmaTokens.deepNavy.withValues(alpha: 0.9),
-                      ]
-                    : [
-                        colorScheme.primary.withValues(
-                          alpha: isActive ? 0.30 : 0.08,
-                        ),
-                        colorScheme.surface,
-                      ],
-              ),
-              border: Border.all(color: ringColor, width: 2),
-              boxShadow: ArmaTokens.ambientGlow(
-                color: isActive ? ArmaTokens.indigo : ArmaTokens.glow,
-                alpha: glowAlpha,
-                blur: 60,
-                spread: 8,
-              ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  transitionBuilder: (child, animation) =>
-                      ScaleTransition(scale: animation, child: child),
-                  child: Icon(
-                    icon,
-                    key: ValueKey(icon),
-                    color: contentColor,
-                    size: diameter * 0.22,
-                  ),
-                ),
-                SizedBox(height: diameter * 0.06),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: diameter * 0.1),
-                  child: Text(
-                    statusWord,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.fade,
-                    softWrap: false,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: contentColor,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.5,
+          child:
+              AnimatedContainer(
+                    duration: const Duration(milliseconds: 400),
+                    curve: Curves.easeOut,
+                    width: diameter,
+                    height: diameter,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: isDark
+                            ? [
+                                ArmaTokens.indigoDeep.withValues(
+                                  alpha: isActive ? 0.55 : 0.18,
+                                ),
+                                ArmaTokens.deepNavy.withValues(alpha: 0.9),
+                              ]
+                            : [
+                                colorScheme.primary.withValues(
+                                  alpha: isActive ? 0.30 : 0.08,
+                                ),
+                                colorScheme.surface,
+                              ],
+                      ),
+                      border: Border.all(color: ringColor, width: 2),
+                      boxShadow: ArmaTokens.ambientGlow(
+                        color: isActive ? ArmaTokens.indigo : ArmaTokens.glow,
+                        alpha: glowAlpha,
+                        blur: 60,
+                        spread: 8,
+                      ),
                     ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          transitionBuilder: (child, animation) =>
+                              ScaleTransition(scale: animation, child: child),
+                          child: Icon(
+                            icon,
+                            key: ValueKey(icon),
+                            color: contentColor,
+                            size: diameter * 0.22,
+                          ),
+                        ),
+                        SizedBox(height: diameter * 0.06),
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: diameter * 0.1,
+                          ),
+                          child: Text(
+                            statusWord,
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.fade,
+                            softWrap: false,
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: contentColor,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.5,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                  .animate(target: isPulsing ? 1 : 0)
+                  .scaleXY(
+                    begin: 1.0,
+                    end: 1.04,
+                    duration: 800.ms,
+                    curve: Curves.easeInOut,
+                  )
+                  .then()
+                  .scaleXY(
+                    begin: 1.04,
+                    end: 1.0,
+                    duration: 800.ms,
+                    curve: Curves.easeInOut,
+                  )
+                  .animate(onPlay: isPulsing ? (c) => c.repeat() : null)
+                  .shimmer(
+                    duration: 1500.ms,
+                    color: colorScheme.primary.withValues(alpha: 0.25),
                   ),
-                ),
-              ],
-            ),
-          )
-              .animate(target: isPulsing ? 1 : 0)
-              .scaleXY(
-                begin: 1.0,
-                end: 1.04,
-                duration: 800.ms,
-                curve: Curves.easeInOut,
-              )
-              .then()
-              .scaleXY(
-                begin: 1.04,
-                end: 1.0,
-                duration: 800.ms,
-                curve: Curves.easeInOut,
-              )
-              .animate(onPlay: isPulsing ? (c) => c.repeat() : null)
-              .shimmer(
-                duration: 1500.ms,
-                color: colorScheme.primary.withValues(alpha: 0.25),
-              ),
         ),
       ),
     );

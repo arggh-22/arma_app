@@ -83,13 +83,19 @@ $type::InternetSetOption([IntPtr]::Zero, 37, [IntPtr]::Zero, 0) | Out-Null
       script,
     ]);
     if (result.exitCode != 0) {
-      debugPrint('[SystemProxy] powershell exit ${result.exitCode}: ${result.stderr}');
+      debugPrint(
+        '[SystemProxy] powershell exit ${result.exitCode}: ${result.stderr}',
+      );
     }
   }
 
   // ── Linux (GNOME) ──────────────────────────────────────────────────────────
 
-  Future<void> _enableLinuxGnome(String host, int socksPort, int httpPort) async {
+  Future<void> _enableLinuxGnome(
+    String host,
+    int socksPort,
+    int httpPort,
+  ) async {
     await _gsettings(['set', 'org.gnome.system.proxy', 'mode', 'manual']);
     for (final entry in <MapEntry<String, int>>[
       MapEntry('socks', socksPort),
@@ -118,7 +124,9 @@ $type::InternetSetOption([IntPtr]::Zero, 37, [IntPtr]::Zero, 0) | Out-Null
   Future<void> _gsettings(List<String> args) async {
     final result = await Process.run('gsettings', args);
     if (result.exitCode != 0) {
-      debugPrint('[SystemProxy] gsettings ${args.join(' ')} -> ${result.stderr}');
+      debugPrint(
+        '[SystemProxy] gsettings ${args.join(' ')} -> ${result.stderr}',
+      );
     }
   }
 }
