@@ -273,79 +273,79 @@ jobs:
             dist/*.exe
           if-no-files-found: error
 
-  # ── iOS (unsigned archive for the GitHub release page) ───────────────────
-  # NOTE: the iOS Xcode target + Xray xcframework wiring is still pending, so
-  # this may fail until that work lands. continue-on-error keeps the rest of
-  # the release publishing. App Store upload is a separate job below.
-  ios:
-    name: Build iOS (unsigned)
-    needs: preflight
-    runs-on: macos-14
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: stable
-          cache: true
-
-      - run: flutter pub get
-
-      - name: Build iOS (no codesign)
-        run: >
-          flutter build ios --release --no-codesign
-          --build-name=${{ needs.preflight.outputs.version }}
-          --build-number=${{ github.run_number }}
-
-      - name: Package .app
-        run: |
-          mkdir -p dist
-          ( cd build/ios/iphoneos && zip -r \
-            "$GITHUB_WORKSPACE/dist/ArmaVPN-${{ needs.preflight.outputs.version }}-ios-unsigned.zip" Runner.app )
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ios
-          path: dist/*
-          if-no-files-found: warn
-
-  # ── macOS desktop bundle ─────────────────────────────────────────────────
-  macos:
-    name: Build macOS
-    needs: preflight
-    runs-on: macos-14
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: stable
-          cache: true
-
-      - run: flutter pub get
-      - run: flutter config --enable-macos-desktop
-
-      - name: Build macOS
-        run: >
-          flutter build macos --release
-          --build-name=${{ needs.preflight.outputs.version }}
-          --build-number=${{ github.run_number }}
-
-      - name: Package
-        run: |
-          mkdir -p dist
-          ( cd build/macos/Build/Products/Release && zip -r \
-            "$GITHUB_WORKSPACE/dist/ArmaVPN-${{ needs.preflight.outputs.version }}-macos.zip" ./*.app )
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: macos
-          path: dist/*
-          if-no-files-found: warn
+#  # ── iOS (unsigned archive for the GitHub release page) ───────────────────
+#  # NOTE: the iOS Xcode target + Xray xcframework wiring is still pending, so
+#  # this may fail until that work lands. continue-on-error keeps the rest of
+#  # the release publishing. App Store upload is a separate job below.
+#  ios:
+#    name: Build iOS (unsigned)
+#    needs: preflight
+#    runs-on: macos-14
+#    continue-on-error: true
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - uses: subosito/flutter-action@v2
+#        with:
+#          flutter-version: ${{ env.FLUTTER_VERSION }}
+#          channel: stable
+#          cache: true
+#
+#      - run: flutter pub get
+#
+#      - name: Build iOS (no codesign)
+#        run: >
+#          flutter build ios --release --no-codesign
+#          --build-name=${{ needs.preflight.outputs.version }}
+#          --build-number=${{ github.run_number }}
+#
+#      - name: Package .app
+#        run: |
+#          mkdir -p dist
+#          ( cd build/ios/iphoneos && zip -r \
+#            "$GITHUB_WORKSPACE/dist/ArmaVPN-${{ needs.preflight.outputs.version }}-ios-unsigned.zip" Runner.app )
+#
+#      - uses: actions/upload-artifact@v4
+#        with:
+#          name: ios
+#          path: dist/*
+#          if-no-files-found: warn
+#
+#  # ── macOS desktop bundle ─────────────────────────────────────────────────
+#  macos:
+#    name: Build macOS
+#    needs: preflight
+#    runs-on: macos-14
+#    continue-on-error: true
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - uses: subosito/flutter-action@v2
+#        with:
+#          flutter-version: ${{ env.FLUTTER_VERSION }}
+#          channel: stable
+#          cache: true
+#
+#      - run: flutter pub get
+#      - run: flutter config --enable-macos-desktop
+#
+#      - name: Build macOS
+#        run: >
+#          flutter build macos --release
+#          --build-name=${{ needs.preflight.outputs.version }}
+#          --build-number=${{ github.run_number }}
+#
+#      - name: Package
+#        run: |
+#          mkdir -p dist
+#          ( cd build/macos/Build/Products/Release && zip -r \
+#            "$GITHUB_WORKSPACE/dist/ArmaVPN-${{ needs.preflight.outputs.version }}-macos.zip" ./*.app )
+#
+#      - uses: actions/upload-artifact@v4
+#        with:
+#          name: macos
+#          path: dist/*
+#          if-no-files-found: warn
 
   # ── Publish everything to the GitHub Releases page ───────────────────────
   github-release:
@@ -369,100 +369,100 @@ jobs:
           fail_on_unmatched_files: false
           files: artifacts/**/*
 
-  # ── Publish AAB to Google Play (internal track) ──────────────────────────
-  # Requires a signed AAB, so gated on BOTH the Play service account and the
-  # Android signing keystore being configured.
-  publish-play:
-    name: Publish to Google Play
-    needs: [preflight, android]
-    if: >
-      needs.android.result == 'success' &&
-      needs.preflight.outputs.has_play == 'true' &&
-      needs.preflight.outputs.has_android_signing == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: android
-          path: android-artifacts
-
-      - name: Write Play service account key
-        env:
-          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-        run: printf '%s' "$PLAY_SERVICE_ACCOUNT_JSON" > play-service-account.json
-
-      - name: Upload to Play (internal track)
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJson: play-service-account.json
-          packageName: com.arma.vpn
-          releaseFiles: android-artifacts/*.aab
-          track: internal # promote to production manually, or change here
-          status: completed
-
-  # ── Publish IPA to App Store Connect (TestFlight) ────────────────────────
-  # Self-contained signed build. NOTE: blocked on the pending iOS Xcode/Xray
-  # wiring — continue-on-error so it never blocks the rest of the release.
-  publish-appstore:
-    name: Publish to App Store (TestFlight)
-    needs: [preflight]
-    if: needs.preflight.outputs.has_appstore == 'true'
-    runs-on: macos-14
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: stable
-          cache: true
-
-      - run: flutter pub get
-
-      - name: Import distribution certificate
-        uses: apple-actions/import-codesign-certs@v3
-        with:
-          p12-file-base64: ${{ secrets.APPLE_DISTRIBUTION_CERT_BASE64 }}
-          p12-password: ${{ secrets.APPLE_DISTRIBUTION_CERT_PASSWORD }}
-
-      - name: Install provisioning profile
-        env:
-          APPLE_PROVISIONING_PROFILE_BASE64: ${{ secrets.APPLE_PROVISIONING_PROFILE_BASE64 }}
-        run: |
-          PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
-          mkdir -p "$PROFILE_DIR"
-          echo "$APPLE_PROVISIONING_PROFILE_BASE64" | base64 --decode > "$PROFILE_DIR/build.mobileprovision"
-
-      - name: Generate ExportOptions.plist
-        env:
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          cat > ios/ExportOptions.plist <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key><string>app-store</string>
-            <key>teamID</key><string>$APPLE_TEAM_ID</string>
-            <key>uploadBitcode</key><false/>
-            <key>uploadSymbols</key><true/>
-            <key>signingStyle</key><string>manual</string>
-          </dict>
-          </plist>
-          EOF
-
-      - name: Build signed IPA
-        run: >
-          flutter build ipa --release
-          --build-name=${{ needs.preflight.outputs.version }}
-          --build-number=${{ github.run_number }}
-          --export-options-plist=ios/ExportOptions.plist
-
-      - name: Upload to TestFlight
-        uses: apple-actions/upload-testflight-build@v3
-        with:
-          app-path: build/ios/ipa/*.ipa
-          issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          api-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-          api-private-key: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+#  # ── Publish AAB to Google Play (internal track) ──────────────────────────
+#  # Requires a signed AAB, so gated on BOTH the Play service account and the
+#  # Android signing keystore being configured.
+#  publish-play:
+#    name: Publish to Google Play
+#    needs: [preflight, android]
+#    if: >
+#      needs.android.result == 'success' &&
+#      needs.preflight.outputs.has_play == 'true' &&
+#      needs.preflight.outputs.has_android_signing == 'true'
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/download-artifact@v4
+#        with:
+#          name: android
+#          path: android-artifacts
+#
+#      - name: Write Play service account key
+#        env:
+#          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+#        run: printf '%s' "$PLAY_SERVICE_ACCOUNT_JSON" > play-service-account.json
+#
+#      - name: Upload to Play (internal track)
+#        uses: r0adkll/upload-google-play@v1
+#        with:
+#          serviceAccountJson: play-service-account.json
+#          packageName: com.arma.vpn
+#          releaseFiles: android-artifacts/*.aab
+#          track: internal # promote to production manually, or change here
+#          status: completed
+#
+#  # ── Publish IPA to App Store Connect (TestFlight) ────────────────────────
+#  # Self-contained signed build. NOTE: blocked on the pending iOS Xcode/Xray
+#  # wiring — continue-on-error so it never blocks the rest of the release.
+#  publish-appstore:
+#    name: Publish to App Store (TestFlight)
+#    needs: [preflight]
+#    if: needs.preflight.outputs.has_appstore == 'true'
+#    runs-on: macos-14
+#    continue-on-error: true
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - uses: subosito/flutter-action@v2
+#        with:
+#          flutter-version: ${{ env.FLUTTER_VERSION }}
+#          channel: stable
+#          cache: true
+#
+#      - run: flutter pub get
+#
+#      - name: Import distribution certificate
+#        uses: apple-actions/import-codesign-certs@v3
+#        with:
+#          p12-file-base64: ${{ secrets.APPLE_DISTRIBUTION_CERT_BASE64 }}
+#          p12-password: ${{ secrets.APPLE_DISTRIBUTION_CERT_PASSWORD }}
+#
+#      - name: Install provisioning profile
+#        env:
+#          APPLE_PROVISIONING_PROFILE_BASE64: ${{ secrets.APPLE_PROVISIONING_PROFILE_BASE64 }}
+#        run: |
+#          PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+#          mkdir -p "$PROFILE_DIR"
+#          echo "$APPLE_PROVISIONING_PROFILE_BASE64" | base64 --decode > "$PROFILE_DIR/build.mobileprovision"
+#
+#      - name: Generate ExportOptions.plist
+#        env:
+#          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+#        run: |
+#          cat > ios/ExportOptions.plist <<EOF
+#          <?xml version="1.0" encoding="UTF-8"?>
+#          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+#          <plist version="1.0">
+#          <dict>
+#            <key>method</key><string>app-store</string>
+#            <key>teamID</key><string>$APPLE_TEAM_ID</string>
+#            <key>uploadBitcode</key><false/>
+#            <key>uploadSymbols</key><true/>
+#            <key>signingStyle</key><string>manual</string>
+#          </dict>
+#          </plist>
+#          EOF
+#
+#      - name: Build signed IPA
+#        run: >
+#          flutter build ipa --release
+#          --build-name=${{ needs.preflight.outputs.version }}
+#          --build-number=${{ github.run_number }}
+#          --export-options-plist=ios/ExportOptions.plist
+#
+#      - name: Upload to TestFlight
+#        uses: apple-actions/upload-testflight-build@v3
+#        with:
+#          app-path: build/ios/ipa/*.ipa
+#          issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+#          api-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+#          api-private-key: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
