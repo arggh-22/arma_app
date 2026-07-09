@@ -10,7 +10,6 @@ import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/features/api/presentation/providers/default_server_refresh_scheduler_provider.dart';
 import 'package:arma_proxy_vpn_client/features/log/presentation/providers/log_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/domain/entities/default_server_auto_update_interval.dart';
-import 'package:arma_proxy_vpn_client/features/settings/domain/entities/dns_presets.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/anti_censorship_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/default_server_auto_update_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/dns_settings_provider.dart';
@@ -266,30 +265,6 @@ class SettingsScreen extends ConsumerWidget {
                       .setProtocol(values.first);
                 },
               ),
-            ),
-          ),
-
-          // DNS Presets
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text('DNS Presets', style: theme.textTheme.titleSmall),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Wrap(
-              spacing: 4,
-              runSpacing: 4,
-              children: DnsPresets.list.map((preset) {
-                final isSelected = dnsSettings.presetId == preset.id;
-                return FilterChip(
-                  label: Text(preset.name),
-                  selected: isSelected,
-                  onSelected: (_) {
-                    ref.read(dnsSettingsProvider.notifier).applyPreset(preset);
-                  },
-                  tooltip: preset.description,
-                );
-              }).toList(),
             ),
           ),
 

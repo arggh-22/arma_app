@@ -82,10 +82,13 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     if (target == null) return; // not loaded / not an imported server.
 
     _revealHandledId = id;
-    final groupName = target.groupName;
+    // Groups are keyed by subscription id (see _buildGroupedList), NOT by the
+    // display group name — so the accordion key must be computed the same way,
+    // otherwise the group never expands and the card can't be scrolled into view.
+    final groupKey = target.subscriptionId ?? 'manual:${target.groupName}';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      setState(() => _expandedGroup = groupName);
+      setState(() => _expandedGroup = groupKey);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         final ctx = _cardKeys[id]?.currentContext;
