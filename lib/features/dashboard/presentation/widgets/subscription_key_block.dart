@@ -272,17 +272,30 @@ class _InfoRow extends StatelessWidget {
       children: [
         Icon(Icons.data_usage, size: 13, color: colorScheme.onSurfaceVariant),
         const Gap(4),
-        Text(usageText, style: subtle),
-        const Spacer(),
+        // Usage flexes + ellipsizes so a narrow card can't overflow; the short
+        // expiry label stays pinned to the right.
+        Expanded(
+          child: Text(
+            usageText,
+            style: subtle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const Gap(8),
         if (emphasize) ...[
           Icon(Icons.warning_amber_rounded, size: 13, color: expiryColor),
           const Gap(3),
         ],
-        Text(
-          expiryText,
-          style: subtle?.copyWith(
-            color: expiryColor,
-            fontWeight: emphasize ? FontWeight.bold : null,
+        Flexible(
+          child: Text(
+            expiryText,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: subtle?.copyWith(
+              color: expiryColor,
+              fontWeight: emphasize ? FontWeight.bold : null,
+            ),
           ),
         ),
       ],

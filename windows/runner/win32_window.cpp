@@ -179,6 +179,16 @@ Win32Window::MessageHandler(HWND hwnd,
                             WPARAM const wparam,
                             LPARAM const lparam) noexcept {
   switch (message) {
+    case WM_GETMINMAXINFO: {
+      // Enforce a minimum window size so the two-pane layout stays usable.
+      auto* info = reinterpret_cast<MINMAXINFO*>(lparam);
+      const UINT dpi = GetDpiForWindow(hwnd);
+      const double scale = dpi > 0 ? dpi / 96.0 : 1.0;
+      info->ptMinTrackSize.x = static_cast<LONG>(820 * scale);
+      info->ptMinTrackSize.y = static_cast<LONG>(600 * scale);
+      return 0;
+    }
+
     case WM_DESTROY:
       window_handle_ = nullptr;
       Destroy();
