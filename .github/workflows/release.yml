@@ -195,28 +195,14 @@ jobs:
             dist/*.AppImage
           if-no-files-found: error
 
-  # ── Windows desktop: portable zip + Setup.exe, for x64 and arm64 ─────────
+  # ── Windows desktop: portable zip + Setup.exe (x64) ─────────────────────
+  # x64 only: Flutter's stable channel doesn't ship a native Windows-arm64 SDK
+  # (subosito/flutter-action can't resolve an arm64 build), and Windows-on-ARM
+  # runs x64 apps under emulation — so the x64 build serves arm64 machines too.
   windows:
-    name: Build Windows (${{ matrix.arch }})
+    name: Build Windows
     needs: preflight
-    runs-on: ${{ matrix.runner }}
-    # arm64 uses GitHub's windows-11-arm runner; if it isn't available on your
-    # plan, that leg is skipped instead of failing the whole release.
-    continue-on-error: ${{ matrix.arch == 'arm64' }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: x64
-            runner: windows-latest
-            xray_asset: Xray-windows-64.zip
-            iss_arch: x64compatible
-            build_dir: build\windows\x64\runner\Release
-          - arch: arm64
-            runner: windows-11-arm
-            xray_asset: Xray-windows-arm64-v8a.zip
-            iss_arch: arm64
-            build_dir: build\windows\arm64\runner\Release
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -229,11 +215,11 @@ jobs:
       - run: flutter pub get
       - run: flutter config --enable-windows-desktop
 
-      - name: Fetch xray-core (windows-${{ matrix.arch }})
+      - name: Fetch xray-core (windows-x64)
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path assets/xray | Out-Null
-          Invoke-WebRequest -Uri "https://github.com/XTLS/Xray-core/releases/latest/download/${{ matrix.xray_asset }}" -OutFile "$env:TEMP\xray.zip"
+          Invoke-WebRequest -Uri "https://github.com/XTLS/Xray-core/releases/latest/download/Xray-windows-64.zip" -OutFile "$env:TEMP\xray.zip"
           Expand-Archive -Path "$env:TEMP\xray.zip" -DestinationPath assets/xray -Force
 
       - name: Build Windows
@@ -247,20 +233,20 @@ jobs:
         run: |
           $ver = "${{ needs.preflight.outputs.version }}"
           New-Item -ItemType Directory -Force -Path dist | Out-Null
-          Compress-Archive -Path "${{ matrix.build_dir }}\*" `
-            -DestinationPath "dist/ArmaVPN-$ver-windows-${{ matrix.arch }}.zip"
+          Compress-Archive -Path "build\windows\x64\runner\Release\*" `
+            -DestinationPath "dist/ArmaVPN-$ver-windows-x64.zip"
           # Inno Setup → Setup.exe wizard (Start-menu shortcut, uninstaller).
           choco install innosetup --no-progress -y
           & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" `
             "/DMyAppVersion=$ver" `
-            "/DTargetArch=${{ matrix.iss_arch }}" `
-            "/DArchTag=${{ matrix.arch }}" `
-            "/DBuildDir=$PWD\${{ matrix.build_dir }}" `
+            "/DTargetArch=x64compatible" `
+            "/DArchTag=x64" `
+            "/DBuildDir=$PWD\build\windows\x64\runner\Release" `
             packaging\windows\installer.iss
 
       - uses: actions/upload-artifact@v4
         with:
-          name: windows-${{ matrix.arch }}
+          name: windows-x64
           path: |
             dist/*.zip
             dist/*.exe

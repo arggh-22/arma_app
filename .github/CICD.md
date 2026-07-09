@@ -91,18 +91,21 @@ See `desktop-vpn-proxy-mode` in project memory.
 
 ## Windows package formats
 
-The Windows release job runs for **x64 and arm64** and produces, per arch:
+The Windows release job (x64) produces:
 
 | Artifact | For |
 |----------|-----|
-| `ArmaVPN-<ver>-windows-<arch>-setup.exe` | Inno Setup wizard installer (Start-menu shortcut, uninstaller) |
-| `ArmaVPN-<ver>-windows-<arch>.zip` | portable (extract + run the `.exe`) |
+| `ArmaVPN-<ver>-windows-x64-setup.exe` | Inno Setup wizard installer (Start-menu shortcut, uninstaller) |
+| `ArmaVPN-<ver>-windows-x64.zip` | portable (extract + run the `.exe`) |
 
-The installer is built by `packaging/windows/installer.iss` via Inno Setup
-(`choco install innosetup`). **arm64** builds on GitHub's `windows-11-arm`
-runner — if that runner isn't available on your plan, the arm64 leg is skipped
-(marked `continue-on-error`) and the release still ships x64. Unsigned installers
-trigger a SmartScreen warning until you code-sign them.
+Built by `packaging/windows/installer.iss` via Inno Setup (`choco install
+innosetup`). Unsigned installers trigger a SmartScreen warning until code-signed.
+
+> **Why x64 only (no native arm64):** Flutter's stable channel doesn't publish a
+> Windows-arm64 SDK, so `subosito/flutter-action` can't build it (`Unable to
+> determine Flutter version ... architecture: arm64`). It's also unnecessary —
+> **Windows-on-ARM runs x64 apps under emulation**, so this build serves arm64
+> machines too. Revisit if/when Flutter ships a native Windows-arm64 toolchain.
 
 ## Linux package formats
 
