@@ -4,6 +4,7 @@ import 'package:arma_proxy_vpn_client/features/settings/domain/entities/default_
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/theme_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/xray_version_provider.dart';
 import 'package:arma_proxy_vpn_client/features/settings/presentation/screens/settings_screen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -148,6 +149,37 @@ void main() {
       );
     },
   );
+
+  testWidgets('desktop centers settings in a constrained (<=720) column', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    try {
+      tester.view.physicalSize = const Size(1400, 1000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final prefs = await SharedPreferences.getInstance();
+      await _pumpSettingsScreen(
+        tester,
+        prefs: prefs,
+        fakeScheduler: _FakeSchedulerClient(),
+      );
+
+      final context = tester.element(find.byType(SettingsScreen));
+      final l10n = AppLocalizations.of(context)!;
+      // Content is not stretched to the full 1400px window width.
+      expect(
+        tester.getSize(find.text(l10n.armaVpnSettingsSection).first).width,
+        lessThan(720),
+      );
+      // Settings still render.
+      expect(find.text(l10n.generalSection), findsOneWidget);
+    } finally {
+      debugDefaultTargetPlatformOverride = null;
+    }
+  });
 }
 
 Future<void> _pumpSettingsScreen(
