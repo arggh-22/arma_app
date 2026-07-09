@@ -18,7 +18,7 @@ class VpnPlatformService {
 
   /// Start the VPN with a complete Xray JSON config and server display name.
   Future<bool> startVpn(String configJson, String serverName) async {
-    print(
+    debugPrint(
       '[VpnPlatformService] startVpn(configJson.length=${configJson.length}, serverName=$serverName)',
     );
     final result =
@@ -27,15 +27,15 @@ class VpnPlatformService {
           'serverName': serverName,
         }) ??
         false;
-    print('[VpnPlatformService] startVpn result: $result');
+    debugPrint('[VpnPlatformService] startVpn result: $result');
     return result;
   }
 
   /// Stop the currently active VPN connection.
   Future<bool> stopVpn() async {
-    print('[VpnPlatformService] stopVpn()');
+    debugPrint('[VpnPlatformService] stopVpn()');
     final result = await _methodChannel.invokeMethod<bool>('stopVpn') ?? false;
-    print('[VpnPlatformService] stopVpn result: $result');
+    debugPrint('[VpnPlatformService] stopVpn result: $result');
     return result;
   }
 
@@ -43,17 +43,17 @@ class VpnPlatformService {
   Future<bool> get isRunning async {
     final result =
         await _methodChannel.invokeMethod<bool>('isRunning') ?? false;
-    print('[VpnPlatformService] isRunning: $result');
+    debugPrint('[VpnPlatformService] isRunning: $result');
     return result;
   }
 
   /// Request VPN permission from the Android system.
   Future<bool> requestVpnPermission() async {
-    print('[VpnPlatformService] requestVpnPermission()');
+    debugPrint('[VpnPlatformService] requestVpnPermission()');
     final result =
         await _methodChannel.invokeMethod<bool>('requestVpnPermission') ??
         false;
-    print('[VpnPlatformService] requestVpnPermission result: $result');
+    debugPrint('[VpnPlatformService] requestVpnPermission result: $result');
     return result;
   }
 
@@ -88,7 +88,7 @@ class VpnPlatformService {
       final mapped = Map<String, dynamic>.from(event as Map);
       // Log all events EXCEPT frequent traffic stats
       if (mapped['type'] != 'stats') {
-        print('[VpnPlatformService] EVENT: $mapped');
+        debugPrint('[VpnPlatformService] EVENT: $mapped');
       }
       return mapped;
     }).asBroadcastStream();

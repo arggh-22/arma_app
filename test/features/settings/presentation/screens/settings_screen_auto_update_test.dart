@@ -39,11 +39,20 @@ void main() {
         .dy;
     expect(armaHeaderTop, lessThan(generalHeaderTop));
 
-    final disabledRadio = tester
-        .widget<RadioListTile<DefaultServerAutoUpdateInterval>>(
-          find.byKey(const Key('default-server-auto-update-disabled')),
+    // The tiles are wrapped in a RadioGroup ancestor that owns the selected
+    // value, so assert on the group rather than a per-tile groupValue.
+    final radioGroup = tester
+        .widget<RadioGroup<DefaultServerAutoUpdateInterval>>(
+          find.ancestor(
+            of: find.byKey(
+              const Key('default-server-auto-update-disabled'),
+            ),
+            matching: find.byType(
+              RadioGroup<DefaultServerAutoUpdateInterval>,
+            ),
+          ),
         );
-    expect(disabledRadio.groupValue, DefaultServerAutoUpdateInterval.disabled);
+    expect(radioGroup.groupValue, DefaultServerAutoUpdateInterval.disabled);
   });
 
   testWidgets(

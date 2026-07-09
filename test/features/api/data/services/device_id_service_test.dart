@@ -133,7 +133,7 @@ void main() {
           await service.resolveDeviceId();
         },
         zoneSpecification: ZoneSpecification(
-          print: (_, __, ___, line) => printed.add(line),
+          print: (_, _, _, line) => printed.add(line),
         ),
       );
 

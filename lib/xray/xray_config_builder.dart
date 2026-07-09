@@ -301,24 +301,6 @@ class XrayConfigBuilder {
     };
   }
 
-  /// SOCKS5 inbound on 127.0.0.1:10808 — kept for future per-app proxy mode.
-  @Deprecated('Use _buildTunInbound() for VPN mode')
-  static Map<String, dynamic> _buildSocksInbound() {
-    return {
-      'tag': 'socks-in',
-      'protocol': 'socks',
-      'listen': '127.0.0.1',
-      'port': 10808,
-      'settings': {'auth': 'noauth', 'udp': true, 'userLevel': 0},
-      'sniffing': {
-        'enabled': true,
-        'destOverride': ['http', 'tls', 'quic'],
-        'metadataOnly': false,
-        'routeOnly': false,
-      },
-    };
-  }
-
   /// Builds the proxy outbound with protocol-specific settings.
   ///
   /// When [muxEnabled] is true, adds mux configuration (except for Hysteria2

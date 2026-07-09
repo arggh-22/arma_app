@@ -9,7 +9,6 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
-import android.os.Bundle
 import android.util.Base64
 import android.util.Log
 import io.flutter.embedding.android.FlutterActivity

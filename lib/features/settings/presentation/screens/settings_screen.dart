@@ -72,11 +72,8 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
 
-          RadioListTile<DefaultServerAutoUpdateInterval>(
-            key: const Key('default-server-auto-update-disabled'),
-            value: DefaultServerAutoUpdateInterval.disabled,
+          RadioGroup<DefaultServerAutoUpdateInterval>(
             groupValue: autoUpdateInterval,
-            title: Text(l10n.defaultServerAutoUpdateDisabled),
             onChanged: (value) async {
               if (value != null) {
                 await ref
@@ -84,45 +81,30 @@ class SettingsScreen extends ConsumerWidget {
                     .setInterval(value);
               }
             },
-          ),
-          RadioListTile<DefaultServerAutoUpdateInterval>(
-            key: const Key('default-server-auto-update-12h'),
-            value: DefaultServerAutoUpdateInterval.every12Hours,
-            groupValue: autoUpdateInterval,
-            title: Text(l10n.defaultServerAutoUpdateEvery12Hours),
-            onChanged: (value) async {
-              if (value != null) {
-                await ref
-                    .read(defaultServerAutoUpdateProvider.notifier)
-                    .setInterval(value);
-              }
-            },
-          ),
-          RadioListTile<DefaultServerAutoUpdateInterval>(
-            key: const Key('default-server-auto-update-24h'),
-            value: DefaultServerAutoUpdateInterval.every24Hours,
-            groupValue: autoUpdateInterval,
-            title: Text(l10n.defaultServerAutoUpdateEvery24Hours),
-            onChanged: (value) async {
-              if (value != null) {
-                await ref
-                    .read(defaultServerAutoUpdateProvider.notifier)
-                    .setInterval(value);
-              }
-            },
-          ),
-          RadioListTile<DefaultServerAutoUpdateInterval>(
-            key: const Key('default-server-auto-update-7d'),
-            value: DefaultServerAutoUpdateInterval.every7Days,
-            groupValue: autoUpdateInterval,
-            title: Text(l10n.defaultServerAutoUpdateEvery7Days),
-            onChanged: (value) async {
-              if (value != null) {
-                await ref
-                    .read(defaultServerAutoUpdateProvider.notifier)
-                    .setInterval(value);
-              }
-            },
+            child: Column(
+              children: [
+                RadioListTile<DefaultServerAutoUpdateInterval>(
+                  key: const Key('default-server-auto-update-disabled'),
+                  value: DefaultServerAutoUpdateInterval.disabled,
+                  title: Text(l10n.defaultServerAutoUpdateDisabled),
+                ),
+                RadioListTile<DefaultServerAutoUpdateInterval>(
+                  key: const Key('default-server-auto-update-12h'),
+                  value: DefaultServerAutoUpdateInterval.every12Hours,
+                  title: Text(l10n.defaultServerAutoUpdateEvery12Hours),
+                ),
+                RadioListTile<DefaultServerAutoUpdateInterval>(
+                  key: const Key('default-server-auto-update-24h'),
+                  value: DefaultServerAutoUpdateInterval.every24Hours,
+                  title: Text(l10n.defaultServerAutoUpdateEvery24Hours),
+                ),
+                RadioListTile<DefaultServerAutoUpdateInterval>(
+                  key: const Key('default-server-auto-update-7d'),
+                  value: DefaultServerAutoUpdateInterval.every7Days,
+                  title: Text(l10n.defaultServerAutoUpdateEvery7Days),
+                ),
+              ],
+            ),
           ),
           if (overdueRefreshState.hasRecentOverdueRefresh)
             Padding(
@@ -759,24 +741,30 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ),
-          for (final type in PingType.values)
-            RadioListTile<PingType>(
-              key: Key('ping-type-${type.key}'),
-              value: type,
-              groupValue: pingType,
-              title: Text(_pingTypeTitle(l10n, type)),
-              subtitle: Text(
-                _pingTypeSubtitle(l10n, type),
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(pingTypeProvider.notifier).set(value);
-                }
-              },
+          RadioGroup<PingType>(
+            groupValue: pingType,
+            onChanged: (value) {
+              if (value != null) {
+                ref.read(pingTypeProvider.notifier).set(value);
+              }
+            },
+            child: Column(
+              children: [
+                for (final type in PingType.values)
+                  RadioListTile<PingType>(
+                    key: Key('ping-type-${type.key}'),
+                    value: type,
+                    title: Text(_pingTypeTitle(l10n, type)),
+                    subtitle: Text(
+                      _pingTypeSubtitle(l10n, type),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+              ],
             ),
+          ),
 
           const Divider(),
 
@@ -1063,7 +1051,6 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   void _showCustomBlockListDialog(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
     final currentUrl = ref.read(dnsSettingsProvider).filtering.customBlockList;
     final controller = TextEditingController(text: currentUrl);
 

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hive_ce/hive_ce.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -48,7 +47,7 @@ class ConnectionNotifier extends _$ConnectionNotifier
 
   @override
   ConnectionStatus build() {
-    print('[ConnectionNotifier] build() — subscribing to vpnEvents');
+    debugPrint('[ConnectionNotifier] build() — subscribing to vpnEvents');
     _eventSubscription = _platformService.vpnEvents
         .where((e) => e['type'] == 'status')
         .listen(_handleStatusEvent);
@@ -58,7 +57,7 @@ class ConnectionNotifier extends _$ConnectionNotifier
     _syncInitialState();
 
     ref.onDispose(() {
-      print('[ConnectionNotifier] dispose() — cleaning up');
+      debugPrint('[ConnectionNotifier] dispose() — cleaning up');
       _eventSubscription?.cancel();
       _durationTimer?.cancel();
       _stateTimeoutTimer?.cancel();
@@ -69,9 +68,9 @@ class ConnectionNotifier extends _$ConnectionNotifier
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState lifecycleState) {
-    if (lifecycleState == AppLifecycleState.resumed) {
-      print('[ConnectionNotifier] App resumed — re-syncing VPN state');
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      debugPrint('[ConnectionNotifier] App resumed — re-syncing VPN state');
       resyncState();
     }
   }
@@ -81,7 +80,7 @@ class ConnectionNotifier extends _$ConnectionNotifier
   Future<void> resyncState() async {
     try {
       final running = await _platformService.isRunning;
-      print('[ConnectionNotifier] resyncState: isRunning=$running, currentState=$state');
+      debugPrint('[ConnectionNotifier] resyncState: isRunning=$running, currentState=$state');
       if (running && state is! Connected) {
         final serverName =
             state is Connecting ? (state as Connecting).serverName : 'Active';
@@ -92,7 +91,7 @@ class ConnectionNotifier extends _$ConnectionNotifier
         _cancelStateTimeout();
       }
     } catch (e) {
-      print('[ConnectionNotifier] resyncState error: $e');
+      debugPrint('[ConnectionNotifier] resyncState error: $e');
     }
   }
 
@@ -100,18 +99,18 @@ class ConnectionNotifier extends _$ConnectionNotifier
     await Future.delayed(const Duration(milliseconds: 800));
     try {
       final running = await _platformService.isRunning;
-      print('[ConnectionNotifier] _syncInitialState: isRunning=$running, currentState=$state');
+      debugPrint('[ConnectionNotifier] _syncInitialState: isRunning=$running, currentState=$state');
       if (running && state is Disconnected) {
         state = Connected(serverName: 'Active', connectedAt: DateTime.now());
       }
     } catch (e) {
-      print('[ConnectionNotifier] _syncInitialState error: $e');
+      debugPrint('[ConnectionNotifier] _syncInitialState error: $e');
     }
   }
 
   /// Connect to the given [server].
   Future<void> connect(ServerConfig server, {bool isManual = true}) async {
-    print('[ConnectionNotifier] connect(${server.name}) — current state: $state');
+    debugPrint('[ConnectionNotifier] connect(${server.name}) — current state: $state');
 
     // Switching servers / reconnecting: tear down any existing (or pending)
     // session and WAIT until the native side reports it is fully stopped
@@ -135,7 +134,7 @@ class ConnectionNotifier extends _$ConnectionNotifier
     _startStateTimeout(_connectingTimeout);
 
     final hasPermission = await _platformService.requestVpnPermission();
-    print('[ConnectionNotifier] VPN permission: $hasPermission');
+    debugPrint('[ConnectionNotifier] VPN permission: $hasPermission');
     if (!hasPermission) {
       state = const Disconnected('VPN permission denied');
       _cancelStateTimeout();
@@ -149,7 +148,7 @@ class ConnectionNotifier extends _$ConnectionNotifier
     // every dial silently hangs. Xray dials this same address:port directly, so
     // if we can't even open TCP here, the tunnel cannot work either.
     final reachable = await _isServerReachable(server);
-    print('[ConnectionNotifier] reachability ${server.address}:${server.port} '
+    debugPrint('[ConnectionNotifier] reachability ${server.address}:${server.port} '
         '= $reachable');
     if (!reachable) {
       state = Disconnected(
@@ -189,15 +188,15 @@ class ConnectionNotifier extends _$ConnectionNotifier
     }
 
     try {
-      print('[ConnectionNotifier] Calling startVpn...');
+      debugPrint('[ConnectionNotifier] Calling startVpn...');
       final started = await _platformService.startVpn(configJson, server.name);
-      print('[ConnectionNotifier] startVpn returned: $started');
+      debugPrint('[ConnectionNotifier] startVpn returned: $started');
       if (!started) {
         state = const Disconnected('Failed to start VPN');
         _cancelStateTimeout();
       }
     } catch (e) {
-      print('[ConnectionNotifier] startVpn ERROR: $e');
+      debugPrint('[ConnectionNotifier] startVpn ERROR: $e');
       state = Disconnected('Error: $e');
       _cancelStateTimeout();
     }
@@ -221,7 +220,7 @@ class ConnectionNotifier extends _$ConnectionNotifier
       );
       return true;
     } catch (e) {
-      print('[ConnectionNotifier] reachability check failed: $e');
+      debugPrint('[ConnectionNotifier] reachability check failed: $e');
       return false;
     } finally {
       socket?.destroy();
@@ -230,7 +229,7 @@ class ConnectionNotifier extends _$ConnectionNotifier
 
   /// Disconnect from the current VPN connection.
   Future<void> disconnect() async {
-    print('[ConnectionNotifier] disconnect() — current state: $state');
+    debugPrint('[ConnectionNotifier] disconnect() — current state: $state');
     if (state is Disconnected) return;
 
     state = const Disconnecting();
@@ -238,9 +237,9 @@ class ConnectionNotifier extends _$ConnectionNotifier
 
     try {
       await _platformService.stopVpn();
-      print('[ConnectionNotifier] stopVpn called');
+      debugPrint('[ConnectionNotifier] stopVpn called');
     } catch (e) {
-      print('[ConnectionNotifier] stopVpn ERROR: $e');
+      debugPrint('[ConnectionNotifier] stopVpn ERROR: $e');
       state = const Disconnected();
       _cancelStateTimeout();
     }
@@ -274,7 +273,7 @@ class ConnectionNotifier extends _$ConnectionNotifier
   void _startStateTimeout(Duration timeout) {
     _cancelStateTimeout();
     _stateTimeoutTimer = Timer(timeout, () {
-      print('[ConnectionNotifier] State timeout — checking actual state');
+      debugPrint('[ConnectionNotifier] State timeout — checking actual state');
       resyncState();
     });
   }
@@ -287,7 +286,7 @@ class ConnectionNotifier extends _$ConnectionNotifier
   /// Handle status events from the native VPN process via EventChannel.
   void _handleStatusEvent(Map<String, dynamic> event) {
     final status = event['state'] as String?;
-    print('[ConnectionNotifier] _handleStatusEvent: status=$status, current=$state');
+    debugPrint('[ConnectionNotifier] _handleStatusEvent: status=$status, current=$state');
     _cancelStateTimeout();
     switch (status) {
       case 'connecting':

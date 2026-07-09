@@ -69,3 +69,4 @@ vendor/
 coverage/
 .cache/
 tmp/
+/problem_export

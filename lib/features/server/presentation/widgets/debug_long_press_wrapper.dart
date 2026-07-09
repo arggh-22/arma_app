@@ -121,7 +121,7 @@ class _DebugLongPressWrapperState extends State<DebugLongPressWrapper>
               right: 4,
               child: AnimatedBuilder(
                 animation: _progressController,
-                builder: (_, __) => SizedBox(
+                builder: (_, _) => SizedBox(
                   width: 24,
                   height: 24,
                   child: CircularProgressIndicator(

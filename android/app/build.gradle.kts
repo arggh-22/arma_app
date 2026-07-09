@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
-    id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    // The Flutter Gradle Plugin applies the Kotlin Android plugin (built-in Kotlin).
+    // KGP is declared on the classpath in settings.gradle.kts.
     id("dev.flutter.flutter-gradle-plugin")
 }
 

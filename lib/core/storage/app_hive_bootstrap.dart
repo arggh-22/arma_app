@@ -7,7 +7,6 @@ import 'package:arma_proxy_vpn_client/features/server/data/models/server_config_
 import 'package:arma_proxy_vpn_client/features/server/data/models/subscription_model.dart';
 import 'package:arma_proxy_vpn_client/hive_registrar.g.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:hive_ce/hive_ce.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 
