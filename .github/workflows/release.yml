@@ -79,6 +79,19 @@ jobs:
 
       - run: flutter pub get
 
+      # The `jni` plugin builds native code via AGP's externalNativeBuild and
+      # pins no CMake version, so AGP defaults to cmake;3.22.1 and tries to
+      # auto-install it through its own embedded SDK installer. That installer
+      # intermittently fetches a corrupt archive on CI ("Archive is not a ZIP
+      # archive" → configureCMakeRelease fails). Install the exact version up
+      # front with sdkmanager so AGP finds it already present and skips its
+      # buggy auto-install path entirely.
+      - name: Install CMake for Android NDK build
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "cmake;3.22.1"
+
       # Only present when the ANDROID_KEYSTORE_* secrets are set. Without them
       # the build falls back to debug signing (see android/app/build.gradle.kts)
       # — installable for testing but NOT accepted by Play (publish-play is
