@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -64,6 +65,22 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
   /// rebuilds the FAB — never the heavy grouped list. Rebuilding the list
   /// mid-fling dropped frames and stalled the scroll, forcing a second swipe.
   final ValueNotifier<bool> _showImportFab = ValueNotifier<bool>(true);
+
+  /// Desktop lays a group's servers out as a multi-column grid; mobile keeps
+  /// the single-column list.
+  bool get _isDesktopUi {
+    if (kIsWeb) return false;
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.linux:
+      case TargetPlatform.windows:
+      case TargetPlatform.macOS:
+        return true;
+      case TargetPlatform.android:
+      case TargetPlatform.iOS:
+      case TargetPlatform.fuchsia:
+        return false;
+    }
+  }
 
   bool _onScroll(UserScrollNotification notification) {
     // The sort/filter bar is a horizontal ListView whose scroll notifications
@@ -520,18 +537,23 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
                   pinKey,
                   displayName,
                 ),
-          children: [
-            for (final server in groupServers)
-              _buildServerCard(
-                context,
-                ref,
-                server,
-                activeServer,
-                latencyMap,
-                multiSelect,
-                isMultiSelectActive,
-              ),
-          ],
+          children: () {
+            final cards = [
+              for (final server in groupServers)
+                _buildServerCard(
+                  context,
+                  ref,
+                  server,
+                  activeServer,
+                  latencyMap,
+                  multiSelect,
+                  isMultiSelectActive,
+                ),
+            ];
+            // Desktop: pack cards into a responsive grid to use the width.
+            // Mobile: unchanged single-column list.
+            return _isDesktopUi ? [_DesktopServerGrid(cards: cards)] : cards;
+          }(),
         ),
       );
     }
@@ -1067,6 +1089,42 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
       context,
       message: '${l10n.importSuccess} — ${config.name}',
       backgroundColor: Colors.green.shade700,
+    );
+  }
+}
+
+/// Lays out a subscription group's server cards in a responsive grid for
+/// desktop — 1–3 columns depending on available width. Each card keeps its
+/// own [GlobalKey] (reveal/scroll-into-view) and full behavior.
+class _DesktopServerGrid extends StatelessWidget {
+  const _DesktopServerGrid({required this.cards});
+
+  final List<Widget> cards;
+
+  static const double _minCardWidth = 340;
+  static const double _spacing = 12;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxWidth = constraints.maxWidth;
+        final columns = (maxWidth / (_minCardWidth + _spacing))
+            .floor()
+            .clamp(1, 3);
+        if (columns <= 1) {
+          // Narrow desktop window — behave like the mobile column.
+          return Column(children: cards);
+        }
+        final cardWidth = (maxWidth - _spacing * (columns - 1)) / columns;
+        return Wrap(
+          spacing: _spacing,
+          runSpacing: _spacing,
+          children: [
+            for (final card in cards) SizedBox(width: cardWidth, child: card),
+          ],
+        );
+      },
     );
   }
 }

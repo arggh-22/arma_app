@@ -9,6 +9,7 @@ import 'package:arma_proxy_vpn_client/features/server/presentation/providers/mul
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/server_list_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/providers/subscription_provider.dart';
 import 'package:arma_proxy_vpn_client/features/server/presentation/screens/server_list_screen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -71,6 +72,23 @@ void main() {
       find.byKey(const Key('server-filter-empty-hint')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('desktop renders servers in a grid (Wrap) without breaking them', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    try {
+      await _pumpScreen(tester);
+
+      // Cards still render (grid didn't clip/break them)...
+      expect(find.text('Tokyo-01'), findsOneWidget);
+      expect(find.text('Berlin-02'), findsOneWidget);
+      // ...and the group's servers are laid out in a Wrap grid on desktop.
+      expect(find.byType(Wrap), findsWidgets);
+    } finally {
+      debugDefaultTargetPlatformOverride = null;
+    }
   });
 }
 
