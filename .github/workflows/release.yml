@@ -332,10 +332,10 @@ jobs:
 #          path: dist/*
 #          if-no-files-found: warn
 
-  # ── Publish everything to the GitHub Releases page ─────────────────────── # TODO
+  # ── Publish everything to the GitHub Releases page ───────────────────────
   github-release:
     name: GitHub Release
-    needs: [preflight, android, linux, windows]
+    needs: [preflight, android, linux, windows] # TODO add ios, macos
     if: always() && needs.android.result == 'success'
     runs-on: ubuntu-latest
     steps:
@@ -353,6 +353,8 @@ jobs:
           generate_release_notes: true
           fail_on_unmatched_files: false
           files: artifacts/**/*
+
+# TODO needs: [preflight, android, linux, windows] # TODO add ios, macos
 
 #  # ── Publish AAB to Google Play (internal track) ──────────────────────────
 #  # Requires a signed AAB, so gated on BOTH the Play service account and the
