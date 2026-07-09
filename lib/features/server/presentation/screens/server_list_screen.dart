@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -55,6 +56,36 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
   String? _expandedGroup;
   final Set<String> _refreshingSubscriptions = {};
   final Set<String> _pingingSubscriptions = {};
+
+  /// Import FAB hides while scrolling down and reappears on scroll up,
+  /// mirroring the dashboard's Telegram link FAB.
+  ///
+  /// A [ValueNotifier] (not `setState`) drives visibility so a scroll only
+  /// rebuilds the FAB — never the heavy grouped list. Rebuilding the list
+  /// mid-fling dropped frames and stalled the scroll, forcing a second swipe.
+  final ValueNotifier<bool> _showImportFab = ValueNotifier<bool>(true);
+
+  bool _onScroll(UserScrollNotification notification) {
+    // The sort/filter bar is a horizontal ListView whose scroll notifications
+    // bubble up here too — ignore them so only the vertical server list drives
+    // the FAB, otherwise swiping the filter chips flickers the FAB.
+    if (notification.metrics.axis != Axis.vertical) return false;
+    switch (notification.direction) {
+      case ScrollDirection.reverse:
+        _showImportFab.value = false;
+      case ScrollDirection.forward:
+        _showImportFab.value = true;
+      case ScrollDirection.idle:
+        break;
+    }
+    return false;
+  }
+
+  @override
+  void dispose() {
+    _showImportFab.dispose();
+    super.dispose();
+  }
 
   /// Per-server card keys, used to scroll a server into view on reveal.
   final Map<String, GlobalKey> _cardKeys = {};
@@ -160,44 +191,68 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
             );
           }
 
-          return Column(
-            children: [
-              // Sort/filter bar (hidden in multi-select mode)
-              if (!isMultiSelectActive)
-                SortFilterBar(
-                  state: ref.watch(sortFilterProvider),
-                  availableProtocols: {
-                    for (final server in servers) server.protocol,
-                  },
-                  onSort: ref.read(sortFilterProvider.notifier).setSort,
-                  onFilter: ref.read(sortFilterProvider.notifier).setFilter,
-                  onQuery: ref.read(sortFilterProvider.notifier).setQuery,
-                  onProtocol: ref.read(sortFilterProvider.notifier).setProtocol,
-                ),
+          return NotificationListener<UserScrollNotification>(
+            onNotification: _onScroll,
+            child: Column(
+              children: [
+                // Sort/filter bar (hidden in multi-select mode)
+                if (!isMultiSelectActive)
+                  SortFilterBar(
+                    state: ref.watch(sortFilterProvider),
+                    availableProtocols: {
+                      for (final server in servers) server.protocol,
+                    },
+                    onSort: ref.read(sortFilterProvider.notifier).setSort,
+                    onFilter: ref.read(sortFilterProvider.notifier).setFilter,
+                    onQuery: ref.read(sortFilterProvider.notifier).setQuery,
+                    onProtocol: ref
+                        .read(sortFilterProvider.notifier)
+                        .setProtocol,
+                  ),
 
-              // Grouped server list with pull-to-refresh
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: () => _onPullToRefresh(l10n),
-                  child: _buildGroupedList(
-                    context,
-                    ref,
-                    servers,
-                    activeServer,
-                    multiSelect,
+                // Grouped server list with pull-to-refresh
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: () => _onPullToRefresh(l10n),
+                    child: _buildGroupedList(
+                      context,
+                      ref,
+                      servers,
+                      activeServer,
+                      multiSelect,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),
-      // Lift the FAB clear of the floating pill nav.
+      // Lift the FAB clear of the floating pill nav. Hides on scroll down,
+      // reappears on scroll up (see _onScroll). The FAB stays mounted and
+      // slides/fades via the ValueNotifier, so scrolling never rebuilds the
+      // list — only this small subtree — which keeps flings from stalling.
       floatingActionButton: isMultiSelectActive
           ? null
-          : const Padding(
-              padding: EdgeInsets.only(bottom: 84),
-              child: ImportFab(),
+          : ValueListenableBuilder<bool>(
+              valueListenable: _showImportFab,
+              child: const Padding(
+                padding: EdgeInsets.only(bottom: 84),
+                child: ImportFab(),
+              ),
+              builder: (context, show, child) {
+                return AnimatedSlide(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeInOut,
+                  offset: show ? Offset.zero : const Offset(0, 2),
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeInOut,
+                    opacity: show ? 1 : 0,
+                    child: IgnorePointer(ignoring: !show, child: child),
+                  ),
+                );
+              },
             ),
     );
   }
