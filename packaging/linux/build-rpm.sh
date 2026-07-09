@@ -15,7 +15,15 @@ BINARY="arma_proxy_vpn_client"
 INSTALL_DIR="usr/lib/${PKG}"
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-BUNDLE="${ROOT}/build/linux/x64/release/bundle"
+# Flutter emits to build/linux/<hostarch>/release/bundle where <hostarch> is
+# x64 on amd64 and arm64 on arm64 — auto-detect so this works on both.
+BUNDLE=""
+for a in x64 arm64; do
+  if [ -d "${ROOT}/build/linux/${a}/release/bundle" ]; then
+    BUNDLE="${ROOT}/build/linux/${a}/release/bundle"
+    break
+  fi
+done
 ICON_SRC="${ROOT}/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
 OUT_DIR="${ROOT}/dist"
 TOP="$(mktemp -d)"

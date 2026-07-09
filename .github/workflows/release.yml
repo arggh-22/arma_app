@@ -125,11 +125,32 @@ jobs:
           path: dist/*
           if-no-files-found: error
 
-  # ── Linux desktop bundle ─────────────────────────────────────────────────
+  # ── Linux desktop bundle (x64 + arm64) ───────────────────────────────────
+  # Flutter Linux desktop builds are NATIVE (no cross-compile), so each arch
+  # must build on a runner of that arch: amd64 on ubuntu-latest, arm64 on the
+  # ubuntu-24.04-arm hosted runner. fail-fast:false so an arm64 hiccup never
+  # sinks the x64 release. (Contrast Windows, which is x64-only — Flutter's
+  # stable channel ships no native Windows-arm64 SDK.)
   linux:
-    name: Build Linux
+    name: Build Linux (${{ matrix.arch }})
     needs: preflight
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-latest
+            xray_asset: Xray-linux-64.zip
+            deb_arch: amd64
+            rpm_arch: x86_64
+            appimage_arch: x86_64
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+            xray_asset: Xray-linux-arm64-v8a.zip
+            deb_arch: arm64
+            rpm_arch: aarch64
+            appimage_arch: aarch64
     steps:
       - uses: actions/checkout@v4
 
@@ -156,14 +177,12 @@ jobs:
       - name: Install packaging tooling
         run: sudo apt-get install -y rpm
 
-      # Bundle the xray-core binary + geo data for proxy mode. ubuntu-latest is
-      # amd64; for a linux-arm64 release, run this job on an arm64 runner and
-      # swap the asset to Xray-linux-arm64-v8a.zip.
-      - name: Fetch xray-core (linux-amd64)
+      # Bundle the arch-matched xray-core binary + geo data for proxy mode.
+      - name: Fetch xray-core (${{ matrix.arch }})
         run: |
           mkdir -p assets/xray
           curl -fL -o /tmp/xray.zip \
-            https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip
+            https://github.com/XTLS/Xray-core/releases/latest/download/${{ matrix.xray_asset }}
           unzip -o /tmp/xray.zip -d assets/xray xray geoip.dat geosite.dat
           chmod +x assets/xray/xray
 
@@ -174,20 +193,22 @@ jobs:
           --build-number=${{ github.run_number }}
 
       # tar.gz (portable) + .deb (Debian/Ubuntu) + .rpm (Fedora/RHEL) +
-      # AppImage (universal). See packaging/linux/*.sh.
+      # AppImage (universal). The packaging scripts auto-detect the Flutter
+      # bundle dir (build/linux/x64 or .../arm64). See packaging/linux/*.sh.
       - name: Package (tar.gz, deb, rpm, AppImage)
         run: |
           V="${{ needs.preflight.outputs.version }}"
           mkdir -p dist
-          tar -czf "dist/ArmaVPN-$V-linux-x64.tar.gz" \
-            -C build/linux/x64/release/bundle .
-          bash packaging/linux/build-deb.sh "$V" amd64
-          bash packaging/linux/build-rpm.sh "$V" x86_64
-          bash packaging/linux/build-appimage.sh "$V" x86_64
+          BUNDLE="$(ls -d build/linux/*/release/bundle | head -n1)"
+          tar -czf "dist/ArmaVPN-$V-linux-${{ matrix.arch }}.tar.gz" \
+            -C "$BUNDLE" .
+          bash packaging/linux/build-deb.sh "$V" ${{ matrix.deb_arch }}
+          bash packaging/linux/build-rpm.sh "$V" ${{ matrix.rpm_arch }}
+          bash packaging/linux/build-appimage.sh "$V" ${{ matrix.appimage_arch }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: linux
+          name: linux-${{ matrix.arch }}
           path: |
             dist/*.tar.gz
             dist/*.deb
