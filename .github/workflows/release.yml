@@ -152,6 +152,10 @@ jobs:
       - run: flutter pub get
       - run: flutter config --enable-linux-desktop
 
+      # rpm provides rpmbuild for the .rpm package.
+      - name: Install packaging tooling
+        run: sudo apt-get install -y rpm
+
       # Bundle the xray-core binary + geo data for proxy mode. ubuntu-latest is
       # amd64; for a linux-arm64 release, run this job on an arm64 runner and
       # swap the asset to Xray-linux-arm64-v8a.zip.
@@ -169,16 +173,26 @@ jobs:
           --build-name=${{ needs.preflight.outputs.version }}
           --build-number=${{ github.run_number }}
 
-      - name: Package
+      # tar.gz (portable) + .deb (Debian/Ubuntu) + .rpm (Fedora/RHEL) +
+      # AppImage (universal). See packaging/linux/*.sh.
+      - name: Package (tar.gz, deb, rpm, AppImage)
         run: |
+          V="${{ needs.preflight.outputs.version }}"
           mkdir -p dist
-          tar -czf "dist/ArmaVPN-${{ needs.preflight.outputs.version }}-linux-x64.tar.gz" \
+          tar -czf "dist/ArmaVPN-$V-linux-x64.tar.gz" \
             -C build/linux/x64/release/bundle .
+          bash packaging/linux/build-deb.sh "$V" amd64
+          bash packaging/linux/build-rpm.sh "$V" x86_64
+          bash packaging/linux/build-appimage.sh "$V" x86_64
 
       - uses: actions/upload-artifact@v4
         with:
           name: linux
-          path: dist/*
+          path: |
+            dist/*.tar.gz
+            dist/*.deb
+            dist/*.rpm
+            dist/*.AppImage
           if-no-files-found: error
 
   # ── Windows desktop bundle ───────────────────────────────────────────────

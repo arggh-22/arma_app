@@ -89,6 +89,30 @@ targets GNOME (`gsettings`); traffic stats aren't shown on desktop yet; TUN
 (full system-wide) mode is deferred; the Windows path is currently unverified.
 See `desktop-vpn-proxy-mode` in project memory.
 
+## Linux package formats
+
+The release Linux job produces four artifacts (all attached to the GitHub
+Release), built by `packaging/linux/*.sh`:
+
+| Format | Install | For |
+|--------|---------|-----|
+| `.deb` | `sudo apt install ./ArmaVPN-*.deb` | Debian/Ubuntu |
+| `.rpm` | `sudo dnf install ./ArmaVPN-*.rpm` | Fedora/RHEL/openSUSE |
+| `.AppImage` | `chmod +x *.AppImage && ./ArmaVPN-*.AppImage` | any distro, no install |
+| `.tar.gz` | extract + run the binary | portable/manual |
+
+Build any of them locally after `flutter build linux --release`:
+
+```bash
+V=$(grep '^version:' pubspec.yaml | sed 's/version: //; s/+.*//')
+packaging/linux/build-deb.sh      "$V" amd64
+packaging/linux/build-rpm.sh      "$V" x86_64   # needs `rpmbuild`
+packaging/linux/build-appimage.sh "$V" x86_64   # downloads appimagetool
+```
+
+All install to `/usr/lib/arma-vpn`, a `/usr/bin/arma-vpn` launcher, a desktop
+entry, and an icon. Depends: `libgtk-3-0`/`gtk3`, `libsecret-1-0`/`libsecret`.
+
 ## Known blockers
 
 - **iOS/macOS won't build yet** until the Xcode target + Xray xcframework wiring
