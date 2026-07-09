@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -200,6 +201,110 @@ class DesktopXrayManager {
     _process = null;
     process?.kill(ProcessSignal.sigkill);
     await _systemProxy.disable();
+  }
+
+  /// Measures real latency **through the proxy** — the desktop equivalent of
+  /// Android's native Xray MeasureDelay, and what the HTTP ping needs to work.
+  ///
+  /// [configJson] is a latency config (proxy + direct outbounds, no inbounds —
+  /// see [XrayConfigBuilder.buildForLatencyTest]). We inject a temporary local
+  /// HTTP-proxy inbound on an ephemeral port, run xray, then time a request to
+  /// [url] sent through that proxy. Returns milliseconds, or -1 on failure.
+  ///
+  /// A fresh short-lived xray is used per call so this works whether or not a
+  /// VPN session is active. Callers throttle concurrency (bulk test runs one
+  /// server at a time).
+  Future<int> measureDelay(String configJson, String url) async {
+    Process? probe;
+    File? configFile;
+    try {
+      final dir = await _ensureRuntime();
+
+      final config = jsonDecode(configJson);
+      if (config is! Map<String, dynamic>) return -1;
+      final port = await _freePort();
+      config['log'] = {'loglevel': 'error'};
+      config['inbounds'] = [
+        {
+          'tag': 'http-probe',
+          'protocol': 'http',
+          'listen': '127.0.0.1',
+          'port': port,
+          'settings': <String, dynamic>{},
+        },
+      ];
+
+      configFile = File('${dir.path}/probe-$port.json');
+      await configFile.writeAsString(jsonEncode(config), flush: true);
+
+      probe = await Process.start(
+        '${dir.path}/$_binaryFileName',
+        ['run', '-c', configFile.path],
+        workingDirectory: dir.path,
+        environment: {'XRAY_LOCATION_ASSET': dir.path},
+      );
+      // Don't leak xray logs into the probe path; just drain them.
+      probe.stdout.drain<void>();
+      probe.stderr.drain<void>();
+
+      // Wait until the inbound is accepting (fast xray startup) before timing.
+      if (!await _waitForPort(port, const Duration(seconds: 3))) return -1;
+
+      final client = HttpClient()
+        ..connectionTimeout = const Duration(seconds: 5)
+        ..findProxy = (_) => 'PROXY 127.0.0.1:$port';
+      try {
+        final sw = Stopwatch()..start();
+        final request = await client
+            .getUrl(Uri.parse(url))
+            .timeout(const Duration(seconds: 8));
+        final response = await request.close().timeout(
+          const Duration(seconds: 8),
+        );
+        await response.drain<void>();
+        sw.stop();
+        return sw.elapsedMilliseconds;
+      } finally {
+        client.close(force: true);
+      }
+    } on Object catch (e) {
+      debugPrint('[DesktopXray] measureDelay failed: $e');
+      return -1;
+    } finally {
+      probe?.kill(ProcessSignal.sigkill);
+      try {
+        await configFile?.delete();
+      } on Object {
+        // best-effort
+      }
+    }
+  }
+
+  /// An OS-assigned free loopback port.
+  Future<int> _freePort() async {
+    final socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+    final port = socket.port;
+    await socket.close();
+    return port;
+  }
+
+  /// Polls until [port] accepts a TCP connection (xray inbound is up).
+  Future<bool> _waitForPort(int port, Duration timeout) async {
+    final deadline = DateTime.now().add(timeout);
+    while (DateTime.now().isBefore(deadline)) {
+      try {
+        final s = await Socket.connect(
+          InternetAddress.loopbackIPv4,
+          port,
+          timeout: const Duration(milliseconds: 300),
+        );
+        await s.close();
+        return true;
+      } on Object {
+        await Future<void>.delayed(const Duration(milliseconds: 80));
+      }
+    }
+    return false;
   }
 
   /// Runs `xray version` from the bundled binary.

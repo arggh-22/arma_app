@@ -86,9 +86,12 @@ class VpnPlatformService {
     String configJson, {
     String testUrl = 'https://www.google.com/generate_204',
   }) async {
-    // Not yet implemented on desktop (needs an out-of-band xray probe); the
-    // ping system falls back to TCP/HTTP/ICMP for latency there.
-    if (_isDesktop) return -1;
+    // Desktop measures real through-proxy latency by running a short-lived
+    // xray with a local HTTP-proxy inbound (equivalent to Android's native
+    // MeasureDelay). This is what makes the HTTP server test work on desktop.
+    if (_isDesktop) {
+      return DesktopXrayManager.instance.measureDelay(configJson, testUrl);
+    }
     try {
       final result = await _methodChannel.invokeMethod<Object>('measureDelay', {
         'config': configJson,
