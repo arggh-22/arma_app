@@ -332,10 +332,10 @@ jobs:
 #          path: dist/*
 #          if-no-files-found: warn
 
-  # ── Publish everything to the GitHub Releases page ───────────────────────
+  # ── Publish everything to the GitHub Releases page ─────────────────────── # TODO
   github-release:
     name: GitHub Release
-    needs: [preflight, android, linux, windows, ios, macos]
+    needs: [preflight, android, linux, windows]
     if: always() && needs.android.result == 'success'
     runs-on: ubuntu-latest
     steps:
