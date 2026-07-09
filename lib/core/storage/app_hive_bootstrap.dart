@@ -26,8 +26,15 @@ Future<void> openHiveBoxSafe<T>(String name, Directory hiveDir) async {
     }
     for (final ext in ['.hive', '.lock']) {
       final file = File('${hiveDir.path}/$name$ext');
-      if (await file.exists()) {
-        await file.delete();
+      // Best-effort cleanup: a stale .lock left by a force-quit can be gone by
+      // the time we delete it (TOCTOU), which used to throw
+      // PathNotFoundException and crash startup before runApp — swallow it.
+      try {
+        if (await file.exists()) {
+          await file.delete();
+        }
+      } on FileSystemException {
+        // File already removed or held elsewhere — nothing more to do.
       }
     }
     await Hive.openBox<T>(name);

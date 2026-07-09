@@ -1,5 +1,6 @@
 import 'package:arma_proxy_vpn_client/core/l10n/app_localizations.dart';
 import 'package:arma_proxy_vpn_client/shared/widgets/navigation_shell.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -29,6 +30,41 @@ void main() {
     await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
     expect(find.text('settings-screen'), findsOneWidget);
+  });
+
+  group('desktop layout', () {
+    testWidgets('uses a NavigationRail instead of the floating pill', (
+      tester,
+    ) async {
+      // Reset must happen inside the test body (the framework verifies debug
+      // vars are unset before group tearDowns run).
+      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+      try {
+        await _pumpShell(tester);
+
+        expect(find.byType(NavigationRail), findsOneWidget);
+        expect(find.text('Home'), findsWidgets);
+        expect(find.text('Servers'), findsWidgets);
+        expect(find.text('Settings'), findsWidgets);
+      } finally {
+        debugDefaultTargetPlatformOverride = null;
+      }
+    });
+
+    testWidgets('rail destination switches the active branch', (tester) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+      try {
+        await _pumpShell(tester);
+
+        expect(find.text('home-screen'), findsOneWidget);
+
+        await tester.tap(find.text('Servers'));
+        await tester.pumpAndSettle();
+        expect(find.text('servers-screen'), findsOneWidget);
+      } finally {
+        debugDefaultTargetPlatformOverride = null;
+      }
+    });
   });
 }
 
