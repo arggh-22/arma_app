@@ -89,6 +89,21 @@ targets GNOME (`gsettings`); traffic stats aren't shown on desktop yet; TUN
 (full system-wide) mode is deferred; the Windows path is currently unverified.
 See `desktop-vpn-proxy-mode` in project memory.
 
+## Windows package formats
+
+The Windows release job runs for **x64 and arm64** and produces, per arch:
+
+| Artifact | For |
+|----------|-----|
+| `ArmaVPN-<ver>-windows-<arch>-setup.exe` | Inno Setup wizard installer (Start-menu shortcut, uninstaller) |
+| `ArmaVPN-<ver>-windows-<arch>.zip` | portable (extract + run the `.exe`) |
+
+The installer is built by `packaging/windows/installer.iss` via Inno Setup
+(`choco install innosetup`). **arm64** builds on GitHub's `windows-11-arm`
+runner — if that runner isn't available on your plan, the arm64 leg is skipped
+(marked `continue-on-error`) and the release still ships x64. Unsigned installers
+trigger a SmartScreen warning until you code-sign them.
+
 ## Linux package formats
 
 The release Linux job produces four artifacts (all attached to the GitHub
