@@ -41,6 +41,10 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
   /// Subscription URLs whose block is currently expanded (default collapsed).
   final Set<String> _expanded = {};
 
+  /// Guards the one-time "auto-open the sole subscription" behavior so the
+  /// user can still collapse it and have it stay collapsed.
+  bool _appliedSingleAutoExpand = false;
+
   /// The subscription URL currently refreshing (shows a spinner on its block).
   String? _refreshingUrl;
 
@@ -156,6 +160,14 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
       ...entries.where((e) => pinned.contains(e.key)),
       ...entries.where((e) => !pinned.contains(e.key)),
     ];
+
+    // With a single subscription, open its block by default so the user sees
+    // their servers right away. Applied once (guarded) — read in this same
+    // build by _buildBlock — so a later collapse by the user sticks.
+    if (ordered.length == 1 && !_appliedSingleAutoExpand) {
+      _appliedSingleAutoExpand = true;
+      _expanded.add(ordered.first.key);
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

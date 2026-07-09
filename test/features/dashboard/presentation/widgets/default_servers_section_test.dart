@@ -42,7 +42,9 @@ void main() {
     expect(find.text('Key-4'), findsOneWidget);
   });
 
-  testWidgets('expanding a block reveals its server cards', (tester) async {
+  testWidgets('sole subscription auto-expands and can be collapsed', (
+    tester,
+  ) async {
     final notifier = TestDefaultServersNotifier(
       _state(
         items: [_item(id: '1', name: 'Alpha')],
@@ -50,13 +52,15 @@ void main() {
     );
 
     await _pumpSection(tester, defaultServersNotifier: notifier);
-    expect(find.byType(ServerCard), findsNothing);
 
-    await tester.tap(find.text('Key-1'));
-    await tester.pumpAndSettle();
-
+    // A single subscription opens by default so servers are visible at once.
     expect(find.byType(ServerCard), findsOneWidget);
     expect(find.text('Alpha'), findsOneWidget);
+
+    // The user can still collapse it.
+    await tester.tap(find.text('Key-1'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ServerCard), findsNothing);
   });
 
   testWidgets('per-block Ping tests only that block\'s servers', (
@@ -206,9 +210,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Key-sel'));
-    await tester.pumpAndSettle();
-
+    // Sole subscription is auto-expanded — the card is already visible.
     expect(find.byType(ServerCard), findsOneWidget);
     // Selected card renders the active checkmark.
     expect(find.byIcon(Icons.check_circle), findsOneWidget);
@@ -230,8 +232,7 @@ void main() {
       connectionNotifier: connectionNotifier,
     );
 
-    await tester.tap(find.text('Key-new'));
-    await tester.pumpAndSettle();
+    // Sole subscription is auto-expanded — tap the server card directly.
     await tester.tap(find.text('New server'));
     await tester.pumpAndSettle();
 
@@ -264,8 +265,7 @@ void main() {
       connectionNotifier: connectionNotifier,
     );
 
-    await tester.tap(find.text('Key-new'));
-    await tester.pumpAndSettle();
+    // Sole subscription is auto-expanded — tap the server card directly.
     await tester.tap(find.text('New server'));
     await tester.pumpAndSettle();
 
@@ -282,7 +282,12 @@ void main() {
     final server = _serverConfig(id: 'default-api-1', name: 'Reveal me');
     final notifier = TestDefaultServersNotifier(
       _state(
-        items: [_item(id: '1', name: 'Reveal me', serverConfig: server)],
+        // Two subscriptions so blocks stay collapsed by default (a sole
+        // subscription auto-expands) — this exercises reveal-expands-a-block.
+        items: [
+          _item(id: '1', name: 'Reveal me', serverConfig: server),
+          _item(id: '2', name: 'Other'),
+        ],
       ),
     );
 
@@ -315,6 +320,9 @@ void main() {
             webPageUrl: 'https://example.com/renew',
             supportUrl: 'https://example.com/support',
           ),
+          // A second subscription keeps blocks collapsed by default (a sole
+          // subscription auto-expands), so this can test the expand behavior.
+          _item(id: '2', name: 'B'),
         ],
       ),
     );
