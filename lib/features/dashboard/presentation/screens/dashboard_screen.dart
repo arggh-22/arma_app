@@ -341,20 +341,23 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 24, 24),
+      padding: EdgeInsets.zero,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Left: the connect hero, vertically centered (scrolls if too tall).
-          SizedBox(
-            width: 360,
+          // Left: a full-height connection panel (subtle surface). Centering
+          // the hero on the panel lets the connect button's soft glow blend
+          // into the surface instead of spilling past a card border.
+          Container(
+            width: 400,
+            color: colorScheme.surfaceContainerLow,
             child: LayoutBuilder(
               builder: (context, constraints) => SingleChildScrollView(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(minHeight: constraints.maxHeight),
                   child: Center(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      padding: const EdgeInsets.all(32),
                       child: hero,
                     ),
                   ),
@@ -362,7 +365,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ),
             ),
           ),
-          const VerticalDivider(width: 32),
+          const VerticalDivider(width: 1),
           // Right: announcement + the servers list, scrollable.
           Expanded(
             child: RefreshIndicator(
@@ -370,7 +373,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ref.read(defaultServersProvider.notifier).refresh(),
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.only(top: 16),
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
