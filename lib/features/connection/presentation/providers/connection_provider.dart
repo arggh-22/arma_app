@@ -168,7 +168,11 @@ class ConnectionNotifier extends _$ConnectionNotifier
       routingDatasource.getAllRules(),
     );
 
-    final configJson = XrayConfigBuilder.build(server, settings: vpnSettings);
+    // Desktop runs xray in proxy mode (SOCKS/HTTP inbounds + system proxy);
+    // Android/iOS use the TUN inbound driven by the native tunnel.
+    final configJson = (Platform.isLinux || Platform.isWindows)
+        ? XrayConfigBuilder.buildForProxy(server, settings: vpnSettings)
+        : XrayConfigBuilder.build(server, settings: vpnSettings);
 
     // Pass per-app proxy config to native side (Plan 03 adds setPerAppConfig)
     try {

@@ -152,6 +152,17 @@ jobs:
       - run: flutter pub get
       - run: flutter config --enable-linux-desktop
 
+      # Bundle the xray-core binary + geo data for proxy mode. ubuntu-latest is
+      # amd64; for a linux-arm64 release, run this job on an arm64 runner and
+      # swap the asset to Xray-linux-arm64-v8a.zip.
+      - name: Fetch xray-core (linux-amd64)
+        run: |
+          mkdir -p assets/xray
+          curl -fL -o /tmp/xray.zip \
+            https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip
+          unzip -o /tmp/xray.zip -d assets/xray xray geoip.dat geosite.dat
+          chmod +x assets/xray/xray
+
       - name: Build Linux
         run: >
           flutter build linux --release
@@ -186,6 +197,15 @@ jobs:
 
       - run: flutter pub get
       - run: flutter config --enable-windows-desktop
+
+      # Bundle the xray-core binary + geo data for proxy mode. windows-latest is
+      # amd64; for windows-arm64 use an arm64 runner and Xray-windows-arm64-v8a.zip.
+      - name: Fetch xray-core (windows-amd64)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path assets/xray | Out-Null
+          Invoke-WebRequest -Uri https://github.com/XTLS/Xray-core/releases/latest/download/Xray-windows-64.zip -OutFile "$env:TEMP\xray.zip"
+          Expand-Archive -Path "$env:TEMP\xray.zip" -DestinationPath assets/xray -Force
 
       - name: Build Windows
         run: >

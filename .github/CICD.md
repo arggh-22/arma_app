@@ -79,6 +79,16 @@ Add under **Settings → Secrets and variables → Actions → New repository se
 - iOS/macOS jobs are `continue-on-error`, so failures there never fail the
   overall release.
 
+## Desktop VPN (proxy mode)
+
+Linux/Windows builds now include a working VPN core in **proxy mode**: the
+release jobs download the xray-core binary + geo data into `assets/xray/`
+(the `Fetch xray-core` steps), the app runs xray with SOCKS/HTTP inbounds and
+sets the OS system proxy. No admin/root needed. Caveats: Linux system-proxy
+targets GNOME (`gsettings`); traffic stats aren't shown on desktop yet; TUN
+(full system-wide) mode is deferred; the Windows path is currently unverified.
+See `desktop-vpn-proxy-mode` in project memory.
+
 ## Known blockers
 
 - **iOS/macOS won't build yet** until the Xcode target + Xray xcframework wiring

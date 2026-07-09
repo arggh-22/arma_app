@@ -70,3 +70,9 @@ coverage/
 .cache/
 tmp/
 /problem_export
+
+# Desktop xray-core binaries (downloaded in CI, not committed)
+assets/xray/xray
+assets/xray/xray.exe
+assets/xray/geoip.dat
+assets/xray/geosite.dat

@@ -24,24 +24,34 @@ class XrayConfigBuilder {
   ///
   /// The returned string can be passed directly to the native AAR's
   /// `StartLoop(json, tunFd)`.
-  static String build(ServerConfig server, {VpnSettings? settings}) {
+  static String build(
+    ServerConfig server, {
+    VpnSettings? settings,
+    List<Map<String, dynamic>>? inboundsOverride,
+  }) {
     final s = settings ?? const VpnSettings();
 
     // JSON-subscription profiles ship a complete, ready-to-run Xray config
     // (multi-server balancers, burstObservatory, xhttp, PQ encryption). Use it
-    // verbatim, swapping only the local inbound for the app's TUN inbound.
+    // verbatim, swapping only the local inbound for the app's inbound.
     final raw = server.rawConfig;
     if (raw != null && raw.trim().isNotEmpty) {
-      final merged = _mergeRawConfigForTun(raw, s, server);
+      final merged = _mergeRawConfig(raw, s, server, inboundsOverride);
       if (merged != null) return merged;
     }
+
+    // Desktop proxy mode passes socks/http inbounds; Android passes none and
+    // gets the TUN inbound (the AAR injects the TUN fd via startLoop).
+    final inbounds =
+        inboundsOverride ??
+        [_buildTunInbound(sniffingEnabled: s.sniffingEnabled)];
 
     final config = <String, dynamic>{
       'log': _buildLog(),
       'stats': <String, dynamic>{},
       'policy': _buildPolicy(),
       'dns': _buildDns(remoteDns: s.remoteDns, directDns: s.directDns),
-      'inbounds': [_buildTunInbound(sniffingEnabled: s.sniffingEnabled)],
+      'inbounds': inbounds,
       'outbounds': [
         _buildProxyOutbound(
           server,
@@ -87,16 +97,68 @@ class XrayConfigBuilder {
     return jsonEncode(config);
   }
 
+  /// Builds a config for desktop **proxy mode**: identical routing/DNS/outbound
+  /// behavior to [build], but with local SOCKS5 + HTTP inbounds instead of the
+  /// Android TUN inbound. The desktop app runs the bundled `xray` binary with
+  /// this config and points the OS system proxy at [socksPort]/[httpPort].
+  static String buildForProxy(
+    ServerConfig server, {
+    VpnSettings? settings,
+    int socksPort = 10808,
+    int httpPort = 10809,
+  }) {
+    return build(
+      server,
+      settings: settings,
+      inboundsOverride: [
+        _buildSocksInbound(socksPort, sniffingEnabled: settings?.sniffingEnabled ?? true),
+        _buildHttpInbound(httpPort),
+      ],
+    );
+  }
+
+  /// Local SOCKS5 inbound bound to loopback (desktop proxy mode).
+  static Map<String, dynamic> _buildSocksInbound(
+    int port, {
+    bool sniffingEnabled = true,
+  }) {
+    return {
+      'tag': 'socks-in',
+      'protocol': 'socks',
+      'listen': '127.0.0.1',
+      'port': port,
+      'settings': {'udp': true, 'auth': 'noauth'},
+      if (sniffingEnabled)
+        'sniffing': {
+          'enabled': true,
+          'destOverride': ['http', 'tls', 'quic'],
+          'routeOnly': false,
+        },
+    };
+  }
+
+  /// Local HTTP proxy inbound bound to loopback (desktop proxy mode).
+  static Map<String, dynamic> _buildHttpInbound(int port) {
+    return {
+      'tag': 'http-in',
+      'protocol': 'http',
+      'listen': '127.0.0.1',
+      'port': port,
+      'settings': <String, dynamic>{},
+    };
+  }
+
   /// Merges a raw JSON-subscription config for VPN use: keeps the server's
   /// outbounds/routing/dns/balancer/burstObservatory, replaces the local
   /// socks/http inbounds with the app's TUN inbound, and ensures stats+policy
   /// are present so traffic stats (QueryStats) keep working.
   ///
   /// Returns `null` if [raw] is not a usable JSON object.
-  static String? _mergeRawConfigForTun(
+  static String? _mergeRawConfig(
     String raw,
     VpnSettings s,
     ServerConfig server,
+    List<Map<String, dynamic>>? inboundsOverride,
   ) {
     try {
       final decoded = jsonDecode(raw);
@@ -108,9 +170,9 @@ class XrayConfigBuilder {
       config['log'] = _buildLog();
       config['stats'] = <String, dynamic>{};
       config['policy'] = _buildPolicy();
-      config['inbounds'] = [
-        _buildTunInbound(sniffingEnabled: s.sniffingEnabled),
-      ];
+      config['inbounds'] =
+          inboundsOverride ??
+          [_buildTunInbound(sniffingEnabled: s.sniffingEnabled)];
 
       // Honor the user's DNS choice (prevents a DNS leak through the
       // subscription's embedded resolver).

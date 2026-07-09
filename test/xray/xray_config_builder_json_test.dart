@@ -86,5 +86,43 @@ void main() {
       expect(config.containsKey('burstObservatory'), isFalse);
       expect((config['inbounds'] as List).single['protocol'], 'tun');
     });
+
+    test('buildForProxy() swaps TUN for socks/http inbounds', () {
+      final json = XrayConfigBuilder.buildForProxy(_rawServer());
+      final config = jsonDecode(json) as Map<String, dynamic>;
+
+      final inbounds = (config['inbounds'] as List).cast<Map>();
+      expect(inbounds.map((i) => i['protocol']), containsAll(['socks', 'http']));
+      expect(inbounds.map((i) => i['protocol']), isNot(contains('tun')));
+      // Loopback-only, on the ports the desktop manager expects.
+      expect(inbounds.every((i) => i['listen'] == '127.0.0.1'), isTrue);
+      expect(
+        inbounds.firstWhere((i) => i['protocol'] == 'socks')['port'],
+        10808,
+      );
+      // Server's outbounds/routing/dns are preserved (proxy still works).
+      expect(json, contains('srv-101.net-infra.systems'));
+      expect(config.containsKey('routing'), isTrue);
+    });
+
+    test('buildForProxy() field-based (no rawConfig) has socks/http + proxy', () {
+      final json = XrayConfigBuilder.buildForProxy(
+        _rawServer().copyWith(rawConfig: null),
+        socksPort: 20000,
+        httpPort: 20001,
+      );
+      final config = jsonDecode(json) as Map<String, dynamic>;
+      final inbounds = (config['inbounds'] as List).cast<Map>();
+      expect(inbounds.map((i) => i['protocol']), containsAll(['socks', 'http']));
+      expect(
+        inbounds.firstWhere((i) => i['protocol'] == 'http')['port'],
+        20001,
+      );
+      // Custom ports flow through.
+      expect(
+        inbounds.firstWhere((i) => i['protocol'] == 'socks')['port'],
+        20000,
+      );
+    });
   });
 }

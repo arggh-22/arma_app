@@ -54,3 +54,9 @@ dev_dependencies:
 flutter:
   generate: true
   uses-material-design: true
+  # Desktop (Linux/Windows) proxy mode bundles the xray-core binary + geo data
+  # here. CI downloads the correct per-platform/arch binary into this folder
+  # before building (see .github/workflows/release.yml). The binaries are
+  # git-ignored; only the README placeholder is committed so the folder exists.
+  assets:
+    - assets/xray/

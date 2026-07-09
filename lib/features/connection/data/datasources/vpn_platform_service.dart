@@ -1,15 +1,25 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import 'package:arma_proxy_vpn_client/features/connection/data/datasources/desktop/desktop_xray_manager.dart';
+
 /// Dart-side wrapper around the native VPN platform channels.
 ///
 /// Encapsulates MethodChannel commands and EventChannel streaming.
 /// Channel names MUST match Kotlin MainActivity:
 ///   - MethodChannel: "com.arma.vpn/method"
 ///   - EventChannel:  "com.arma.vpn/vpn_status"
+///
+/// On desktop (Linux/Windows) there is no native channel handler, so calls are
+/// delegated to [DesktopXrayManager] (proxy mode) instead. The API surface is
+/// identical, keeping callers platform-agnostic.
 class VpnPlatformService {
   static const _methodChannel = MethodChannel('com.arma.vpn/method');
   static const _eventChannel = EventChannel('com.arma.vpn/vpn_status');
+
+  /// Whether to route through the desktop proxy-mode core instead of the
+  /// native Android channels.
+  bool get _isDesktop => DesktopXrayManager.isSupported;
 
   /// Cached broadcast stream — MUST be shared across all subscribers.
   /// Creating multiple receiveBroadcastStream() calls on the same EventChannel
@@ -21,6 +31,9 @@ class VpnPlatformService {
     debugPrint(
       '[VpnPlatformService] startVpn(configJson.length=${configJson.length}, serverName=$serverName)',
     );
+    if (_isDesktop) {
+      return DesktopXrayManager.instance.start(configJson, serverName);
+    }
     final result =
         await _methodChannel.invokeMethod<bool>('startVpn', {
           'config': configJson,
@@ -34,6 +47,9 @@ class VpnPlatformService {
   /// Stop the currently active VPN connection.
   Future<bool> stopVpn() async {
     debugPrint('[VpnPlatformService] stopVpn()');
+    if (_isDesktop) {
+      return DesktopXrayManager.instance.stop();
+    }
     final result = await _methodChannel.invokeMethod<bool>('stopVpn') ?? false;
     debugPrint('[VpnPlatformService] stopVpn result: $result');
     return result;
@@ -41,6 +57,9 @@ class VpnPlatformService {
 
   /// Check whether the VPN service is currently running.
   Future<bool> get isRunning async {
+    if (_isDesktop) {
+      return DesktopXrayManager.instance.isRunning;
+    }
     final result =
         await _methodChannel.invokeMethod<bool>('isRunning') ?? false;
     debugPrint('[VpnPlatformService] isRunning: $result');
@@ -48,8 +67,10 @@ class VpnPlatformService {
   }
 
   /// Request VPN permission from the Android system.
+  /// Desktop proxy mode needs no OS permission → always granted.
   Future<bool> requestVpnPermission() async {
     debugPrint('[VpnPlatformService] requestVpnPermission()');
+    if (_isDesktop) return true;
     final result =
         await _methodChannel.invokeMethod<bool>('requestVpnPermission') ??
         false;
@@ -65,6 +86,9 @@ class VpnPlatformService {
     String configJson, {
     String testUrl = 'https://www.google.com/generate_204',
   }) async {
+    // Not yet implemented on desktop (needs an out-of-band xray probe); the
+    // ping system falls back to TCP/HTTP/ICMP for latency there.
+    if (_isDesktop) return -1;
     try {
       final result = await _methodChannel.invokeMethod<Object>('measureDelay', {
         'config': configJson,
@@ -84,6 +108,11 @@ class VpnPlatformService {
 
   /// Stream of VPN events from native (status changes + traffic stats).
   Stream<Map<String, dynamic>> get vpnEvents {
+    // Desktop has no native EventChannel handler — surface the proxy-mode
+    // manager's status events instead (same {type,state,message} shape).
+    if (_isDesktop) {
+      return DesktopXrayManager.instance.events;
+    }
     _sharedEventStream ??= _eventChannel.receiveBroadcastStream().map((event) {
       final mapped = Map<String, dynamic>.from(event as Map);
       // Log all events EXCEPT frequent traffic stats
@@ -170,6 +199,7 @@ class VpnPlatformService {
   /// Get Xray-core version string from the native runtime.
   /// Returns the version or empty string on error.
   Future<String> getXrayVersion() async {
+    if (_isDesktop) return DesktopXrayManager.instance.version();
     try {
       final result =
           await _methodChannel.invokeMethod<String>('getXrayVersion');
