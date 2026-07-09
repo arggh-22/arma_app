@@ -91,13 +91,17 @@ class _FloatingNavBar extends StatelessWidget {
     return ClipRRect(
       borderRadius: radius,
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        // Lighter blur than before (was sigma 20): a backdrop blur over the
+        // scrolling body (extendBody) re-samples every frame, so a smaller
+        // kernel keeps the frosted look far cheaper. Pill opacity is bumped
+        // to stay legible against the reduced blur.
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
         child: Container(
           height: 68,
           decoration: BoxDecoration(
             color: isDark
-                ? ArmaTokens.deepNavy.withValues(alpha: 0.72)
-                : colorScheme.surface.withValues(alpha: 0.85),
+                ? ArmaTokens.deepNavy.withValues(alpha: 0.82)
+                : colorScheme.surface.withValues(alpha: 0.90),
             borderRadius: radius,
             border: Border.all(
               color: isDark

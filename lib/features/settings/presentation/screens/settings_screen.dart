@@ -477,16 +477,47 @@ class SettingsScreen extends ConsumerWidget {
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 8),
               child: SegmentedButton<String>(
+                showSelectedIcon: false,
+                style: SegmentedButton.styleFrom(
+                  textStyle: const TextStyle(fontSize: 11),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 8,
+                  ),
+                  visualDensity: VisualDensity.compact,
+                ),
                 segments: [
-                  ButtonSegment(value: 'none', label: Text(l10n.profileNone)),
-                  ButtonSegment(value: 'light', label: Text(l10n.profileLight)),
+                  ButtonSegment(
+                    value: 'none',
+                    label: Text(
+                      l10n.profileNone,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  ButtonSegment(
+                    value: 'light',
+                    label: Text(
+                      l10n.profileLight,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                   ButtonSegment(
                     value: 'moderate',
-                    label: Text(l10n.profileModerate),
+                    label: Text(
+                      l10n.profileModerate,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                   ButtonSegment(
                     value: 'aggressive',
-                    label: Text(l10n.profileAggressive),
+                    label: Text(
+                      l10n.profileAggressive,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
                 selected: {acSettings.profile},

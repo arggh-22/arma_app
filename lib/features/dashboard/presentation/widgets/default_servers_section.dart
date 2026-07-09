@@ -73,11 +73,24 @@ class _DefaultServersSectionState extends ConsumerState<DefaultServersSection> {
     if (owner == null) return; // not a default server — not ours to handle.
 
     _revealHandledId = serverId;
-    setState(() => _expanded.add(owner!.subscriptionUrl));
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    final url = owner.subscriptionUrl;
+    final needsExpand = !_expanded.contains(url);
+    if (needsExpand) {
+      setState(() => _expanded.add(url));
+    }
+    // The block reveals its cards with a 200ms AnimatedSize (see
+    // SubscriptionKeyBlock). Scrolling one frame after expanding computes the
+    // offset mid-animation and lands on the wrong spot — which is why a
+    // collapsed block used to need a second tap. Wait for the expand to settle
+    // before scrolling; skip the wait when it was already open so an open
+    // block still reveals in a single tap.
+    final settleDelay = needsExpand
+        ? const Duration(milliseconds: 240)
+        : Duration.zero;
+    Future.delayed(settleDelay, () {
       if (!mounted) return;
       final ctx = _cardKeys[serverId]?.currentContext;
-      if (ctx != null) {
+      if (ctx != null && ctx.mounted) {
         Scrollable.ensureVisible(
           ctx,
           alignment: 0.2,

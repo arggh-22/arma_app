@@ -88,11 +88,23 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     final groupKey = target.subscriptionId ?? 'manual:${target.groupName}';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      setState(() => _expandedGroup = groupKey);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      final needsExpand = _expandedGroup != groupKey;
+      if (needsExpand) {
+        setState(() => _expandedGroup = groupKey);
+      }
+      // The group body reveals its cards with a 200ms AnimatedSize (see
+      // SubscriptionKeyBlock). Scrolling one frame after expanding computes
+      // the offset mid-animation and lands on the wrong spot — which is why a
+      // collapsed group used to need a second tap. Wait for the expand to
+      // settle before scrolling; skip the wait when it was already open so an
+      // open group still reveals in a single tap.
+      final settleDelay = needsExpand
+          ? const Duration(milliseconds: 240)
+          : Duration.zero;
+      Future.delayed(settleDelay, () {
         if (!mounted) return;
         final ctx = _cardKeys[id]?.currentContext;
-        if (ctx != null) {
+        if (ctx != null && ctx.mounted) {
           Scrollable.ensureVisible(
             ctx,
             alignment: 0.2,
