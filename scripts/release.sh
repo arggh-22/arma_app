@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 # Cut a release.
 #
-# Reads the version from pubspec.yaml, pushes the current branch, then creates
-# and pushes a `v<version>` tag — which triggers .github/workflows/release.yml
-# to build every OS package (Android apk/aab, Linux deb/rpm/AppImage/tar.gz,
-# Windows x64+arm64 Setup.exe/zip, iOS/macOS) and publish a GitHub Release.
+# Reads the version from pubspec.yaml, then:
+#   1. dart format lib test
+#   2. commit any pending changes (format + your work)
+#   3. flutter test  — abort the release if anything fails
+#   4. push the current branch, create + push a `v<version>` tag
+#      -> triggers .github/workflows/release.yml to build every OS package
+#         (Android apk/aab, Linux deb/rpm/AppImage/tar.gz, Windows x64+arm64
+#         Setup.exe/zip, iOS/macOS) and publish a GitHub Release.
 #
 # Usage:
-#   scripts/release.sh              # prompt, then push branch + tag
+#   scripts/release.sh              # confirm, then run the full flow
 #   scripts/release.sh -y           # no confirmation prompt
 #   scripts/release.sh --dry-run    # show what it would do, change nothing
 #   scripts/release.sh --remote up  # use a remote other than 'origin'
@@ -24,7 +28,7 @@ while [ $# -gt 0 ]; do
     -y|--yes) ASSUME_YES=true ;;
     --dry-run) DRY_RUN=true ;;
     --remote) REMOTE="${2:?--remote needs a value}"; shift ;;
-    -h|--help) sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,23p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
   shift
@@ -49,13 +53,7 @@ echo "Branch  : $BRANCH"
 echo "Remote  : $REMOTE"
 echo
 
-# ── safety checks ───────────────────────────────────────────────────────────
-# Uncommitted tracked changes would be excluded from the tagged commit.
-if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
-  echo "error: uncommitted changes — commit them before releasing." >&2
-  exit 1
-fi
-
+# ── fail fast: tag must not already exist ───────────────────────────────────
 if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
   echo "error: tag $TAG already exists locally. Bump 'version:' in pubspec.yaml." >&2
   exit 1
@@ -69,16 +67,19 @@ if [ "$BRANCH" != "main" ]; then
   echo "note: not on 'main' (on '$BRANCH'). The release builds from this commit."
 fi
 
-# ── confirm ─────────────────────────────────────────────────────────────────
+# ── plan / confirm ──────────────────────────────────────────────────────────
 if [ "$DRY_RUN" = true ]; then
   echo "[dry-run] would run:"
+  echo "  dart format lib test"
+  echo "  git add -A && git commit -m 'release: $TAG'   (if anything changed)"
+  echo "  flutter test"
   echo "  git push $REMOTE $BRANCH"
-  echo "  git tag -a $TAG -m 'Release $TAG'"
-  echo "  git push $REMOTE $TAG"
+  echo "  git tag -a $TAG -m 'Release $TAG' && git push $REMOTE $TAG"
   exit 0
 fi
 if [ "$ASSUME_YES" != true ]; then
-  printf "Push '%s' and release %s? [y/N] " "$BRANCH" "$TAG"
+  echo "This will: format, COMMIT ALL pending changes, run tests, then push"
+  printf "branch '%s' and release %s. Continue? [y/N] " "$BRANCH" "$TAG"
   read -r reply
   case "$reply" in
     y|Y|yes|YES) ;;
@@ -86,7 +87,27 @@ if [ "$ASSUME_YES" != true ]; then
   esac
 fi
 
-# ── release ─────────────────────────────────────────────────────────────────
+# ── 1. format ───────────────────────────────────────────────────────────────
+echo "==> dart format lib test"
+dart format lib test
+
+# ── 2. commit pending changes (format + your work) ──────────────────────────
+git add -A
+if git diff --cached --quiet; then
+  echo "==> nothing to commit"
+else
+  echo "==> committing pending changes"
+  git commit -m "release: $TAG"
+fi
+
+# ── 3. tests — gate the release ─────────────────────────────────────────────
+echo "==> flutter test"
+if ! flutter test; then
+  echo "error: tests failed — release aborted (nothing pushed)." >&2
+  exit 1
+fi
+
+# ── 4. existing flow: push branch + tag ─────────────────────────────────────
 git push "$REMOTE" "$BRANCH"
 git tag -a "$TAG" -m "Release $TAG"
 git push "$REMOTE" "$TAG"
