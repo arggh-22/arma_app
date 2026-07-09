@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:arma_proxy_vpn_client/features/api/data/datasources/api_client.dart';
 import 'package:arma_proxy_vpn_client/features/api/data/services/default_server_refresh_service.dart';
 import 'package:arma_proxy_vpn_client/features/settings/data/datasources/settings_local_datasource.dart';
@@ -84,9 +86,37 @@ class WorkmanagerDefaultServerBackgroundSchedulerClient
   }
 }
 
+/// No-op scheduler for platforms without Workmanager (desktop). Background
+/// refresh is mobile-only; calling Workmanager here throws UnimplementedError.
+class NoopDefaultServerBackgroundSchedulerClient
+    implements DefaultServerBackgroundSchedulerClient {
+  const NoopDefaultServerBackgroundSchedulerClient();
+
+  @override
+  Future<void> cancelByUniqueName(String uniqueName) async {}
+
+  @override
+  Future<void> registerOneOff({
+    required String uniqueName,
+    required String taskName,
+    required Duration initialDelay,
+    required Map<String, Object?> inputData,
+  }) async {}
+
+  @override
+  Future<void> registerPeriodic({
+    required String uniqueName,
+    required String taskName,
+    required Duration frequency,
+  }) async {}
+}
+
 final defaultServerBackgroundSchedulerClientProvider =
     Provider<DefaultServerBackgroundSchedulerClient>((ref) {
-      return WorkmanagerDefaultServerBackgroundSchedulerClient(Workmanager());
+      if (Platform.isAndroid || Platform.isIOS) {
+        return WorkmanagerDefaultServerBackgroundSchedulerClient(Workmanager());
+      }
+      return const NoopDefaultServerBackgroundSchedulerClient();
     });
 
 final defaultServerSchedulerNowProvider = Provider<DefaultServerSchedulerNow>(

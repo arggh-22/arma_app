@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,7 +14,12 @@ import 'package:arma_proxy_vpn_client/features/settings/presentation/providers/t
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppConstants.init();
-  await Workmanager().initialize(defaultServerBackgroundDispatcher);
+  // Workmanager only has Android/iOS implementations — initializing it on
+  // desktop throws UnimplementedError and aborts startup. Background refresh
+  // is a mobile-only feature; skip it elsewhere.
+  if (Platform.isAndroid || Platform.isIOS) {
+    await Workmanager().initialize(defaultServerBackgroundDispatcher);
+  }
   await initializeAppHiveStorage();
 
   // Load SharedPreferences for settings persistence
