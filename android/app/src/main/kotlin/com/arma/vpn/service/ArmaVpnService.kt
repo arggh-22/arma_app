@@ -450,7 +450,6 @@ class ArmaVpnService : VpnService() {
             return
         }
         isRunning = false
-        sendStatusToClient("disconnected")
 
         // D-09: Shutdown order is CRITICAL
         Log.w(TAG, "Stop step 1: Stopping traffic monitor and logcat capture")
@@ -466,6 +465,9 @@ class ArmaVpnService : VpnService() {
             Log.w(TAG, "Error stopping core", e)
         }
         coreController = null
+        // gVisor goroutines don't stop instantly on stopLoop; give them time to
+        // wind down before the fd goes away and before we report "stopped".
+        Thread.sleep(300)
 
         Log.w(TAG, "Stop step 3: Unregistering network callback")
         unregisterNetworkCallback()
@@ -484,6 +486,15 @@ class ArmaVpnService : VpnService() {
             Log.w(TAG, "Error closing TUN", e)
         }
         tunInterface = null
+        // Give Android time to release VPN routing before a reconnect.
+        Thread.sleep(200)
+
+        // Report "disconnected" only AFTER the core and TUN are fully torn
+        // down. Dart's server-switch path waits for this before starting the
+        // next server; reporting early let the new session race the old one
+        // (new protocol's xray came up while the old core/TUN still lived →
+        // "Connected" with no traffic).
+        sendStatusToClient("disconnected")
         Log.w(TAG, "=== stopVpn() complete ===")
         debugLog("stopVpn complete")
     }

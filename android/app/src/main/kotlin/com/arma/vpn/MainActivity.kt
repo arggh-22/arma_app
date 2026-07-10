@@ -9,6 +9,9 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.os.Messenger
 import android.util.Base64
 import android.util.Log
 import io.flutter.embedding.android.FlutterActivity
@@ -97,11 +100,7 @@ class MainActivity : FlutterActivity() {
                     result.success(true)
                 }
                 "isRunning" -> {
-                    // Return actual VPN state — check lastKnownStatus from service too
-                    val running = isVpnActive ||
-                        vpnConnection.lastKnownStatus == "connected" ||
-                        vpnConnection.lastKnownStatus == "connecting"
-                    result.success(running)
+                    queryIsRunning(result)
                 }
                 "requestVpnPermission" -> {
                     requestVpnPermission(result)
@@ -277,9 +276,71 @@ class MainActivity : FlutterActivity() {
      * Only uses Messenger (not Intent) to avoid race condition: a queued
      * Intent STOP can arrive after a subsequent Intent START, killing
      * the reconnection. Messenger delivery is immediate and synchronous.
+     * If the Messenger is not bound (e.g., after process restart), falls
+     * back to an explicit ACTION_STOP intent and re-initiates binding.
      */
     private fun stopVpnService() {
-        vpnConnection.sendStop()
+        if (vpnConnection.isConnected) {
+            vpnConnection.sendStop()
+        } else {
+            Log.w(TAG, "stopVpnService: not bound — falling back to ACTION_STOP intent")
+            val intent = Intent(this, ArmaVpnService::class.java).apply {
+                action = ArmaVpnService.ACTION_STOP
+            }
+            startService(intent)
+            bindVpnService()
+        }
+    }
+
+    /**
+     * Ask the :vpn_process for its true running state.
+     *
+     * The service processes stop/start/isRunning on ONE sequential Handler, so
+     * this reply is only produced after any previously queued stop command has
+     * fully torn down xray-core and closed the TUN. Dart's server-switch logic
+     * polls this as a "safe to start the next server" barrier — it must NOT be
+     * answered from the main-process status cache, which flips to
+     * "disconnected" before teardown finishes.
+     *
+     * Falls back to the cached status if the service is unbound or the reply
+     * does not arrive within 2 seconds.
+     */
+    private fun queryIsRunning(result: MethodChannel.Result) {
+        val cached = isVpnActive ||
+            vpnConnection.lastKnownStatus == "connected" ||
+            vpnConnection.lastKnownStatus == "connecting"
+        if (!vpnConnection.isConnected) {
+            result.success(cached)
+            return
+        }
+
+        var replied = false
+        val timeoutHandler = Handler(Looper.getMainLooper())
+        val timeout = Runnable {
+            if (!replied) {
+                replied = true
+                Log.w(TAG, "queryIsRunning: reply timed out, using cached=$cached")
+                result.success(cached)
+            }
+        }
+        val replyHandler = Handler(Looper.getMainLooper()) { msg ->
+            if (msg.what == ArmaVpnService.MSG_IS_RUNNING && !replied) {
+                replied = true
+                timeoutHandler.removeCallbacks(timeout)
+                result.success(msg.data.getBoolean("running", false))
+            }
+            true
+        }
+        timeoutHandler.postDelayed(timeout, 2000)
+        try {
+            vpnConnection.queryIsRunning(Messenger(replyHandler))
+        } catch (e: Exception) {
+            if (!replied) {
+                replied = true
+                timeoutHandler.removeCallbacks(timeout)
+                result.success(cached)
+            }
+        }
     }
 
     /**

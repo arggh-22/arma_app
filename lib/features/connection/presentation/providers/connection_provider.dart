@@ -261,12 +261,17 @@ class ConnectionNotifier extends _$ConnectionNotifier
   /// preceding `stopVpn` has fully torn down xray-core and closed the TUN — so
   /// this is a reliable "safe to start the next server" barrier.
   Future<void> _awaitNativeStopped({
-    Duration timeout = const Duration(seconds: 6),
+    Duration timeout = const Duration(seconds: 10),
   }) async {
     final deadline = DateTime.now().add(timeout);
     while (DateTime.now().isBefore(deadline)) {
       try {
-        if (!await _platformService.isRunning) return;
+        if (!await _platformService.isRunning) {
+          // Teardown confirmed. Brief settle so the OS finishes releasing the
+          // old VPN interface before the next establish().
+          await Future<void>.delayed(const Duration(milliseconds: 200));
+          return;
+        }
       } catch (_) {
         // Treat an errored query as "assume stopped" rather than hang forever.
         return;
